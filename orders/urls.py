@@ -4,5 +4,6 @@ from . import views
 app_name = 'orders'
 
 urlpatterns = [
-    path('', views.AIbot.as_view(), name='AIbot'),
+    path('input/', views.AIbot.as_view(), name='AIbot'),
+    path('kiosk/', views.kiosk_view, name='kiosk'),
 ]

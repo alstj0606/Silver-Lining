@@ -1,10 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>음성 입력</title>
 </head>
 <body>
+    <h2>음성 입력하기</h2>
+    <button id="micOnButton" type="button" value="on">마이크 on</button>
+    <button id="micOffButton" type="button" value="off">마이크 off</button>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> <!-- Axios CDN 추가 -->
+
+    <script>
+        document.getElementById("micOnButton").addEventListener("click", function(){
+            // 서버로 마이크 ON 신호를 전송
+            axios.post('{% url 'orders:AIbot' %}', { input: "on" })
+            .then(function(response){
+                console.log('서버 응답:', response.data);
+                // 서버 응답에 대한 처리 추가
+            })
+            .catch(function(error){
+                console.error('에러:', error);
+            });
+        });
+
+        document.getElementById("micOffButton").addEventListener("click", function(){
+            // 서버로 마이크 OFF 신호를 전송
+            axios.post('{% url 'orders:AIbot' %}', { input: "off" })
+            .then(function(response){
+                console.log('서버 응답:', response.data);
+                // 서버 응답에 대한 처리 추가
+            })
+            .catch(function(error){
+                console.error('에러:', error);
+            });
+        });
+    </script>
 </body>
 </html>

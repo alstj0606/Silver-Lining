@@ -6,28 +6,34 @@ from openai import OpenAI
 import pygame
 from django.conf import settings
 
+
 class AI:
     # 음성 인식 (듣기, STT)
-    def listen(self, recognizer, audio):
+    def __init__(self):
+        self.stop_listening = None
+        self.r = sr.Recognizer()
+        self.m = sr.Microphone()
+
+    def stop_microphone(self):
+        print(self.stop_listening)
+        if self.stop_listening is not None:
+            self.stop_listening(wait_for_stop=False)
+            self.speak("마이크 입력을 종료 합니다.")
+
+    def listen(self, recognizer, audio):  # 리스너 메서드에 recognizer와 audio 매개변수 추가
         try:
             text = recognizer.recognize_google(audio, language='ko-KR')
             print("[고객] : " + text)
-            if "종료" in text:
-                stop_listening(wait_for_stop=False)
-                self.speak("마이크 입력을 종료 합니다.")
-            else:
-                self.answer(text)
-
+            self.answer(text)
         except sr.UnknownValueError:
-            print("인식 실패")  # 음성 인식 실패한 경우
+            print("인식 실패")
         except sr.RequestError as e:
-            print("요청 실패 : {0}".format(e))  # API key 오류, 네트워크 단절 등
-
+            print("요청 실패 : {0}".format(e))
 
     # 대답
     def answer(self, input_text):
         client = OpenAI(api_key=settings.OPEN_API_KEY)
-        menu = ["아메리카노", "카푸치노", "딸기스무디", "블루베리스무디"]  # 데이터 베이스에서 목록조회
+        menu = ["아메리카노", "아이스아메리카노", "카푸치노", "딸기스무디", "블루베리스무디"]  # 데이터 베이스에서 목록조회
         category = ["시원한", "커피", "따뜻한", "과일", "딸기", "블루베리"]
         system_instructions = f"""
             이제부터 너는 "카페 직원"이야. 
@@ -66,9 +72,9 @@ class AI:
         customer_message = customer_message.strip()
         self.speak(customer_message)
 
-
     # 소리내어 읽기 (TTS)
-    def speak(self, text):
+    @staticmethod
+    def speak(text):
         print("[AI도우미] : " + text)
         file_name = "voice.mp3"
         if os.path.exists(file_name):
@@ -87,3 +93,14 @@ class AI:
         pygame.mixer.quit()
         if os.path.exists(file_name):  # 음성 하고 파일 삭제
             os.remove(file_name)
+
+    def input(self):
+        r = sr.Recognizer()
+        m = sr.Microphone()
+
+        self.speak("무엇을 도와드릴까요?")
+        self.stop_listening = r.listen_in_background(m, self.listen)  # 처음 인자는 입력 신호, 두번 째 인자는 실행을 하는 함수
+
+        print(self.stop_listening)
+        while True:
+            time.sleep(0.1)
