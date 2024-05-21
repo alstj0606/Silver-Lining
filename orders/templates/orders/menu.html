@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy KIOSK</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .menu-item, .selected-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .menu-item img {
+            width: 250px;
+            height: 250px;
+        }
+
+        .menu-item:hover {
+            transform: scale(1.05);
+        }
+
+        .selected-item span {
+            margin: 0 5px;
+        }
+
+        .actions button {
+            margin: 5px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Silver Lining</h2>
+    <div class="button d-flex flex-wrap justify-content-center">
+        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)"> {# additem("음료 이름", 음료 가격) #}
+            <img src="{% static 'menus/복숭아 스무디.jpg' %}" alt="복숭아 스무디" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">복숭아 스무디</span>
+                <span class="card-text">4000원</span>
+            </div>
+        </div>
+        <div class="menu-item card" onclick="addItem('복숭아 음료', 4800)">
+            <img src="{% static 'menus/복숭아 음료.jpg' %}" alt="복숭아 음료" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">복숭아 음료</span>
+                <span class="card-text">4800원</span>
+            </div>
+        </div>
+        <div class="menu-item card" onclick="addItem('아이스아메리카노', 3800)">
+            <img src="{% static 'menus/아이스아메리카노.jpg' %}" alt="아이스아메리카노" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">아이스아메리카노</span>
+                <span class="card-text">3800원</span>
+            </div>
+        </div>
+        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)">
+            <img src="{% static 'menus/복숭아 스무디.jpg' %}" alt="복숭아 스무디" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">복숭아 스무디</span>
+                <span class="card-text">4000원</span>
+            </div>
+        </div>
+        <div class="menu-item card" onclick="addItem('복숭아 음료', 4800)">
+            <img src="{% static 'menus/복숭아 음료.jpg' %}" alt="복숭아 음료" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">복숭아 음료</span>
+                <span class="card-text">4800원</span>
+            </div>
+        </div>
+        <div class="menu-item card" onclick="addItem('아이스아메리카노', 3800)">
+            <img src="{% static 'menus/아이스아메리카노.jpg' %}" alt="아이스아메리카노" class="card-img-top">
+            <div class="card-body">
+                <span class="card-title">아이스아메리카노</span>
+                <span class="card-text">3800원</span>
+            </div>
+        </div>
+    </div>
+    <div class="selected-items mt-4">
+        <h3 class="text-center">선택한 상품</h3>
+        <div id="selectedItemsList" class="list-group"></div>
+    </div>
+    <div class="total-price mt-3">
+        <h3 class="text-center">총 금액: <span id="totalPrice">0원</span></h3>
+    </div>
+    <div class="actions text-center">
+        <button class="btn btn-danger" onclick="clearItems()">전체삭제</button>
+        <button class="btn btn-success" id="submitOrderBtn">결제하기</button>
+    </div>
+</div>
+<script>
+    const selectedItems = {};
+
+    function addItem(name, price) {
+        if (selectedItems[name]) {
+            selectedItems[name].count++;
+        } else {
+            selectedItems[name] = {price: price, count: 1};
+        }
+        updateSelectedItemsList();
+    }
+
+    function updateSelectedItemsList() {
+        const selectedItemsList = document.getElementById('selectedItemsList');
+        const totalPriceElement = document.getElementById('totalPrice');
+        selectedItemsList.innerHTML = '';
+        let totalPrice = 0;
+        for (const [name, item] of Object.entries(selectedItems)) {
+            const itemElement = document.createElement('div');
+            itemElement.className = 'selected-item list-group-item d-flex justify-content-between align-items-center';
+
+            const itemName = document.createElement('span');
+            itemName.textContent = name;
+
+            const itemCount = document.createElement('span');
+            itemCount.className = 'badge badge-primary badge-pill';
+            itemCount.textContent = `${item.count}개`;
+
+            const itemPrice = document.createElement('span');
+            itemPrice.textContent = `${item.price * item.count}원`;
+
+            itemElement.appendChild(itemName);
+            itemElement.appendChild(itemCount);
+            itemElement.appendChild(itemPrice);
+
+            selectedItemsList.appendChild(itemElement);
+
+            totalPrice += item.price * item.count;
+        }
+        totalPriceElement.textContent = `${totalPrice}원`;
+    }
+
+    function clearItems() {
+        for (const key in selectedItems) {
+            delete selectedItems[key];
+        }
+        updateSelectedItemsList();
+    }
+
+    document.getElementById('submitOrderBtn').addEventListener('click', function () {
+        // 선택된 상품 목록을 배열로 변환하여 전송합니다.
+        const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
+            return {name: name, count: item.count};
+        });
+
+        // 총 금액 계산
+        const totalPrice = calculateTotalPrice(selectedItems);
+
+        $.ajax({
+            url: '/orders/submit_order/',
+            cache: false,
+            dataType: 'json',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({items: selectedItemsArray, total_price: totalPrice}), // 선택된 상품 목록과 총 금액을 JSON으로 전송합니다.
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $.cookie('csrftoken'));
+            },
+            success: function (data) {
+                console.log('주문이 성공적으로 처리되었습니다.');
+                window.location.href = '/orders/order_complete/' + data.order_number + '/';
+            },
+            error: function (error) {
+                console.error('주문 처리 중 오류가 발생했습니다:', error);
+            }
+        });
+    });
+
+    function calculateTotalPrice(selectedItems) {
+        let totalPrice = 0;
+        for (const item of Object.values(selectedItems)) {
+            totalPrice += item.price * item.count;
+        }
+        return totalPrice;
+    }
+
+
+</script>
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
