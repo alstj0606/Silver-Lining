@@ -3,8 +3,9 @@ from django.conf import settings
 
 
 class Hashtag(models.Model):
-    menu = models.ForeignKey('Menu', on_delete=models.CASCADE, related_name='menu_hashtags')
+    menu = models.ForeignKey('Menu', on_delete=models.CASCADE, blank=True, related_name='menu_hashtags')
     hashtag = models.CharField(max_length=255)
+    hashtag_author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_hashtag")
 
     def __str__(self):
         return self.hashtag
