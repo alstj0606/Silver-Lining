@@ -4,7 +4,6 @@ from .bot import bot
 from django.http import JsonResponse
 
 
-
 def kiosk_view(request):
     # kiosk.html 템플릿을 렌더링하여 사용자에게 보여줌
     return render(request, 'orders/kiosk.html')
