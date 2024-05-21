@@ -42,7 +42,7 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Silver Lining</h2>
     <div class="button d-flex flex-wrap justify-content-center">
-        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)">
+        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)"> {# additem("음료 이름", 음료 가격) #}
             <img src="{% static 'menus/복숭아 스무디.jpg' %}" alt="복숭아 스무디" class="card-img-top">
             <div class="card-body">
                 <span class="card-title">복숭아 스무디</span>
@@ -94,7 +94,7 @@
     </div>
     <div class="actions text-center">
         <button class="btn btn-danger" onclick="clearItems()">전체삭제</button>
-        <button class="btn btn-success">결제하기</button>
+        <button class="btn btn-success" id="submitOrderBtn">결제하기</button>
     </div>
 </div>
 <script>
@@ -104,7 +104,7 @@
         if (selectedItems[name]) {
             selectedItems[name].count++;
         } else {
-            selectedItems[name] = { price: price, count: 1 };
+            selectedItems[name] = {price: price, count: 1};
         }
         updateSelectedItemsList();
     }
@@ -145,7 +145,30 @@
         }
         updateSelectedItemsList();
     }
+
+    jq(document).ready(function () {
+        jq('#submitOrderBtn').click(function () {
+            var csrftoken = jq('input[name=csrfmiddlewaretoken]').val();
+            jq.ajax({
+                type: 'POST',
+                url: '/orders/submit_order/',
+                data: {
+                    // 데이터
+                },
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+                    // 성공적으로 처리된 경우
+                }
+            });
+        });
+    });
+
+
 </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <!-- Bootstrap JS and dependencies -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>

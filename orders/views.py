@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .bot import bot
 from django.http import JsonResponse
 
@@ -21,3 +21,25 @@ class AIbot(APIView):
         print(message)
         print(category)
         return JsonResponse({'responseText': message})
+
+
+def submit_order(request):
+    if request.method == 'POST':
+        # 주문을 제출하는 POST 요청을 처리합니다.
+        # 요청에서 데이터를 추출합니다.
+        # 주문을 데이터베이스에 저장합니다.
+        # 예시를 위해, 'name'과 'price'를 POST 데이터에서 가져오는 것으로 가정합니다.
+        name = request.POST.get('name')
+        price = request.POST.get('price')
+        # 주문 객체를 생성하거나 가져옵니다.
+        # order, created = Order.objects.get_or_create(name=name, defaults={'price': price})
+        order_number = 100
+        # 주문 완료 페이지로 주문 번호와 함께 리다이렉트합니다.
+        return redirect('order_complete', order_number=order_number)
+
+
+def order_complete(request, order_number):
+    context = {
+        'order_number': order_number,
+    }
+    return render(request, 'orders/order_complete.html', context)
