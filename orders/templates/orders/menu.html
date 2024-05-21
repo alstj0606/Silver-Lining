@@ -37,6 +37,8 @@
             margin: 5px;
         }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 <body>
 <div class="container mt-5">
@@ -146,31 +148,46 @@
         updateSelectedItemsList();
     }
 
-    jq(document).ready(function () {
-        jq('#submitOrderBtn').click(function () {
-            var csrftoken = jq('input[name=csrfmiddlewaretoken]').val();
-            jq.ajax({
-                type: 'POST',
-                url: '/orders/submit_order/',
-                data: {
-                    // 데이터
-                },
-                beforeSend: function (xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                success: function (data) {
-                    // 성공적으로 처리된 경우
-                }
-            });
+    document.getElementById('submitOrderBtn').addEventListener('click', function () {
+        // 선택된 상품 목록을 배열로 변환하여 전송합니다.
+        const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
+            return {name: name, count: item.count};
+        });
+
+        // 총 금액 계산
+        const totalPrice = calculateTotalPrice(selectedItems);
+
+        $.ajax({
+            url: '/orders/submit_order/',
+            cache: false,
+            dataType: 'json',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({items: selectedItemsArray, total_price: totalPrice}), // 선택된 상품 목록과 총 금액을 JSON으로 전송합니다.
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $.cookie('csrftoken'));
+            },
+            success: function (data) {
+                console.log('주문이 성공적으로 처리되었습니다.');
+                window.location.href = '/orders/order_complete/' + data.order_number + '/';
+            },
+            error: function (error) {
+                console.error('주문 처리 중 오류가 발생했습니다:', error);
+            }
         });
     });
 
+    function calculateTotalPrice(selectedItems) {
+        let totalPrice = 0;
+        for (const item of Object.values(selectedItems)) {
+            totalPrice += item.price * item.count;
+        }
+        return totalPrice;
+    }
+
 
 </script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
 <!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
