@@ -44,13 +44,6 @@ class MenuAdmin(admin.ModelAdmin):
 class HashtagAdmin(admin.ModelAdmin):
     readonly_fields = ("menu_id", "menu", "hashtag_author")
 
-    def get_search_results(self, request, queryset, search_term):
-        print("get_search_results >>>>>>>> 들어오는지")
-        queryset = queryset.filter(hashtag_author_id=request.user)
-        qs = super().get_search_results(request, queryset, search_term)
-        print(qs)
-        return qs
-
     def save_model(self, request, obj, form, change):
         obj.hashtag_author = request.user
         super().save_model(request, obj, form, change)
