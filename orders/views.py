@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Order
 from menus.models import Menu
+import os
 
 
 def kiosk_view(request):
@@ -170,6 +171,16 @@ def face_recognition(request):
     print("api통과??>>>>>>>>>>>>")
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-    print("response.json()>>>>>>>>>>", response.json())
+    try:
+        os.remove(image_path)
+        print(f"{image_path} 이미지가 삭제되었습니다.")
+    except FileNotFoundError:
+        print(f"{image_path} 이미지를 찾을 수 없습니다.")
+
+
+    # print("response>>>>>>>>>>>", response)
+    # print("response.json()>>>>>>>>>>", response.json())
+    # print("JsonResponse(response)>>>>>>>>>>", JsonResponse(response))
+    # print("JsonResponse(response.json())>>>>>>>>>>", JsonResponse(response.json()))
     return JsonResponse(response.json())
 
