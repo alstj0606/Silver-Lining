@@ -12,6 +12,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Order
 from menus.models import Menu
+import os
+import re
 
 
 def kiosk_view(request):
@@ -170,6 +172,23 @@ def face_recognition(request):
     print("api통과??>>>>>>>>>>>>")
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-    print("response.json()>>>>>>>>>>", response.json())
-    return JsonResponse(response.json())
+    try:
+        os.remove(image_path)
+        print(f"{image_path} 이미지가 삭제되었습니다.")
+        
+    except FileNotFoundError:
+        print(f"{image_path} 이미지를 찾을 수 없습니다.")
+
+    ai_answer = response.json()
+
+    age_message = ai_answer["choices"][0]['message']['content']
+
+    age = age_message.split("Estimated Age: ")[1].strip()
+    number = re.findall(r'\d+', age)
+    age_number = int(number[0])
+
+    if age_number >= 60:
+        return render(request, 'orders/menu_big.html')
+    
+    return render(request, 'orders/menu.html')
 
