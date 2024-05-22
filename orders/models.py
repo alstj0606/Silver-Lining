@@ -9,7 +9,7 @@ class Order(models.Model):
         ("C", "준비완료"),
     )
 
-    order_number = models.CharField(max_length=50)
+    order_number = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     order_menu = models.JSONField(default=list)
     total_price = models.PositiveIntegerField()
