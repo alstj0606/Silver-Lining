@@ -10,14 +10,8 @@ from menus.models import Menu
 from django.contrib.sessions.models import Session
 
 
-def kiosk_view(request):
-    # kiosk.html 템플릿을 렌더링하여 사용자에게 보여줌
-    return render(request, 'orders/kiosk.html')
-
-
 def menu_view(request):
     hashtags = request.session.get('hashtags', None)
-    print(hashtags)
     if hashtags:
         menus = Menu.objects.filter(hashtags__hashtag=hashtags)
     else:
@@ -32,9 +26,7 @@ def menu_view(request):
 class AIbot(APIView):
     def post(self, request):
         input_text = request.data.get('inputText')
-        print(input_text)
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-
         message, hashtags = bot(input_text, current_user)
         print(message)
         print(hashtags)
@@ -72,6 +64,10 @@ def submit_order(request):
 
 
 def order_complete(request, order_number):
+    # 이전 세션 정보 삭제
+    if 'hashtags' in request.session:
+        del request.session['hashtags']
+
     context = {
         'order_number': order_number,
     }
