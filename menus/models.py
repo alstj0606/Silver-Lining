@@ -21,6 +21,7 @@ class Menu(models.Model):
     price = models.PositiveIntegerField()
     hashtags = models.ManyToManyField('Hashtag', related_name='menu_items')
     store = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="foods")
+    img = models.ImageField(upload_to='menu_images/', null=True, blank=True)  # 새로운 필드 추가
 
     def __str__(self):
         return self.food_name
