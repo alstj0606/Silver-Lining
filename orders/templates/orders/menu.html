@@ -1,10 +1,9 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Easy KIOSK</title>
+    <title>Silver Lining</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -36,6 +35,41 @@
         .actions button {
             margin: 5px;
         }
+
+        .card-body {
+            text-align: center;
+        }
+
+        .fly-to-cart {
+            position: absolute;
+            z-index: 1000;
+            transition: transform 1s ease-in-out;
+        }
+
+        /* 추가한 스타일 */
+        #selectedItemsList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .selected-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-direction: row;
+            width: 600px; /* 너비를 조정합니다. */
+            margin: 5px 0;
+        }
+
+        .selected-item img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -44,52 +78,21 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Silver Lining</h2>
     <div class="button d-flex flex-wrap justify-content-center">
-        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)"> {# additem("음료 이름", 음료 가격) #}
-            <img src="{% static 'menus/복숭아 스무디.jpg' %}" alt="복숭아 스무디" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">복숭아 스무디</span>
-                <span class="card-text">4000원</span>
+        {% for menu in menus %}
+            <div class="menu-item card"
+                 onclick="addItem('{{ menu.food_name }}', {{ menu.price }}, '{{ menu.img.url }}', this)">
+                <img src="{% if menu.img %}{{ menu.img.url }}{% endif %}" alt="{{ menu.food_name }}"
+                     class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">{{ menu.food_name }}</h5>
+                    <p class="card-text text-muted">{{ menu.price }}원</p>
+                </div>
             </div>
-        </div>
-        <div class="menu-item card" onclick="addItem('복숭아 음료', 4800)">
-            <img src="{% static 'menus/복숭아 음료.jpg' %}" alt="복숭아 음료" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">복숭아 음료</span>
-                <span class="card-text">4800원</span>
-            </div>
-        </div>
-        <div class="menu-item card" onclick="addItem('아이스아메리카노', 3800)">
-            <img src="{% static 'menus/아이스아메리카노.jpg' %}" alt="아이스아메리카노" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">아이스아메리카노</span>
-                <span class="card-text">3800원</span>
-            </div>
-        </div>
-        <div class="menu-item card" onclick="addItem('복숭아 스무디', 4000)">
-            <img src="{% static 'menus/복숭아 스무디.jpg' %}" alt="복숭아 스무디" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">복숭아 스무디</span>
-                <span class="card-text">4000원</span>
-            </div>
-        </div>
-        <div class="menu-item card" onclick="addItem('복숭아 음료', 4800)">
-            <img src="{% static 'menus/복숭아 음료.jpg' %}" alt="복숭아 음료" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">복숭아 음료</span>
-                <span class="card-text">4800원</span>
-            </div>
-        </div>
-        <div class="menu-item card" onclick="addItem('아이스아메리카노', 3800)">
-            <img src="{% static 'menus/아이스아메리카노.jpg' %}" alt="아이스아메리카노" class="card-img-top">
-            <div class="card-body">
-                <span class="card-title">아이스아메리카노</span>
-                <span class="card-text">3800원</span>
-            </div>
-        </div>
+        {% endfor %}
     </div>
     <div class="selected-items mt-4">
         <h3 class="text-center">선택한 상품</h3>
-        <div id="selectedItemsList" class="list-group"></div>
+        <div id="selectedItemsList"></div>
     </div>
     <div class="total-price mt-3">
         <h3 class="text-center">총 금액: <span id="totalPrice">0원</span></h3>
@@ -102,13 +105,20 @@
 <script>
     const selectedItems = {};
 
-    function addItem(name, price) {
+    function addItem(name, price, imgUrl, element) {
         if (selectedItems[name]) {
             selectedItems[name].count++;
         } else {
-            selectedItems[name] = {price: price, count: 1};
+            selectedItems[name] = {price: price, count: 1, imgUrl: imgUrl};
         }
+
         updateSelectedItemsList();
+
+        // Delay flyToCart to ensure the element is in the DOM
+        setTimeout(() => {
+            const targetElement = document.getElementById(`item-${name}`);
+            flyToCart(element, targetElement);
+        }, 100);
     }
 
     function updateSelectedItemsList() {
@@ -119,6 +129,13 @@
         for (const [name, item] of Object.entries(selectedItems)) {
             const itemElement = document.createElement('div');
             itemElement.className = 'selected-item list-group-item d-flex justify-content-between align-items-center';
+            itemElement.id = `item-${name}`;
+
+            const itemImg = document.createElement('img');
+            itemImg.src = item.imgUrl;
+            itemImg.style.width = '50px';
+            itemImg.style.height = '50px';
+            itemImg.style.marginRight = '10px';
 
             const itemName = document.createElement('span');
             itemName.textContent = name;
@@ -130,6 +147,7 @@
             const itemPrice = document.createElement('span');
             itemPrice.textContent = `${item.price * item.count}원`;
 
+            itemElement.appendChild(itemImg);
             itemElement.appendChild(itemName);
             itemElement.appendChild(itemCount);
             itemElement.appendChild(itemPrice);
@@ -148,13 +166,35 @@
         updateSelectedItemsList();
     }
 
+    function flyToCart(element, targetElement) {
+        const imgToDrag = element.querySelector("img");
+        if (imgToDrag) {
+            const imgClone = imgToDrag.cloneNode(true);
+            const rect = imgToDrag.getBoundingClientRect();
+            imgClone.style.position = 'absolute';
+            imgClone.style.top = rect.top + 'px';
+            imgClone.style.left = rect.left + 'px';
+            imgClone.style.width = '100px';
+            imgClone.style.height = '100px';
+            imgClone.classList.add('fly-to-cart');
+            document.body.appendChild(imgClone);
+
+            const targetRect = targetElement.getBoundingClientRect();
+            setTimeout(() => {
+                imgClone.style.transform = `translate(${targetRect.left - rect.left}px, ${targetRect.top - rect.top}px) scale(0.5)`;
+            }, 10);
+
+            setTimeout(() => {
+                imgClone.remove();
+            }, 1000);
+        }
+    }
+
     document.getElementById('submitOrderBtn').addEventListener('click', function () {
-        // 선택된 상품 목록을 배열로 변환하여 전송합니다.
         const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
             return {name: name, count: item.count};
         });
 
-        // 총 금액 계산
         const totalPrice = calculateTotalPrice(selectedItems);
 
         $.ajax({
@@ -163,7 +203,7 @@
             dataType: 'json',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({items: selectedItemsArray, total_price: totalPrice}), // 선택된 상품 목록과 총 금액을 JSON으로 전송합니다.
+            data: JSON.stringify({items: selectedItemsArray, total_price: totalPrice}),
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('X-CSRFToken', $.cookie('csrftoken'));
             },
@@ -184,8 +224,6 @@
         }
         return totalPrice;
     }
-
-
 </script>
 <!-- Bootstrap JS and dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
