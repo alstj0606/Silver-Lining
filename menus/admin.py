@@ -1,5 +1,42 @@
+
 from django.contrib import admin
 from .models import Hashtag, Menu
+
+# class CustomListFilterA(admin.SimpleListFilter):
+#     title = _("hashtag")
+#     parameter_name = "hashtag"
+
+#     def lookups(self, request, model_admin):
+#             """
+#             Returns a list of tuples. The first element in each
+#             tuple is the coded value for the option that will
+#             appear in the URL query. The second element is the
+#             human-readable name for the option that will appear
+#             in the right sidebar.
+#             """
+#             return [
+#                 ("80s", _("in the eighties")),
+#                 ("90s", _("in the nineties")),
+#             ]
+
+#     def queryset(self, request, queryset):
+#         """
+#         Returns the filtered queryset based on the value
+#         provided in the query string and retrievable via
+#         `self.value()`.
+#         """
+#         # Compare the requested value (either '80s' or '90s')
+#         # to decide how to filter the queryset.
+#         if self.value() == "80s":
+#             return queryset.filter(
+#                 birthday__gte=date(1980, 1, 1),
+#                 birthday__lte=date(1989, 12, 31),
+#             )
+#         if self.value() == "90s":
+#             return queryset.filter(
+#                 birthday__gte=date(1990, 1, 1),
+#                 birthday__lte=date(1999, 12, 31),
+#             )
 
 
 @admin.register(Menu)
@@ -37,7 +74,9 @@ class MenuAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             list_filter = ("store_id",)
         else:
-            list_filter = ("hashtags",)
+                list_filter = [
+        ("hashtags", admin.RelatedOnlyFieldListFilter),
+    ]
         return list_filter
 
     def get_hashtags(self, obj):
@@ -66,3 +105,8 @@ class HashtagAdmin(admin.ModelAdmin):
         return ", ".join([menu.food_name for menu in obj.menu_items.all()])
 
     get_menus.short_description = "Menus"
+
+
+##admin page내에서 filter
+##admin계정 -> menu: store별로, hastag: hashtag_author별로
+##staff계정 -> menu:카테고리? , hashtag: 메뉴별로?
