@@ -19,7 +19,6 @@ def menu_view(request):
     context = {
         'menus': menus
     }
-    # kiosk.html 템플릿을 렌더링하여 사용자에게 보여줌
     return render(request, 'orders/menu.html', context)
 
 
