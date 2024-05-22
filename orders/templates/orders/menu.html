@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silver Lining</title>
-    <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* 기존 스타일 */
@@ -49,7 +48,6 @@
             transition: transform 1s ease-in-out;
         }
 
-        /* 추가한 스타일 */
         #selectedItemsList {
             display: flex;
             flex-direction: column;
@@ -64,7 +62,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             flex-direction: row;
-            width: 600px; /* 너비를 조정합니다. */
+            width: 600px;
             margin: 5px 0;
         }
 
@@ -76,28 +74,22 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <!-- axios 스크립트 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 </head>
 <body>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Silver Lining</h2>
-    <!-- 음성 입력 폼 추가 -->
     <h2>음성 입력하기</h2>
-    <form id="speechForm"> <!-- 폼 추가 -->
+    <form id="speechForm">
         {% csrf_token %}
-        <!-- 다른 폼 입력 요소들 -->
-        <button type="button" id="startButton">음성 입력 시작</button> <!-- type="button" 추가 -->
+        <button type="button" id="startButton">음성 입력 시작</button>
     </form>
     <p id="transcription"></p>
 
-    <div class="button d-flex flex-wrap justify-content-center">
+    <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
         {% for menu in menus %}
-            <div class="menu-item card"
-                 onclick="addItem('{{ menu.food_name }}', {{ menu.price }}, '{{ menu.img.url }}', this)">
-                <img src="{% if menu.img %}{{ menu.img.url }}{% endif %}" alt="{{ menu.food_name }}"
-                     class="card-img-top">
+            <div class="menu-item card" onclick="addItem('{{ menu.food_name }}', {{ menu.price }}, '{{ menu.img.url }}', this)">
+                <img src="{% if menu.img %}{{ menu.img.url }}{% endif %}" alt="{{ menu.food_name }}" class="card-img-top">
                 <div class="card-body text-center">
                     <h5 class="card-title text-primary">{{ menu.food_name }}</h5>
                     <p class="card-text text-muted">{{ menu.price }}원</p>
@@ -105,6 +97,7 @@
             </div>
         {% endfor %}
     </div>
+
     <div class="selected-items mt-4">
         <h3 class="text-center">선택한 상품</h3>
         <div id="selectedItemsList"></div>
@@ -117,11 +110,16 @@
         <button class="btn btn-success" id="submitOrderBtn">결제하기</button>
     </div>
 </div>
+
 <script>
+    window.addEventListener('load', function () {
+        const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
+        speak(welcomeMessage, startSpeechRecognition);
+    });
+
     const startButton = document.getElementById('startButton');
     const transcription = document.getElementById('transcription');
 
-    // CSRF 토큰을 가져오는 함수
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
         if (csrfTokenElement) {
@@ -132,114 +130,118 @@
         }
     }
 
-    // 음성 합성 함수
-    function speak(text) {
+    function speak(text, callback) {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ko-KR';
+        utterance.onend = function () {
+            console.log("음성 안내가 끝났습니다.");
+            if (callback) {
+                callback();
+            }
+        };
         synth.speak(utterance);
     }
 
-    // 음성 인식 시작 함수
     function startSpeechRecognition() {
-        // 음성 인식 API를 지원하는지 확인
         if (!('webkitSpeechRecognition' in window)) {
             alert("음성 인식이 지원되지 않는 브라우저입니다.");
         } else {
-            const recognition = new webkitSpeechRecognition(); // 음성 인식 객체 생성
-            recognition.lang = 'ko-KR'; // 언어 설정 (한국어)
-
-            recognition.start(); // 음성 인식 시작
-
-            // 음성 인식 결과 이벤트 처리
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.start();
             recognition.onresult = function (event) {
                 const transcript = event.results[0][0].transcript;
                 transcription.textContent = transcript;
-
-                // CSRF 토큰 가져오기
                 const csrfToken = getCsrfToken();
-
-                // 서버로 음성 데이터 전송
                 axios.post('{% url "orders:aibot" %}', {inputText: transcript}, {
                     headers: {
-                        'X-CSRFToken': csrfToken // CSRF 토큰을 요청 헤더에 추가
+                        'X-CSRFToken': csrfToken
                     }
                 })
-                    .then(function (response) {
-                        const responseText = response.data.responseText;
-                        console.log('서버 응답:', responseText);
-                        // 서버 응답을 음성으로 출력
-                        speak(responseText);
-                        window.location.href = '/orders/menu/';
-                    })
-                    .catch(function (error) {
-                        console.error('에러:', error);
+                .then(function (response) {
+                    const responseText = response.data.responseText;
+                    const hashtags = response.data.hashtags;
+                    console.log('서버 응답:', responseText);
+                    speak(responseText, function() {
+                        updateMenus(hashtags);
                     });
+                })
+                .catch(function (error) {
+                    console.error('에러:', error);
+                });
             };
-
-            // 음성 인식 종료 이벤트 처리
             recognition.onend = function () {
                 startButton.textContent = '음성 입력 다시 시작';
             };
         }
     }
 
-    // 버튼 클릭 시 음성 인식 시작
-    startButton.addEventListener('click', startSpeechRecognition);
+    function updateMenus(hashtags) {
+        $.ajax({
+            url: '/orders/get_menus/',
+            data: {hashtags: hashtags},
+            dataType: 'json',
+            success: function (data) {
+                const menus = data.menus;
+                const menuContainer = $('#menuContainer');
+                menuContainer.empty();
+                menus.forEach(menu => {
+                    const menuItem = `
+                        <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                            <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-primary">${menu.food_name}</h5>
+                                <p class="card-text text-muted">${menu.price}원</p>
+                            </div>
+                        </div>
+                    `;
+                    menuContainer.append(menuItem);
+                });
+            },
+            error: function (error) {
+                console.error('메뉴 업데이트 중 오류 발생:', error);
+            }
+        });
+    }
+
     const selectedItems = {};
 
     function addItem(name, price, imgUrl, element) {
-        if (selectedItems[name]) {
-            selectedItems[name].count++;
-        } else {
+        if (!selectedItems[name]) {
             selectedItems[name] = {price: price, count: 1, imgUrl: imgUrl};
+        } else {
+            selectedItems[name].count += 1;
         }
-
         updateSelectedItemsList();
-
-        // Delay flyToCart to ensure the element is in the DOM
-        setTimeout(() => {
-            const targetElement = document.getElementById(`item-${name}`);
-            flyToCart(element, targetElement);
-        }, 100);
+        flyToCart(element, document.getElementById('selectedItemsList'));
     }
 
     function updateSelectedItemsList() {
         const selectedItemsList = document.getElementById('selectedItemsList');
-        const totalPriceElement = document.getElementById('totalPrice');
         selectedItemsList.innerHTML = '';
         let totalPrice = 0;
         for (const [name, item] of Object.entries(selectedItems)) {
             const itemElement = document.createElement('div');
-            itemElement.className = 'selected-item list-group-item d-flex justify-content-between align-items-center';
-            itemElement.id = `item-${name}`;
-
-            const itemImg = document.createElement('img');
-            itemImg.src = item.imgUrl;
-            itemImg.style.width = '50px';
-            itemImg.style.height = '50px';
-            itemImg.style.marginRight = '10px';
-
-            const itemName = document.createElement('span');
-            itemName.textContent = name;
-
-            const itemCount = document.createElement('span');
-            itemCount.className = 'badge badge-primary badge-pill';
-            itemCount.textContent = `${item.count}개`;
-
-            const itemPrice = document.createElement('span');
-            itemPrice.textContent = `${item.price * item.count}원`;
-
-            itemElement.appendChild(itemImg);
-            itemElement.appendChild(itemName);
-            itemElement.appendChild(itemCount);
-            itemElement.appendChild(itemPrice);
-
+            itemElement.classList.add('selected-item');
+            itemElement.innerHTML = `
+                <img src="${item.imgUrl}" alt="${name}">
+                <span>${name}</span>
+                <span>${item.price}원</span>
+                <span>${item.count}개</span>
+                <button class="btn btn-danger btn-sm" onclick="removeItem('${name}')">삭제</button>
+            `;
             selectedItemsList.appendChild(itemElement);
-
             totalPrice += item.price * item.count;
         }
-        totalPriceElement.textContent = `${totalPrice}원`;
+        document.getElementById('totalPrice').textContent = `${totalPrice}원`;
+    }
+
+    function removeItem(name) {
+        if (selectedItems[name]) {
+            delete selectedItems[name];
+            updateSelectedItemsList();
+        }
     }
 
     function clearItems() {
@@ -308,7 +310,6 @@
         return totalPrice;
     }
 </script>
-<!-- Bootstrap JS and dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

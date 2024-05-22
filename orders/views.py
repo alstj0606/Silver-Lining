@@ -7,15 +7,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Order
 from menus.models import Menu
-from django.contrib.sessions.models import Session
 
 
 def menu_view(request):
-    hashtags = request.session.get('hashtags', None)
-    if hashtags:
-        menus = Menu.objects.filter(hashtags__hashtag=hashtags)
-    else:
-        menus = Menu.objects.all()
+    menus = Menu.objects.all()
     context = {
         'menus': menus
     }
@@ -29,8 +24,7 @@ class AIbot(APIView):
         message, hashtags = bot(input_text, current_user)
         print(message)
         print(hashtags)
-        request.session['hashtags'] = hashtags
-        return JsonResponse({'responseText': message})
+        return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
 
 @csrf_exempt
@@ -63,11 +57,24 @@ def submit_order(request):
 
 
 def order_complete(request, order_number):
-    # 이전 세션 정보 삭제
-    if 'hashtags' in request.session:
-        del request.session['hashtags']
-
     context = {
         'order_number': order_number,
     }
     return render(request, 'orders/order_complete.html', context)
+
+
+def get_menus(request):
+    hashtags = request.GET.get('hashtags', None)
+    print("음성인식 >>>>", hashtags)
+    if hashtags:
+        menus = Menu.objects.filter(hashtags__hashtag=hashtags)
+    else:
+        menus = Menu.objects.all()
+    menu_list = [
+        {
+            'food_name': menu.food_name,
+            'price': menu.price,
+            'img_url': menu.img.url if menu.img else ''
+        } for menu in menus
+    ]
+    return JsonResponse({'menus': menu_list})
