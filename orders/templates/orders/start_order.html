@@ -4,15 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Page</title>
-    <!-- Add any additional CSS or stylesheets here -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #ef4040;
+            margin-top: 50px;
+            font-size: 48px;
+        }
+        p {
+            font-size: 24px;
+            margin: 20px;
+        }
+        button {
+            width: 500px;
+            height: 160px;
+            font-size: 70px;
+            font-weight: bold;
+            padding: 20px 40px;
+            color: white;
+            background-color: #ef4040;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #d93636;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to our Order Page</h1>
-    <p>Click the button below to place your order:</p>
+    <h1>여기에서 주문하세요!</h1>
+    <p>화면을 터치해 주세요</p>
     <form method="post" action="{% url 'orders:face_recognition' %}">
         {% csrf_token %}
-        <button type="submit">Order Now</button>
+        <button type="submit">주문하기</button>
     </form>
-    <!-- Add any additional content or styling as needed -->
 </body>
 </html>
