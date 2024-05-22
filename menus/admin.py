@@ -89,7 +89,7 @@ class MenuAdmin(admin.ModelAdmin):
 class HashtagAdmin(admin.ModelAdmin):
     readonly_fields = ("hashtag_author",)
     list_display = ("hashtag", "hashtag_author", "get_menus")
-    list_filter = ("hashtag_author",)
+    # list_filter = ("hashtag_author",)
 
     def save_model(self, request, obj, form, change):
         obj.hashtag_author = request.user
@@ -100,6 +100,20 @@ class HashtagAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(hashtag_author=request.user)
+    
+    def get_list_display(self, request):
+        if request.user.is_superuser:
+            list_display = ("hashtag", "hashtag_author", "get_menus")
+        else:
+            list_display = ("hashtag", "get_menus")
+        return list_display
+
+    def get_list_filter(self, request):
+        if request.user.is_superuser:
+            list_filter = ("hashtag_author",)
+        else:
+                list_filter = ()
+        return list_filter
 
     def get_menus(self, obj):
         return ", ".join([menu.food_name for menu in obj.menu_items.all()])
