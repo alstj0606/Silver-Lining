@@ -15,6 +15,7 @@ from SilverLining.config import OPEN_API_KEY
 from menus.models import Menu
 from .bot import bot
 from .models import Order
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def menu_view(request):
@@ -68,12 +69,27 @@ def order_complete(request, order_number):
 
 
 def get_menus(request):
+    user = request.user
+    print(user)
     hashtags = request.GET.get('hashtags', None)
-    print("음성인식 >>>>", hashtags)
     if hashtags:
         menus = Menu.objects.filter(hashtags__hashtag=hashtags)
     else:
         menus = Menu.objects.all()
+
+    # 페이지네이션 설정
+    paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
+
+    page_number = request.GET.get('page')
+    try:
+        menus = paginator.page(page_number)
+    except PageNotAnInteger:
+        # 페이지 번호가 정수가 아닌 경우, 첫 번째 페이지를 반환
+        menus = paginator.page(1)
+    except EmptyPage:
+        # 페이지가 비어있는 경우, 마지막 페이지를 반환
+        menus = paginator.page(paginator.num_pages)
+
     menu_list = [
         {
             'food_name': menu.food_name,
@@ -81,7 +97,11 @@ def get_menus(request):
             'img_url': menu.img.url if menu.img else ''
         } for menu in menus
     ]
-    return JsonResponse({'menus': menu_list})
+
+    # 총 페이지 수 계산
+    total_pages = paginator.num_pages
+
+    return JsonResponse({'menus': menu_list, 'page_count': total_pages})
 
 
 def start_order(request):
@@ -107,7 +127,8 @@ def face_recognition(request):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-        if faces.any():
+        if len(faces) > 0:
+            print("faces>>>>>>>", faces)
             break
 
     cap.release()
@@ -174,9 +195,3 @@ def face_recognition(request):
         return redirect("orders:menu_big")
 
     return redirect("orders:menu")
-
-def elder_start(request):
-    return render(request, "orders/elder_start.html")
-
-def elder_menu(request):
-    return render(request, "orders/elder_menu.html")

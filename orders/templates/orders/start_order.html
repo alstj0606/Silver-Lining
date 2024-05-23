@@ -4,44 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f8f9fa;
         }
+
         h1 {
             color: #ef4040;
-            margin-top: 50px;
-            font-size: 48px;
+            margin-top: 70px;
+            font-size: 70px;
         }
+
         p {
-            font-size: 24px;
+            font-size: 45px;
             margin: 20px;
         }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 70px;
+        }
+
         button {
-            width: 500px;
-            height: 160px;
-            font-size: 70px;
+            width: 700px;
+            height: 600px;
+            font-size: 120px;
             font-weight: bold;
-            padding: 20px 40px;
+            padding: 40px 80px;
             color: white;
             background-color: #ef4040;
             border: none;
-            border-radius: 10px;
+            border-radius: 20px;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #d93636;
+        }
+
+        .spinner-container {
+            display: none;
+        }
+
+        .status {
+            font-size: 50px;
+            margin-top: 100px;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>여기에서 주문하세요!</h1>
-    <p>화면을 터치해 주세요</p>
-    <form method="post" action="{% url 'orders:face_recognition' %}">
+<h1>여기에서 주문하세요!</h1>
+<p>화면을 터치해 주세요</p>
+<div class="button-container">
+    <form id="order-form" method="post" action="{% url 'orders:face_recognition' %}">
         {% csrf_token %}
-        <button type="submit">주문하기</button>
+        <button type="submit" id="order-button">주문하기</button>
+        <div class="spinner-container" id="spinner">
+            <div class="spinner-border" style="width: 15rem; height: 15rem;" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+        <div class="status" id="status">얼굴 인식을 진행하고 있습니다</div>
     </form>
+</div>
+
+<script>
+    document.getElementById("order-form").addEventListener("submit", function () {
+        document.getElementById("spinner").style.display = "block";
+        document.getElementById("status").style.display = "block";
+        document.getElementById("order-button").style.display = "none";
+    });
+</script>
 </body>
 </html>
