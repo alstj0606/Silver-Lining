@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>주문하기</title>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            height: 100vh;
+
+            background-color: #D3C4FF;
+
+            margin: 0;
+
+        }
+
+        .container {
+
+            text-align: center;
+
+            padding: 20px;
+
+            background-color: #E6E6FA; /* Lavender */
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+        }
+
+        h1 {
+
+            font-size: 2rem;
+
+            color: #333;
+
+        }
+
+        .processing {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            margin-top: 20px;
+
+        }
+
+        .dot {
+
+            height: 20px;
+
+            width: 20px;
+
+            margin: 0 5px;
+
+            background-color: #99FF99;
+
+            border-radius: 50%;
+
+            display: inline-block;
+
+            animation: bounce 1.5s infinite;
+
+        }
+
+        .dot:nth-child(1) {
+
+            animation-delay: 0s;
+
+        }
+
+        .dot:nth-child(2) {
+
+            animation-delay: 0.3s;
+
+        }
+
+        .dot:nth-child(3) {
+
+            animation-delay: 0.6s;
+
+        }
+
+        @keyframes bounce {
+
+            0%, 100% {
+
+                transform: translateY(0);
+
+            }
+
+            50% {
+
+                transform: translateY(-15px);
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>안녕하세요, 어떤 메뉴로 주문하시겠습니까?</h1>
+
+        <div class="processing">
+
+            <div class="dot"></div>
+
+            <div class="dot"></div>
+
+            <div class="dot"></div>
+
+        </div>
+
+        <p>음성 인식 중 ....</p>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+
+        // Example function to simulate voice input processing
+
+        function processVoiceInput() {
+
+            console.log("Processing voice input...");
+
+            // Add your voice input processing logic here
+
+            // Call AI system to get menu recommendations
+
+        }
+
+
+
+        // Call the processVoiceInput function on page load
+
+        window.onload = function() {
+
+            processVoiceInput();
+
+        };
+
+    </script>
+
+</body>
+
+</html>
