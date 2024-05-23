@@ -5,11 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silver Lining</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         /* 기존 스타일 */
+        body {
+            font-size: 2rem;
+        }
 
-        .menu-item,
-        .selected-item {
+        .h2, h2 {
+            font-size: 4rem;
+            background-color: #ef4040;
+            color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .h3, h3 {
+            font-size: 2.75rem;
+        }
+
+        .h5, h5 {
+            font-size: 1.5rem;
+        }
+
+        .menu-item {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,6 +37,7 @@
             border-radius: 5px;
             flex-direction: column;
             transition: transform 0.2s;
+            width: 280px;
         }
 
         .menu-item img {
@@ -49,9 +68,19 @@
         }
 
         #selectedItemsList {
+            height: 350px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .scroll-button {
+            margin: 5px 0;
+            height: 155px;
+            width: 50px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: center;
             align-items: center;
         }
 
@@ -62,8 +91,25 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             flex-direction: row;
-            width: 600px;
+            width: 850px;
             margin: 5px 0;
+            justify-content: space-between;
+        }
+
+        .btn-custom {
+            padding: 30px 95px;
+            font-size: 3.5rem;
+        }
+
+        .btn-page {
+            padding: .375rem 1.75rem;
+            font-size: 3rem;
+        }
+
+        .scroll-button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 1.5rem;
         }
 
         .selected-item img {
@@ -71,32 +117,49 @@
             height: 50px;
             margin-right: 10px;
         }
+
+        .menu {
+            height: 850px;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+<h2 class="text-center mb-4">Silver Lining</h2>
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Silver Lining</h2>
     <form id="speechForm">
         {% csrf_token %}
     </form>
     <p id="transcription"></p>
 
-    <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
+    <!-- 메뉴를 표시할 컨테이너 -->
+    <div class="menu">
+        <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
+        </div>
     </div>
 
-    <div class="selected-items mt-4">
-        <h3 class="text-center">선택한 상품 🛒</h3>
-        <div id="selectedItemsList"></div>
+    <div class="pagination justify-content-center" id="paginationButtons">
+    </div>
+    <h3 class="text-center">선택한 상품 🛒</h3>
+    <div class="selected-items mt-4 d-flex">
+        <div id="selectedItemsList" class="flex-grow-1"></div>
+        <div class="d-flex flex-column justify-content-center align-items-center">
+            <button class="btn btn-primary scroll-button mb-2" onclick="scrollSelectedItemsList(-100)">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-primary scroll-button" onclick="scrollSelectedItemsList(100)">
+                <i class="fas fa-arrow-down"></i>
+            </button>
+        </div>
     </div>
     <div class="total-price mt-3">
         <h3 class="text-center">총 금액: <span id="totalPrice">0원</span></h3>
     </div>
     <div class="actions text-center">
-        <button class="btn btn-danger" onclick="clearItems()">전체삭제</button>
-        <button class="btn btn-success" id="submitOrderBtn">결제하기</button>
+        <button class="btn btn-danger btn-custom" onclick="clearItems()">전체삭제</button>
+        <button class="btn btn-success btn-custom" id="submitOrderBtn">결제하기</button>
     </div>
 </div>
 
@@ -105,7 +168,8 @@
         const hashtags = "";
         updateMenus(hashtags)
         const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
-        speak(welcomeMessage, startSpeechRecognition);
+        {#시끄러워서 주석처리#}
+        {#speak(welcomeMessage, startSpeechRecognition);#}
     });
 
     const startButton = document.getElementById('startButton');
@@ -167,10 +231,10 @@
         }
     }
 
-    function updateMenus(hashtags) {
+    function updateMenus(hashtags, page = 1) {
         $.ajax({
             url: '/orders/get_menus/',
-            data: {hashtags: hashtags},
+            data: {hashtags: hashtags, page: page},
             dataType: 'json',
             success: function (data) {
                 const menus = data.menus;
@@ -188,11 +252,38 @@
                     `;
                     menuContainer.append(menuItem);
                 });
+                console.log(data.page_count)
+                updatePaginationButtons(data.page_count, page);
             },
             error: function (error) {
                 console.error('메뉴 업데이트 중 오류 발생:', error);
             }
         });
+    }
+
+    function updatePaginationButtons(totalPages, currentPage) {
+        const paginationButtons = $('#paginationButtons');
+        paginationButtons.empty();
+
+        if (currentPage > 1) {
+            const prevButton = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${currentPage - 1})">이전</button>`;
+            paginationButtons.append(prevButton);
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            const button = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${i})">${i}</button>`;
+            paginationButtons.append(button);
+        }
+
+        if (currentPage < totalPages) {
+            const nextButton = `<button class="btn btn-outline-primary btn-page" onclick="changePage(${currentPage + 1})">다음</button>`;
+            paginationButtons.append(nextButton);
+        }
+    }
+
+    function changePage(pageNumber) {
+        const hashtags = "";
+        updateMenus(hashtags, pageNumber);
     }
 
     const selectedItems = {};
@@ -216,10 +307,12 @@
             itemElement.classList.add('selected-item');
             itemElement.innerHTML = `
                 <img src="${item.imgUrl}" alt="${name}">
+                <div>
                 <span>${name}</span>
                 <span>${item.price}원</span>
                 <span>${item.count}개</span>
-                <button class="btn btn-danger btn-sm" onclick="removeItem('${name}')">삭제</button>
+                </div>
+                <button class="btn btn-danger btn-lg" onclick="removeItem('${name}')">삭제</button>
             `;
             selectedItemsList.appendChild(itemElement);
             totalPrice += item.price * item.count;
@@ -242,57 +335,60 @@
     }
 
     function flyToCart(element, targetElement) {
-    const imgToDrag = element.querySelector("img");
-    if (imgToDrag) {
-        const imgClone = imgToDrag.cloneNode(true);
-        let rect = imgToDrag.getBoundingClientRect();
-        imgClone.style.position = 'absolute';
-        imgClone.style.top = rect.top + 'px';
-        imgClone.style.left = rect.left + 'px';
-        imgClone.style.width = '250px'; // 초기 이미지 크기
-        imgClone.style.height = '250px'; // 초기 이미지 크기
-        imgClone.classList.add('fly-to-cart');
-        document.body.appendChild(imgClone);
+        const imgToDrag = element.querySelector("img");
+        if (imgToDrag) {
+            const imgClone = imgToDrag.cloneNode(true);
+            let rect = imgToDrag.getBoundingClientRect();
+            imgClone.style.position = 'absolute';
+            imgClone.style.top = rect.top + 'px';
+            imgClone.style.left = rect.left + 'px';
+            imgClone.style.width = '250px'; // 초기 이미지 크기
+            imgClone.style.height = '250px'; // 초기 이미지 크기
+            imgClone.classList.add('fly-to-cart');
+            document.body.appendChild(imgClone);
 
-        // 🛒 아이콘 위치 설정
-        const cartIconRect = targetElement.getBoundingClientRect();
+            // 🛒 아이콘 위치 설정
+            const cartIconRect = targetElement.getBoundingClientRect();
 
-        // 카트 아이콘 중앙 위치 계산
-        const cartCenterX = cartIconRect.left + cartIconRect.width / 2;
-        const cartCenterY = cartIconRect.top + cartIconRect.height / 2;
+            // 카트 아이콘 중앙 위치 계산
+            const cartCenterX = cartIconRect.left + cartIconRect.width / 2;
+            const cartCenterY = cartIconRect.top + cartIconRect.height / 2;
 
-        // 이미지 이동 속도 계산
-        const dx = (cartCenterX - rect.left) / 120; // x 방향 이동 속도
-        const dy = (cartCenterY - rect.top) / 120; // y 방향 이동 속도
+            // 이미지 이동 속도 계산
+            const dx = (cartCenterX - rect.left) / 120; // x 방향 이동 속도
+            const dy = (cartCenterY - rect.top) / 120; // y 방향 이동 속도
 
-        // 이미지 크기 감소 속도 계산
-        const dw = (250 - 100) / 120; // 이미지 크기 감소 속도
+            // 이미지 크기 감소 속도 계산
+            const dw = (250 - 100) / 120; // 이미지 크기 감소 속도
 
-        // 이미지 이동 및 크기 조절 함수
-        function moveImage() {
-            rect = imgClone.getBoundingClientRect();
-            if ((dx > 0 && rect.left < cartCenterX) || (dx < 0 && rect.left > cartCenterX) ||
-                (dy > 0 && rect.top < cartCenterY) || (dy < 0 && rect.top > cartCenterY)) {
-                imgClone.style.left = (rect.left + dx) + 'px';
-                imgClone.style.top = (rect.top + dy) + 'px';
+            // 이미지 이동 및 크기 조절 함수
+            function moveImage() {
+                rect = imgClone.getBoundingClientRect();
+                if ((dx > 0 && rect.left < cartCenterX) || (dx < 0 && rect.left > cartCenterX) ||
+                    (dy > 0 && rect.top < cartCenterY) || (dy < 0 && rect.top > cartCenterY)) {
+                    imgClone.style.left = (rect.left + dx) + 'px';
+                    imgClone.style.top = (rect.top + dy) + 'px';
 
-                // 이미지 크기 조절
-                const newWidth = parseFloat(imgClone.style.width) - dw;
-                imgClone.style.width = newWidth + 'px';
-                imgClone.style.height = newWidth + 'px';
+                    // 이미지 크기 조절
+                    const newWidth = parseFloat(imgClone.style.width) - dw;
+                    imgClone.style.width = newWidth + 'px';
+                    imgClone.style.height = newWidth + 'px';
 
-                requestAnimationFrame(moveImage);
-            } else {
-                imgClone.remove();
+                    requestAnimationFrame(moveImage);
+                } else {
+                    imgClone.remove();
+                }
             }
+
+            // 이미지 이동 시작
+            moveImage();
         }
-
-        // 이미지 이동 시작
-        moveImage();
     }
-}
 
-
+    function scrollSelectedItemsList(amount) {
+        const selectedItemsList = document.getElementById('selectedItemsList');
+        selectedItemsList.scrollBy({top: amount, behavior: 'smooth'});
+    }
 
     document.getElementById('submitOrderBtn').addEventListener('click', function () {
         const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {

@@ -16,6 +16,7 @@ from menus.models import Menu
 from .bot import bot
 from .models import Order
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def menu_view(request):
     return render(request, 'orders/menu.html')
@@ -74,11 +75,24 @@ def order_complete(request, order_number):
 
 def get_menus(request):
     hashtags = request.GET.get('hashtags', None)
-    print("음성인식 >>>>", hashtags)
     if hashtags:
         menus = Menu.objects.filter(hashtags__hashtag=hashtags)
     else:
         menus = Menu.objects.all()
+
+    # 페이지네이션 설정
+    paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
+
+    page_number = request.GET.get('page')
+    try:
+        menus = paginator.page(page_number)
+    except PageNotAnInteger:
+        # 페이지 번호가 정수가 아닌 경우, 첫 번째 페이지를 반환
+        menus = paginator.page(1)
+    except EmptyPage:
+        # 페이지가 비어있는 경우, 마지막 페이지를 반환
+        menus = paginator.page(paginator.num_pages)
+
     menu_list = [
         {
             'food_name': menu.food_name,
@@ -86,7 +100,11 @@ def get_menus(request):
             'img_url': menu.img.url if menu.img else ''
         } for menu in menus
     ]
-    return JsonResponse({'menus': menu_list})
+
+    # 총 페이지 수 계산
+    total_pages = paginator.num_pages
+
+    return JsonResponse({'menus': menu_list, 'page_count': total_pages})
 
 
 def start_order(request):
