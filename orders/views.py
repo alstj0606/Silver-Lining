@@ -18,6 +18,7 @@ from .models import Order
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+
 def menu_view(request):
     return render(request, 'orders/menu.html')
 
@@ -74,6 +75,8 @@ def order_complete(request, order_number):
 
 
 def get_menus(request):
+    user = request.user
+    print(user)
     hashtags = request.GET.get('hashtags', None)
     if hashtags:
         menus = Menu.objects.filter(hashtags__hashtag=hashtags)

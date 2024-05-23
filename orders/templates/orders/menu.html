@@ -21,6 +21,7 @@
 
         .h3, h3 {
             font-size: 2.75rem;
+            margin: 20px;
         }
 
         .h5, h5 {
@@ -91,7 +92,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             flex-direction: row;
-            width: 850px;
+            width: 830px;
             margin: 5px 0;
             justify-content: space-between;
         }
@@ -265,19 +266,9 @@
         const paginationButtons = $('#paginationButtons');
         paginationButtons.empty();
 
-        if (currentPage > 1) {
-            const prevButton = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${currentPage - 1})">이전</button>`;
-            paginationButtons.append(prevButton);
-        }
-
         for (let i = 1; i <= totalPages; i++) {
             const button = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${i})">${i}</button>`;
             paginationButtons.append(button);
-        }
-
-        if (currentPage < totalPages) {
-            const nextButton = `<button class="btn btn-outline-primary btn-page" onclick="changePage(${currentPage + 1})">다음</button>`;
-            paginationButtons.append(nextButton);
         }
     }
 
