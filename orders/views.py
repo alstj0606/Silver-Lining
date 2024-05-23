@@ -1,37 +1,28 @@
-from rest_framework.views import APIView
-from django.shortcuts import render
-from .bot import bot
-import json
-import cv2
-from openai import OpenAI
-from SilverLining.config import OPEN_API_KEY
 import base64
-import requests
-from datetime import datetime
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Order
-from menus.models import Menu
+import json
 import os
 import re
+from datetime import datetime
 
+import cv2
+import requests
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
 
-def kiosk_view(request):
-    # kiosk.html 템플릿을 렌더링하여 사용자에게 보여줌
-    return render(request, 'orders/kiosk.html')
-
+from SilverLining.config import OPEN_API_KEY
+from menus.models import Menu
+from .bot import bot
+from .models import Order
 
 
 def menu_view(request):
-    menus = Menu.objects.all()
-    context = {
-        'menus': menus
-    }
-    return render(request, 'orders/menu.html', context)
-
+    return render(request, 'orders/menu.html')
 
 class AIbot(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         input_text = request.data.get('inputText')
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
         message, hashtags = bot(input_text, current_user)
@@ -93,17 +84,12 @@ def get_menus(request):
     return JsonResponse({'menus': menu_list})
 
 
-def order_complete(request, order_number):
-    context = {
-        'order_number': order_number,
-    }
-    return render(request, 'orders/order_complete.html', context)
-
 def start_order(request):
     return render(request, 'orders/start_order.html')
 
+
 def face_recognition(request):
-        # 웹캠 열기
+    # 웹캠 열기
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
@@ -114,9 +100,6 @@ def face_recognition(request):
     # 프레임 읽기
     while True:
         ret, frame = cap.read()
-        print("ret>>>>>>>>>>>", ret)
-        print("frame>>>>>>>>>", frame)
-
 
         if not ret:
             raise Exception("Cannot read frame from webcam")
@@ -125,70 +108,75 @@ def face_recognition(request):
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if faces.any():
-            print("faces>>>>>>>", faces)
             break
 
     cap.release()
 
     image_path = "face.jpg"
-    print("image_path>>>>>>>>>>", image_path)
     cv2.imwrite(image_path, frame)
-
 
     with open(image_path, "rb") as image_file:
         encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-        print("encoded_image>>>>>>>>>>>", encoded_image)
-    # base64_image = encoded_image(image_path)
+
     base64_image = f"data:image/jpeg;base64,{encoded_image}"
 
-    print("base64_image>>>>>>>>>", base64_image)
-
     headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {OPEN_API_KEY}"
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OPEN_API_KEY}"
     }
+
+    instruction = """
+                Although age can be difficult to predict, please provide an approximate number for how old the person in the photo appears to be. 
+                Please consider that Asians tend to look younger than you might think.
+                And Please provide an approximate age in 10-year intervals such as teens, 20s, 30s, 40s, 50s, 60s, 70s, or 80s.
+                When you return the value, remove the 's' in the end of the age interval.
+                For example, when you find the person to be in their 20s, just return the value as 20.
+                Please return the inferred age in the format 'Estimated Age: [inferred age]'.
+                """
 
     payload = {
-    "model": "gpt-4o",
-    "messages": [
-        {
-        "role": "user",
-        "content": [
+        "model": "gpt-4o",
+        "messages": [
             {
-            "type": "text",
-            "text": "Although age can be difficult to predict, please provide an approximate number for how old the person in the photo appears to be. Please consider that Asians tend to look younger than you might think.And Please provide an approximate age in 10-year intervals such as teens, 20s, 30s, 40s, 50s, 60s, 70s, or 80s. Please return the inferred age in the format 'Estimated Age: [inferred age]'."
-            },
-            {
-            "type": "image_url",
-            "image_url": {
-                "url": base64_image
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": instruction,
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": base64_image
+                        }
+                    }
+                ]
             }
-            }
-        ]
-        }
-    ],
-    "max_tokens": 300
+        ],
+        "max_tokens": 300
     }
-    print("api통과??>>>>>>>>>>>>")
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
     try:
         os.remove(image_path)
         print(f"{image_path} 이미지가 삭제되었습니다.")
-        
+
     except FileNotFoundError:
         print(f"{image_path} 이미지를 찾을 수 없습니다.")
 
     ai_answer = response.json()
 
     age_message = ai_answer["choices"][0]['message']['content']
-
     age = age_message.split("Estimated Age: ")[1].strip()
-    number = re.findall(r'\d+', age)
-    age_number = int(number[0])
+    age_number = int(age)
 
     if age_number >= 60:
-        return render(request, 'orders/menu_big.html')
-    
-    return render(request, 'orders/menu.html')
+        return redirect("orders:menu_big")
 
+    return redirect("orders:menu")
+
+def elder_start(request):
+    return render(request, "orders/elder_start.html")
+
+def elder_menu(request):
+    return render(request, "orders/elder_menu.html")

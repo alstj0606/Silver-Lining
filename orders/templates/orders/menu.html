@@ -79,27 +79,16 @@
 <body>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Silver Lining</h2>
-    <h2>음성 입력하기</h2>
     <form id="speechForm">
         {% csrf_token %}
-        <button type="button" id="startButton">음성 입력 시작</button>
     </form>
     <p id="transcription"></p>
 
     <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
-        {% for menu in menus %}
-            <div class="menu-item card" onclick="addItem('{{ menu.food_name }}', {{ menu.price }}, '{{ menu.img.url }}', this)">
-                <img src="{% if menu.img %}{{ menu.img.url }}{% endif %}" alt="{{ menu.food_name }}" class="card-img-top">
-                <div class="card-body text-center">
-                    <h5 class="card-title text-primary">{{ menu.food_name }}</h5>
-                    <p class="card-text text-muted">{{ menu.price }}원</p>
-                </div>
-            </div>
-        {% endfor %}
     </div>
 
     <div class="selected-items mt-4">
-        <h3 class="text-center">선택한 상품</h3>
+        <h3 class="text-center">선택한 상품 🛒</h3>
         <div id="selectedItemsList"></div>
     </div>
     <div class="total-price mt-3">
@@ -113,6 +102,8 @@
 
 <script>
     window.addEventListener('load', function () {
+        const hashtags = "";
+        updateMenus(hashtags)
         const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
         speak(welcomeMessage, startSpeechRecognition);
     });
@@ -159,17 +150,16 @@
                         'X-CSRFToken': csrfToken
                     }
                 })
-                .then(function (response) {
-                    const responseText = response.data.responseText;
-                    const hashtags = response.data.hashtags;
-                    console.log('서버 응답:', responseText);
-                    speak(responseText, function() {
-                        updateMenus(hashtags);
+                    .then(function (response) {
+                        const responseText = response.data.responseText;
+                        const hashtags = response.data.hashtags;
+                        console.log('서버 응답:', responseText);
+                        updateMenus(hashtags); // 메뉴 업데이트 먼저 실행
+                        speak(responseText, startSpeechRecognition); // 그 다음에 음성 안내 실행
+                    })
+                    .catch(function (error) {
+                        console.error('에러:', error);
                     });
-                })
-                .catch(function (error) {
-                    console.error('에러:', error);
-                });
             };
             recognition.onend = function () {
                 startButton.textContent = '음성 입력 다시 시작';
@@ -252,28 +242,57 @@
     }
 
     function flyToCart(element, targetElement) {
-        const imgToDrag = element.querySelector("img");
-        if (imgToDrag) {
-            const imgClone = imgToDrag.cloneNode(true);
-            const rect = imgToDrag.getBoundingClientRect();
-            imgClone.style.position = 'absolute';
-            imgClone.style.top = rect.top + 'px';
-            imgClone.style.left = rect.left + 'px';
-            imgClone.style.width = '100px';
-            imgClone.style.height = '100px';
-            imgClone.classList.add('fly-to-cart');
-            document.body.appendChild(imgClone);
+    const imgToDrag = element.querySelector("img");
+    if (imgToDrag) {
+        const imgClone = imgToDrag.cloneNode(true);
+        let rect = imgToDrag.getBoundingClientRect();
+        imgClone.style.position = 'absolute';
+        imgClone.style.top = rect.top + 'px';
+        imgClone.style.left = rect.left + 'px';
+        imgClone.style.width = '250px'; // 초기 이미지 크기
+        imgClone.style.height = '250px'; // 초기 이미지 크기
+        imgClone.classList.add('fly-to-cart');
+        document.body.appendChild(imgClone);
 
-            const targetRect = targetElement.getBoundingClientRect();
-            setTimeout(() => {
-                imgClone.style.transform = `translate(${targetRect.left - rect.left}px, ${targetRect.top - rect.top}px) scale(0.5)`;
-            }, 10);
+        // 🛒 아이콘 위치 설정
+        const cartIconRect = targetElement.getBoundingClientRect();
 
-            setTimeout(() => {
+        // 카트 아이콘 중앙 위치 계산
+        const cartCenterX = cartIconRect.left + cartIconRect.width / 2;
+        const cartCenterY = cartIconRect.top + cartIconRect.height / 2;
+
+        // 이미지 이동 속도 계산
+        const dx = (cartCenterX - rect.left) / 120; // x 방향 이동 속도
+        const dy = (cartCenterY - rect.top) / 120; // y 방향 이동 속도
+
+        // 이미지 크기 감소 속도 계산
+        const dw = (250 - 100) / 120; // 이미지 크기 감소 속도
+
+        // 이미지 이동 및 크기 조절 함수
+        function moveImage() {
+            rect = imgClone.getBoundingClientRect();
+            if ((dx > 0 && rect.left < cartCenterX) || (dx < 0 && rect.left > cartCenterX) ||
+                (dy > 0 && rect.top < cartCenterY) || (dy < 0 && rect.top > cartCenterY)) {
+                imgClone.style.left = (rect.left + dx) + 'px';
+                imgClone.style.top = (rect.top + dy) + 'px';
+
+                // 이미지 크기 조절
+                const newWidth = parseFloat(imgClone.style.width) - dw;
+                imgClone.style.width = newWidth + 'px';
+                imgClone.style.height = newWidth + 'px';
+
+                requestAnimationFrame(moveImage);
+            } else {
                 imgClone.remove();
-            }, 1000);
+            }
         }
+
+        // 이미지 이동 시작
+        moveImage();
     }
+}
+
+
 
     document.getElementById('submitOrderBtn').addEventListener('click', function () {
         const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {

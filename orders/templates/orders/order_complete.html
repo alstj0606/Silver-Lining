@@ -63,13 +63,13 @@
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var countdown = 5;
-            var timerElement = document.getElementById("timer");
+            let countdown = 5;
+            let timerElement = document.getElementById("timer");
 
-            var interval = setInterval(function() {
+            let interval = setInterval(function() {
                 if (countdown <= 0) {
                     clearInterval(interval);
-                    window.location.href = "{% url 'orders:menu' %}";
+                    window.location.href = "{% url 'orders:start_order' %}";
                 } else {
                     timerElement.textContent = countdown;
                     countdown--;
