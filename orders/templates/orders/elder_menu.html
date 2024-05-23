@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>추천 메뉴 및 장바구니</title>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            height: 100vh;
+
+            background-color: #E6E6FA; /* Lavender */
+
+            margin: 0;
+
+        }
+
+        .container {
+
+            text-align: center;
+
+            padding: 20px;
+
+            background-color: #F5F5F5; /* Light background */
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+            width: 80%;
+
+        }
+
+        h1 {
+
+            font-size: 2rem;
+
+            color: #333;
+
+        }
+
+        .recommendations {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            justify-content: space-between;
+
+            margin: 20px 0;
+
+        }
+
+        .recommendation {
+
+            background-color: #FFE4E1; /* Light pink */
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            flex: 1;
+
+            margin: 10px;
+
+            text-align: center;
+
+            min-width: 45%;
+
+        }
+
+        .recommendation img {
+
+            max-width: 100%;
+
+            height: auto;
+
+        }
+
+        .recommendation h2 {
+
+            font-size: 1.25rem;
+
+            margin: 10px 0;
+
+        }
+
+        .recommendation p {
+
+            font-size: 1rem;
+
+            color: #555;
+
+        }
+
+        .cart {
+
+            margin-top: 30px;
+
+            background-color: #E1D6F7; /* light purple */
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+        }
+
+        .cart-item {
+
+            margin: 10px 0;
+
+            font-size: 1.25rem;
+
+        }
+
+        .total-price {
+
+            font-size: 1.75rem;
+
+            font-weight: bold;
+
+            margin-top: 20px;
+
+        }
+
+        button {
+
+            cursor: pointer;
+
+            font-size: 1.5rem;
+
+            padding: 10px 20px;
+
+            color: #FFF;
+
+            background-color: #FF69B4; /* Hot pink */
+
+            border: none;
+
+            border-radius: 10px;
+
+            margin-top: 20px;
+
+        }
+
+        /* Styles for pop-up */
+
+        .popup-overlay {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-color: rgba(0, 0, 0, 0.5);
+
+            justify-content: center;
+
+            align-items: center;
+
+            z-index: 1000;
+
+        }
+
+        .popup-container {
+
+            background-color: rgba(255, 255, 255, 0.9);
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+            text-align: center;
+
+            width: 80%;
+
+            max-width: 600px;
+
+        }
+
+        .popup-container h2 {
+
+            font-size: 1.5rem;
+
+            margin: 10px 0;
+
+        }
+
+        .popup-container img {
+
+            max-width: 100%;
+
+            height: auto;
+
+        }
+
+        .popup-container p {
+
+            font-size: 1.25rem;
+
+            color: #555;
+
+        }
+
+        .popup-container .price {
+
+            font-size: 1.5rem;
+
+            font-weight: bold;
+
+            color: #333;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>이런 음료도 추천드려요.</h1>
+
+        <div class="recommendations">
+
+            {% for menu in menus %}
+
+            <div class="recommendation">
+
+                <h2>{{ menu.name }}</h2>
+
+                <div class="menu-image">
+                    {% load static %} 
+                    <img src="{% static 'menu_images/복숭아_스무디.jpg' %}" alt="{{ menu.name }} 이미지" />
+                    
+                </div>
+
+                <p>₩{{ menu.price }}</p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="cart">
+
+            <div class="cart-item">장바구니에 들어간 메뉴</div>
+
+            <div class="cart-item">장바구니에 들어간 메뉴</div>
+
+            <div class="total-price">총 가격: ₩6500</div>
+
+            <button>결제하기</button>
+
+        </div>
+
+    </div>
+
+    <!-- Pop-up for best recommendation -->
+
+    <div class="popup-overlay" id="popup-overlay">
+
+        <div class="popup-container" id="popup-container">
+
+            <h2>추천 음료</h2>
+
+            <div class="menu-image">
+
+                <img src="menu-image.jpg" alt="메뉴 이미지" id="popup-image"/>
+
+            </div>
+
+            <h2 id="popup-name">메뉴 이름</h2>
+
+            <p class="price" id="popup-price">₩5000</p>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        // Function to display the pop-up with best menu recommendation
+
+        function displayBestRecommendation(data) {
+
+            document.getElementById('popup-image').src = data.image;
+
+            document.getElementById('popup-name').textContent = data.name;
+
+            document.getElementById('popup-price').textContent = `₩${data.price}`;
+
+            document.getElementById('popup-overlay').style.display = 'flex';
+
+        }
+
+
+
+        // Example data from AI system
+
+        const bestRecommendation = {
+
+            image: 'menu-image.jpg',
+
+            name: '메뉴 이름',
+
+            price: 5000
+
+        };
+
+
+
+        // Function to simulate getting a suggestion from the AI
+
+        function getAISuggestion() {
+
+            // Simulating AI suggestion retrieval
+
+            setTimeout(() => {
+
+                displayBestRecommendation(bestRecommendation);
+
+            }, 1000);
+
+        }
+
+
+
+        // Call the function to get suggestion on page load
+
+        window.onload = function() {
+
+            getAISuggestion();
+
+        };
+
+    </script>
+
+</body>
+
+</html>

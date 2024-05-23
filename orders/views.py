@@ -20,11 +20,6 @@ from .models import Order
 def menu_view(request):
     return render(request, 'orders/menu.html')
 
-
-def menu_view_big(request):
-    return render(request, 'orders/menu_big.html')
-
-
 class AIbot(APIView):
     @staticmethod
     def post(request):
@@ -179,3 +174,9 @@ def face_recognition(request):
         return redirect("orders:menu_big")
 
     return redirect("orders:menu")
+
+def elder_start(request):
+    return render(request, "orders/elder_start.html")
+
+def elder_menu(request):
+    return render(request, "orders/elder_menu.html")
