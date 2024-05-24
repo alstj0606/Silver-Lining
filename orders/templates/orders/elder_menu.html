@@ -181,44 +181,48 @@
             const popupName = document.getElementById('popup-name');
             const popupPrice = document.getElementById('popup-price');
             // const closePopup = document.getElementById('closePopup');
+            console.log("filteredHashtags>>>>>>>>>>", filteredHashtags)
+            console.log("responseText>>>>>>>>>>", responseText)
 
             // Function to update the menu based on hashtags
             axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
                 .then(response => {
-                    const menus = response.data.menus;
+                    const menus = response.data.menus.slice(0, 3);
                     const recommendations = document.getElementById('recommendations');
                     recommendations.innerHTML = '';
-                    menus.forEach((menu, index) => {
-                        const menuItem = `
-                            <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-                                <h2>${menu.food_name}</h2>
-                                <div class="menu-image">
-                                    <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
-                                </div>
-                                <p>₩${menu.price}</p>
-                            </div>
-                        `;
-                        recommendations.insertAdjacentHTML('beforeend', menuItem);
 
-                        // For the first menu item, display it as a popup
-                        if (index === 0) {
-                            popupImage.src = menu.img_url;
-                            popupName.textContent = menu.food_name;
-                            popupPrice.textContent = `₩${menu.price}`;
-                            popupOverlay.style.display = 'flex';
-                            closePopup.style.display = 'flex';
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('메뉴 업데이트 중 오류 발생:', error);
-                });
-                closePopup.addEventListener("click", function() {
-    popupOverlay.style.display = "none"; // Hide the popup
-});
+                    menus.forEach((menu, index) => {
+            const menuItem = `
+                <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                    <h2>${menu.food_name}</h2>
+                    <div class="menu-image">
+                        <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
+                    </div>
+                    <p>₩${menu.price}</p>
+                </div>
+            `;
             
-            if (responseText) {
-                speak(responseText);
+            if (index !== 0) { // Check if index is not equal to 0
+                recommendations.insertAdjacentHTML('beforeend', menuItem);
+            } else {
+                // For the first menu item, display it as a popup
+                popupImage.src = menu.img_url;
+                popupName.textContent = menu.food_name;
+                popupPrice.textContent = `₩${menu.price}`;
+                popupOverlay.style.display = 'flex';
+                closePopup.style.display = 'flex';
+            }
+        });
+    })
+    .catch(error => {
+        console.error('메뉴 업데이트 중 오류 발생:', error);
+    });
+                        closePopup.addEventListener("click", function() {
+            popupOverlay.style.display = "none"; // Hide the popup
+        });
+            
+        if (responseText) {
+            speak(responseText);
             }
         });
 
