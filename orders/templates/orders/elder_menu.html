@@ -51,19 +51,21 @@
         }
 
         .recommendation img {
-            max-width: 100%;
-            height: auto;
+            height: 230px;
+            width: 190px;
         }
 
         .recommendation h2 {
-            font-size: 1.25rem;
-            margin: 10px 0;
+            font-size: 30px;
+            font-weight: bold;
         }
 
         .recommendation p {
-            font-size: 1rem;
-            color: #555;
+            font-size: 30px;
+            font-weight: bold;
+            color: #313030;
         }
+
 
         .cart {
             margin-top: 30px;
@@ -127,16 +129,31 @@
             height: auto;
         }
 
+
+        .popup-container .menu-image img {
+            max-width: 75%; /* Adjust the size as desired */
+            height: auto;
+        
+        }
         .popup-container p {
             font-size: 1.25rem;
             color: #555;
         }
 
         .popup-container .price {
-            font-size: 1.5rem;
+            font-size: 40px;
             font-weight: bold;
             color: #333;
         }
+
+        .popup-container .name {
+            font-size: 40px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+
     </style>
 
 </head>
@@ -152,7 +169,7 @@
                 <!-- Cart items will be populated here dynamically -->
             </div>
             <div id="totalPrice" class="total-price">총 가격: ₩0</div>
-            <button>결제하기</button>
+            <button id="orderBtn">결제하기</button>
         </div>
 
     </div>
@@ -165,7 +182,7 @@
             <div class="menu-image">
                 <img src="" alt="메뉴 이미지" id="popup-image"/>
             </div>
-            <h2 id="popup-name">메뉴 이름</h2>
+            <h2 class="name" id="popup-name">메뉴 이름</h2>
             <p class="price" id="popup-price">₩0</p>
             <button id="closePopup">닫기</button>
         </div>
@@ -208,9 +225,9 @@
                 // For the first menu item, display it as a popup
                 popupImage.src = menu.img_url;
                 popupName.textContent = menu.food_name;
-                popupPrice.textContent = `₩${menu.price}`;
+                popupPrice.textContent = `${menu.price}원`;
                 popupOverlay.style.display = 'flex';
-                closePopup.style.display = 'flex';
+                closePopup.style.display = 'inline';
             }
         });
     })
@@ -245,6 +262,9 @@
             totalPrice.textContent = `총 가격: ₩${currentTotal}`;
         }
 
+    //     document.getElementById('orderBtn').addEventListener('click', function() {
+    //     window.location.href = 'orders/submit_order/';
+    // });
 
     </script>
 </body>
