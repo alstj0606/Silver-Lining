@@ -207,3 +207,9 @@ def face_recognition(request):
         return redirect("orders:menu")
 
     return redirect("orders:menu")
+
+def elder_start(request):
+    return render(request, "orders/elder_start.html")
+
+def elder_menu(request):
+    return render(request, "orders/elder_menu.html")
