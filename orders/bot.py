@@ -1,7 +1,6 @@
 from openai import OpenAI
 from django.conf import settings
 from menus.models import Menu, Hashtag
-from django.contrib.sessions.models import Session
 
 
 def get_user_menu_and_hashtags(user):
@@ -19,12 +18,6 @@ def get_user_menu_and_hashtags(user):
 
 def bot(request, input_text, current_user):
     client = OpenAI(api_key=settings.OPEN_API_KEY)
-
-    # 이전 대화 로그 조회
-    previous_ai_response = request.session.get('previous_ai_response', '')
-
-    if previous_ai_response:
-        input_text = f"{previous_ai_response}\n{input_text}"
 
     # 사용자의 카테고리 가져오기
     category = current_user.category
@@ -56,8 +49,6 @@ def bot(request, input_text, current_user):
     )
     ai_response = completion.choices[0].message.content
 
-    # 세션에 이전 AI 응답 저장
-    request.session['previous_ai_response'] = ai_response
 
     # 선택된 항목과 고객 메시지 추출
     selected_choice = None

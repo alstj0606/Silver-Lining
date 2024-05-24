@@ -5,9 +5,9 @@ from datetime import datetime
 
 import cv2
 import requests
-from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from SilverLining.config import OPEN_API_KEY
@@ -16,13 +16,10 @@ from .bot import bot
 from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.decorators import method_decorator
-from django.contrib.sessions.models import Session
 
 
 # 주문을 시작하는 페이지를 렌더링합니다.
 def start_order(request):
-    if 'previous_ai_response' in request.session:
-        del request.session['previous_ai_response']
     return render(request, 'orders/start_order.html')
 
 
@@ -48,7 +45,7 @@ class AIbot(APIView):
         message, hashtags = bot(request, input_text, current_user)
         print(message)
         print(hashtags)
-        return JsonResponse({'responseText': message, 'hashtags': hashtags})
+        return Response({'responseText': message, 'hashtags': hashtags})
 
 
 # 메뉴 API를 제공하며 페이징된 메뉴 목록을 반환합니다.
@@ -92,7 +89,7 @@ class MenusAPI(APIView):
 
         page_number = request.GET.get('page')
         menu_list, total_pages = self.get_paginator(menus, page_number)
-        return JsonResponse({'menus': menu_list, 'page_count': total_pages})
+        return Response({'menus': menu_list, 'page_count': total_pages})
 
     # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)
@@ -117,9 +114,9 @@ class MenusAPI(APIView):
                 total_price=total_price,
                 status="A"
             )
-            return JsonResponse({'order_number': new_order.order_number}, status=201)
+            return Response({'order_number': new_order.order_number}, status=201)
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            return Response({'error': 'Invalid JSON'}, status=400)
 
 
 # 얼굴 인식을 수행하고 추정된 연령에 따라 리디렉션을 수행합니다.
