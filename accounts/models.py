@@ -4,8 +4,8 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     CATEGORY_CHOICES = (
-        ("CH", "Chicken"),
-        ("CA", "Cafe"),
+        ("CH", "치킨"),
+        ("CA", "카페"),
     )
 
     store_name = models.CharField(max_length=100)
