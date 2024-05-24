@@ -16,16 +16,29 @@ def get_user_menu_and_hashtags(user):
     return menu_list, hashtag_list
 
 
-def bot(input_text, current_user):
+def bot(request, input_text, current_user):
     client = OpenAI(api_key=settings.OPEN_API_KEY)
+
+    # 사용자의 카테고리 가져오기
+    category = current_user.category
+
     # 사용자의 메뉴 및 해시태그 가져오기
     menu, hashtags = get_user_menu_and_hashtags(current_user)
+
+    # 카테고리에 따라 시스템 지침 작성
+    if category == "CH":
+        category_text = "치킨"
+    elif category == "CA":
+        category_text = "카페"
+    else:
+        category_text = "음식점"
+
     system_instructions = f"""
-        이제부터 너는 "카페 직원"이야. 
-        너는 고객의 말에 따라 음료를 추천해 줘야해 우리가게에는 {menu}가 있어.
-        그리고 아래의 카테고리 중에서 고객의 질문과 관련이 있는 항목을 선택해줘: {hashtags}
-        선택된 항목은 '선택된 항목: [항목]' 형식으로 반환하고,
-        고객에게 전달할 메시지는 한 문장으로 서비스를 하는 직원처럼 '메세지: "내용"'으로 작성해줘.
+        이제부터 너는 "{category_text} 직원"이야. 
+        너는 고객의 말에 따라 메뉴를 추천해 줘야해. 우리 가게에는 {menu}가 있어.
+        그리고 아래의 카테고리 중에서 고객의 질문과 관련이 있는 항목을 선택해줘: {hashtags}.
+        선택된 항목은 '선택된 항목: [항목]' 형식으로 반환해줘. 만약에 해당하는 선택항목이 없다면 비워줘.
+        그리고 고객에게 전달할 메시지를 작성해줘. 한 문장으로 서비스를 하는 직원처럼 '메세지: "내용"'으로 작성해줘.
     """
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -35,6 +48,7 @@ def bot(input_text, current_user):
         ],
     )
     ai_response = completion.choices[0].message.content
+
 
     # 선택된 항목과 고객 메시지 추출
     selected_choice = None

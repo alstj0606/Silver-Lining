@@ -1,14 +1,13 @@
 import base64
 import json
 import os
-import re
 from datetime import datetime
 
 import cv2
 import requests
-from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from SilverLining.config import OPEN_API_KEY
@@ -16,51 +15,20 @@ from menus.models import Menu
 from .bot import bot
 from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.decorators import method_decorator
 
 
+# 주문을 시작하는 페이지를 렌더링합니다.
+def start_order(request):
+    return render(request, 'orders/start_order.html')
+
+
+# 메뉴를 보여주는 페이지를 렌더링합니다.
 def menu_view(request):
     return render(request, 'orders/menu.html')
 
-class AIbot(APIView):
-    @staticmethod
-    def post(request):
-        input_text = request.data.get('inputText')
-        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        message, hashtags = bot(input_text, current_user)
-        print(message)
-        print(hashtags)
-        return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
-
-@csrf_exempt
-def submit_order(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        selected_items = data.get('items', [])
-        total_price = data.get('total_price', 0)
-
-        # 현재 날짜
-        today = datetime.now().date()
-
-        # 마지막 주문이 오늘이면 1추가 아니면 1번 부터 시작
-        last_order = Order.objects.filter(created_at__date=today).order_by('-id').first()
-        if last_order:
-            order_number = last_order.order_number + 1
-        else:
-            order_number = 1
-
-        # 새로운 데이터 저장
-        new_order = Order.objects.create(
-            order_number=order_number,
-            order_menu=selected_items,
-            total_price=total_price,
-            status="A"
-        )
-
-        # order_number json으로 반환
-        return JsonResponse({'order_number': new_order.order_number}, status=201)
-
-
+# 주문이 완료된 페이지를 렌더링하며 주문 번호를 표시합니다.
 def order_complete(request, order_number):
     context = {
         'order_number': order_number,
@@ -68,46 +36,90 @@ def order_complete(request, order_number):
     return render(request, 'orders/order_complete.html', context)
 
 
-def get_menus(request):
-    user = request.user
-    print(user)
-    hashtags = request.GET.get('hashtags', None)
-    if hashtags:
-        menus = Menu.objects.filter(hashtags__hashtag=hashtags)
-    else:
-        menus = Menu.objects.all()
-
-    # 페이지네이션 설정
-    paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
-
-    page_number = request.GET.get('page')
-    try:
-        menus = paginator.page(page_number)
-    except PageNotAnInteger:
-        # 페이지 번호가 정수가 아닌 경우, 첫 번째 페이지를 반환
-        menus = paginator.page(1)
-    except EmptyPage:
-        # 페이지가 비어있는 경우, 마지막 페이지를 반환
-        menus = paginator.page(paginator.num_pages)
-
-    menu_list = [
-        {
-            'food_name': menu.food_name,
-            'price': menu.price,
-            'img_url': menu.img.url if menu.img else ''
-        } for menu in menus
-    ]
-
-    # 총 페이지 수 계산
-    total_pages = paginator.num_pages
-
-    return JsonResponse({'menus': menu_list, 'page_count': total_pages})
+# AIbot이 요청을 받아들여 메시지를 처리하고 응답을 반환합니다.
+class AIbot(APIView):
+    @staticmethod
+    def post(request):
+        input_text = request.data.get('inputText')
+        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
+        message, hashtags = bot(request, input_text, current_user)
+        print(message)
+        print(hashtags)
+        return Response({'responseText': message, 'hashtags': hashtags})
 
 
-def start_order(request):
-    return render(request, 'orders/start_order.html')
+# 메뉴 API를 제공하며 페이징된 메뉴 목록을 반환합니다.
+class MenusAPI(APIView):
+    # 메뉴를 페이징하여 반환합니다.
+    @staticmethod
+    def get_paginator(menus, page_number):
+        paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
+
+        try:
+            menus = paginator.page(page_number)
+        except PageNotAnInteger:
+            menus = paginator.page(1)
+        except EmptyPage:
+            menus = paginator.page(paginator.num_pages)
+
+        menu_list = [
+            {
+                'food_name': menu.food_name,
+                'price': menu.price,
+                'img_url': menu.img.url if menu.img else ''
+            } for menu in menus
+        ]
+
+        total_pages = paginator.num_pages
+
+        return menu_list, total_pages
+
+    # GET 요청에 대한 메뉴 목록을 반환합니다.
+    def get(self, request):
+        user = request.user
+        hashtags = request.GET.get('hashtags', None)
+        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        user_menus = Menu.objects.filter(store=user)
+
+        # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
+        if hashtags:
+            menus = user_menus.filter(hashtags__hashtag=hashtags)
+        else:
+            menus = user_menus
+
+        page_number = request.GET.get('page')
+        menu_list, total_pages = self.get_paginator(menus, page_number)
+        return Response({'menus': menu_list, 'page_count': total_pages})
+
+    # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        try:
+            # 요청의 본문을 한 번만 읽어서 사용
+            data = request.data
+            selected_items = data.get('items', [])
+            total_price = data.get('total_price', 0)
+
+            today = datetime.now().date()
+
+            last_order = Order.objects.filter(created_at__date=today).order_by('-id').first()
+            if last_order:
+                order_number = last_order.order_number + 1
+            else:
+                order_number = 1
+
+            new_order = Order.objects.create(
+                order_number=order_number,
+                order_menu=selected_items,
+                total_price=total_price,
+                status="A"
+            )
+            return Response({'order_number': new_order.order_number}, status=201)
+        except json.JSONDecodeError:
+            return Response({'error': 'Invalid JSON'}, status=400)
 
 
+# 얼굴 인식을 수행하고 추정된 연령에 따라 리디렉션을 수행합니다.
 def face_recognition(request):
     # 웹캠 열기
     cap = cv2.VideoCapture(0)
@@ -192,6 +204,6 @@ def face_recognition(request):
     age_number = int(age)
 
     if age_number >= 60:
-        return redirect("orders:menu_big")
+        return redirect("orders:menu")
 
     return redirect("orders:menu")

@@ -97,15 +97,8 @@
         }
 
         .btn-custom {
-            padding: 30px 0; /* 상하 padding은 30px로 유지하고 좌우 padding은 0으로 설정 */
+            padding: 30px 95px;
             font-size: 3.5rem;
-            width: calc(50% - 47.5px); /* 50%에서 좌우 padding(47.5px)를 뺀 값 */
-        }
-
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            margin-left: 200px; /* 왼쪽으로 200px 이동 */
         }
 
         .btn-page {
@@ -238,6 +231,8 @@
             </div>
             <div class="button-container">
 
+                <button id="startButton">AI 음성인식</button>
+
             </div>
 
         </div>
@@ -254,11 +249,7 @@
 
     <div class="pagination justify-content-center" id="paginationButtons">
     </div>
-    <h3 class="text-center">선택한 상품 🛒
-        <button class="btn btn-primary btn-lg" id="startButton">
-            <span>AI음성입력</span>
-        </button>
-    </h3>
+    <h3 class="text-center">선택한 상품 🛒</h3>
     <div class="selected-items mt-4 d-flex">
         <div id="selectedItemsList" class="flex-grow-1"></div>
         <div class="d-flex flex-column justify-content-center align-items-center">
@@ -283,9 +274,9 @@
     window.addEventListener('load', function () {
         const hashtags = "";
         updateMenus(hashtags)
-        const welcomeMessage = "반갑습니다. 필요한 것이 있다면 AI 음성인식을 누르고 말씀해주세요.";
+        const welcomeMessage = "반갑습니다. 필요한 것이 있다면 말씀해주세요.";
         {#시끄러워서 주석처리#}
-        speak(welcomeMessage);
+        speak(welcomeMessage, startSpeechRecognition);
     });
 
 
