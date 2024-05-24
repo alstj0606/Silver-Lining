@@ -239,7 +239,9 @@
         }
 
     </style>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -248,9 +250,9 @@
 
         <h1>이런 음료도 추천드려요.</h1>
 
-        <div class="recommendations">
+        <div class="recommendations" id="menuContainer">
 
-            {% for menu in menus %}
+            <!-- {% for menu in menus %}
 
             <div class="recommendation">
 
@@ -266,7 +268,7 @@
 
             </div>
 
-            {% endfor %}
+            {% endfor %} -->
 
         </div>
 
@@ -308,9 +310,52 @@
 
     <script>
 
-        // Function to display the pop-up with best menu recommendation
+        window.addEventListener('load', function () {
+                        const hashtags = "";
+                        updateMenus(hashtags)
+                        // const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
+                        // {#시끄러워서 주석처리#}
+                        // {#speak(welcomeMessage, startSpeechRecognition);#}
+                    });
+                // Function to display the pop-up with best menu recommendation
+
+        function updateMenus(hashtags, page = 1) {
+                $.ajax({
+                    url: '/orders/get_menus/',
+                    data: {hashtags: hashtags, page: page},
+                    dataType: 'json',
+                    success: function (data) {
+                        const menus = data.menus;
+                        const menuContainer = $('#menuContainer');
+                        menuContainer.empty();
+                        menus.forEach(menu => {
+                            const menuItem = `
+                                <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                                    <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-primary">${menu.food_name}</h5>
+                                        <p class="card-text text-muted">${menu.price}원</p>
+                                    </div>
+                                </div>
+                            `;
+                            menuContainer.append(menuItem);
+                        });
+                        console.log(data.page_count)
+                        updatePaginationButtons(data.page_count, page);
+                    },
+                    error: function (error) {
+                        console.error('메뉴 업데이트 중 오류 발생:', error);
+                    }
+                });
+            }
+
 
         function displayBestRecommendation(data) {
+
+            // ############
+            // 1. 해시태그 AI필터의 결과를 json으로 받아옴
+            // 2. json안의 각 key로 각 value를 받아와야 함 (image, menu_name, menu_prie)
+            // 3. popup에 띄워주고 (메뉴 정보가 이미 들어가 있어야 함) 
 
             document.getElementById('popup-image').src = data.image;
 
@@ -363,7 +408,8 @@
         };
 
     </script>
-
+<!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
 </body>
 
 </html>
