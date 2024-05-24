@@ -1,7 +1,6 @@
 import base64
 import json
 import os
-import re
 from datetime import datetime
 
 import cv2
@@ -17,22 +16,22 @@ from .bot import bot
 from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.decorators import method_decorator
+from django.contrib.sessions.models import Session
 
 
+# 주문을 시작하는 페이지를 렌더링합니다.
+def start_order(request):
+    if 'previous_ai_response' in request.session:
+        del request.session['previous_ai_response']
+    return render(request, 'orders/start_order.html')
+
+
+# 메뉴를 보여주는 페이지를 렌더링합니다.
 def menu_view(request):
     return render(request, 'orders/menu.html')
 
-class AIbot(APIView):
-    @staticmethod
-    def post(request):
-        input_text = request.data.get('inputText')
-        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        message, hashtags = bot(input_text, current_user)
-        print(message)
-        print(hashtags)
-        return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
-
+# 주문이 완료된 페이지를 렌더링하며 주문 번호를 표시합니다.
 def order_complete(request, order_number):
     context = {
         'order_number': order_number,
@@ -40,8 +39,21 @@ def order_complete(request, order_number):
     return render(request, 'orders/order_complete.html', context)
 
 
-class MenusAPI(APIView):
+# AIbot이 요청을 받아들여 메시지를 처리하고 응답을 반환합니다.
+class AIbot(APIView):
+    @staticmethod
+    def post(request):
+        input_text = request.data.get('inputText')
+        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
+        message, hashtags = bot(request, input_text, current_user)
+        print(message)
+        print(hashtags)
+        return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
+
+# 메뉴 API를 제공하며 페이징된 메뉴 목록을 반환합니다.
+class MenusAPI(APIView):
+    # 메뉴를 페이징하여 반환합니다.
     @staticmethod
     def get_paginator(menus, page_number):
         paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
@@ -65,23 +77,29 @@ class MenusAPI(APIView):
 
         return menu_list, total_pages
 
+    # GET 요청에 대한 메뉴 목록을 반환합니다.
     def get(self, request):
         user = request.user
         hashtags = request.GET.get('hashtags', None)
+        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        user_menus = Menu.objects.filter(store=user)
+
+        # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
         if hashtags:
-            menus = Menu.objects.filter(hashtags__hashtag=hashtags)
+            menus = user_menus.filter(hashtags__hashtag=hashtags)
         else:
-            menus = Menu.objects.all()
+            menus = user_menus
 
         page_number = request.GET.get('page')
         menu_list, total_pages = self.get_paginator(menus, page_number)
         return JsonResponse({'menus': menu_list, 'page_count': total_pages})
 
+    # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)
     def post(self, request):
         try:
             # 요청의 본문을 한 번만 읽어서 사용
-            data = json.loads(request.body)
+            data = request.data
             selected_items = data.get('items', [])
             total_price = data.get('total_price', 0)
 
@@ -99,16 +117,12 @@ class MenusAPI(APIView):
                 total_price=total_price,
                 status="A"
             )
-
             return JsonResponse({'order_number': new_order.order_number}, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
 
-def start_order(request):
-    return render(request, 'orders/start_order.html')
-
-
+# 얼굴 인식을 수행하고 추정된 연령에 따라 리디렉션을 수행합니다.
 def face_recognition(request):
     # 웹캠 열기
     cap = cv2.VideoCapture(0)
@@ -193,6 +207,6 @@ def face_recognition(request):
     age_number = int(age)
 
     if age_number >= 60:
-        return redirect("orders:menu_big")
+        return redirect("orders:menu")
 
     return redirect("orders:menu")
