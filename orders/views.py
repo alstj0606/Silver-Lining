@@ -17,6 +17,7 @@ from .bot import bot
 from .models import Order
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.decorators import method_decorator
 
 
 def menu_view(request):
@@ -38,35 +39,6 @@ class AIbot(APIView):
         return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
 
-@csrf_exempt
-def submit_order(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        selected_items = data.get('items', [])
-        total_price = data.get('total_price', 0)
-
-        # 현재 날짜
-        today = datetime.now().date()
-
-        # 마지막 주문이 오늘이면 1추가 아니면 1번 부터 시작
-        last_order = Order.objects.filter(created_at__date=today).order_by('-id').first()
-        if last_order:
-            order_number = last_order.order_number + 1
-        else:
-            order_number = 1
-
-        # 새로운 데이터 저장
-        new_order = Order.objects.create(
-            order_number=order_number,
-            order_menu=selected_items,
-            total_price=total_price,
-            status="A"
-        )
-
-        # order_number json으로 반환
-        return JsonResponse({'order_number': new_order.order_number}, status=201)
-
-
 def order_complete(request, order_number):
     context = {
         'order_number': order_number,
@@ -74,40 +46,69 @@ def order_complete(request, order_number):
     return render(request, 'orders/order_complete.html', context)
 
 
-def get_menus(request):
-    user = request.user
-    print(user)
-    hashtags = request.GET.get('hashtags', None)
-    if hashtags:
-        menus = Menu.objects.filter(hashtags__hashtag=hashtags)
-    else:
-        menus = Menu.objects.all()
+class MenusAPI(APIView):
 
-    # 페이지네이션 설정
-    paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
+    @staticmethod
+    def get_paginator(menus, page_number):
+        paginator = Paginator(menus, 6)  # 페이지 당 6개의 메뉴
 
-    page_number = request.GET.get('page')
-    try:
-        menus = paginator.page(page_number)
-    except PageNotAnInteger:
-        # 페이지 번호가 정수가 아닌 경우, 첫 번째 페이지를 반환
-        menus = paginator.page(1)
-    except EmptyPage:
-        # 페이지가 비어있는 경우, 마지막 페이지를 반환
-        menus = paginator.page(paginator.num_pages)
+        try:
+            menus = paginator.page(page_number)
+        except PageNotAnInteger:
+            menus = paginator.page(1)
+        except EmptyPage:
+            menus = paginator.page(paginator.num_pages)
 
-    menu_list = [
-        {
-            'food_name': menu.food_name,
-            'price': menu.price,
-            'img_url': menu.img.url if menu.img else ''
-        } for menu in menus
-    ]
+        menu_list = [
+            {
+                'food_name': menu.food_name,
+                'price': menu.price,
+                'img_url': menu.img.url if menu.img else ''
+            } for menu in menus
+        ]
 
-    # 총 페이지 수 계산
-    total_pages = paginator.num_pages
+        total_pages = paginator.num_pages
 
-    return JsonResponse({'menus': menu_list, 'page_count': total_pages})
+        return menu_list, total_pages
+
+    def get(self, request):
+        user = request.user
+        hashtags = request.GET.get('hashtags', None)
+        if hashtags:
+            menus = Menu.objects.filter(hashtags__hashtag=hashtags)
+        else:
+            menus = Menu.objects.all()
+
+        page_number = request.GET.get('page')
+        menu_list, total_pages = self.get_paginator(menus, page_number)
+        return JsonResponse({'menus': menu_list, 'page_count': total_pages})
+
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        try:
+            # 요청의 본문을 한 번만 읽어서 사용
+            data = json.loads(request.body)
+            selected_items = data.get('items', [])
+            total_price = data.get('total_price', 0)
+
+            today = datetime.now().date()
+
+            last_order = Order.objects.filter(created_at__date=today).order_by('-id').first()
+            if last_order:
+                order_number = last_order.order_number + 1
+            else:
+                order_number = 1
+
+            new_order = Order.objects.create(
+                order_number=order_number,
+                order_menu=selected_items,
+                total_price=total_price,
+                status="A"
+            )
+
+            return JsonResponse({'order_number': new_order.order_number}, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
 
 def start_order(request):
