@@ -3,171 +3,184 @@
 <html lang="ko">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>주문하기</title>
-
     <style>
-
         body {
-
             font-family: Arial, sans-serif;
-
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
             height: 100vh;
-
             background-color: #D3C4FF;
-
             margin: 0;
-
         }
 
         .container {
-
             text-align: center;
-
             padding: 20px;
-
-            background-color: #E6E6FA; /* Lavender */
-
+            background-color: #E6E6FA;
+            /* Lavender */
             border-radius: 15px;
-
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-
         }
 
         h1 {
-
             font-size: 2rem;
-
             color: #333;
-
         }
 
         .processing {
-
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
             margin-top: 20px;
-
         }
 
         .dot {
-
             height: 20px;
-
             width: 20px;
-
             margin: 0 5px;
-
             background-color: #99FF99;
-
             border-radius: 50%;
-
             display: inline-block;
-
             animation: bounce 1.5s infinite;
-
         }
 
         .dot:nth-child(1) {
-
             animation-delay: 0s;
-
         }
 
         .dot:nth-child(2) {
-
             animation-delay: 0.3s;
-
         }
 
         .dot:nth-child(3) {
-
             animation-delay: 0.6s;
-
         }
 
         @keyframes bounce {
 
-            0%, 100% {
-
+            0%,
+            100% {
                 transform: translateY(0);
-
             }
 
             50% {
-
                 transform: translateY(-15px);
-
             }
-
         }
-
     </style>
 
 </head>
 
 <body>
-
     <div class="container">
-
         <h1>안녕하세요, 어떤 메뉴로 주문하시겠습니까?</h1>
-
         <div class="processing">
-
             <div class="dot"></div>
-
             <div class="dot"></div>
-
             <div class="dot"></div>
-
         </div>
-
+        <div>
+            <form id="speechForm">
+                {% csrf_token %}
+            </form>
+            <p id="transcription"></p>
+        </div>
         <p>음성 인식 중 ....</p>
-
+        <button id="startButton">버튼</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script>
+        window.addEventListener('load', function () {
+            console.log(">>>>>>>>>>>>> 실행")
+            const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
+            speak(welcomeMessage, startSpeechRecognition);
+        });
 
-        // Example function to simulate voice input processing
+        const startButton = document.getElementById('startButton');
+        const transcription = document.getElementById('transcription');
 
-        function processVoiceInput() {
+        function getCsrfToken() {
+            const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfTokenElement ? csrfTokenElement.value : null;
+        }
 
-            console.log("Processing voice input...");
-
-            // Add your voice input processing logic here
-
-            // Call AI system to get menu recommendations
-
+        
+        function speak(text, callback) {
+            console.log(">>>>>>>>> speak 실행")
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            console.log(">>>>>>>>>> utterance", utterance)
+            utterance.lang = 'ko-KR';
+            utterance.onend = function () {
+                if (callback) {
+                    callback();
+                }
+            };
+            synth.speak(utterance);
+            console.log(">>>>>>>> speak 끝 <<<<<<<<<<<")
         }
 
 
 
-        // Call the processVoiceInput function on page load
+        function startSpeechRecognition() {
+            console.log(">>>>>>>>>>>>> startSpeechRecognition")
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("음성 인식이 지원되지 않는 브라우저입니다.");
+                console.log(">>>>>>>>>>>>>>>> if 탔는지")
+            } else {
+                console.log(">>>>>>>>>> else 탔는지")
+                const recognition = new webkitSpeechRecognition();
+                console.log(">>>>>>>> recognition 탔는지")
+                recognition.lang = 'ko-KR';
+                recognition.start();
+                console.log(">>>>>>>>>> start() 탔는지")
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    console.log("transcript>>>>>>>>>>>>>", transcript);
+                    const csrfToken = getCsrfToken();
+                    console.log("csrf 탔는지 >>>>>>>>>")
+                            console.log("csrfToken>>>>>>>>>", csrfToken)
+                            
 
-        window.onload = function() {
+                    axios.post('/orders/aibot/', { inputText: transcript },
+                        {
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            }
+                            
+                        })
+                        .then(function (response) {
+                            const responseText = response.data.responseText;
+                            const hashtags = response.data.hashtags;
+                            console.log('서버 응답:', responseText);
+                            localStorage.setItem('filteredHashtags', hashtags);
+                            localStorage.setItem('responseText', responseText);
+                            window.location.href = '/orders/elder_menu/';
+                            console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                        })
+                        .catch(function (error) {
+                            console.error('에러:', error);
+                        });
+                };
+                console.log("recognition직전>>>>>>>>>>>>>")
+                recognition.onend = function () {
+                    startButton.textContent = '음성 입력 다시 시작';
+                    console.log("recognition onend 탔니>>>>>>>>>>")
+                    console.log("textcontent>>>>>>>", textContent)
+                };
+            }
+        }
 
-            processVoiceInput();
-
-        };
-
+        // window.onload = function () {
+        //     speak("안녕하세요, 어떤 메뉴를 주문하시겠습니까?", startSpeechRecognition);
+        // };
     </script>
-
 </body>
 
 </html>

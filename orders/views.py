@@ -25,10 +25,10 @@ class AIbot(APIView):
     @staticmethod
     def post(request):
         input_text = request.data.get('inputText')
+        print("inputText>>>>>",input_text)
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
+        print("current_user>>>>>>>>", current_user)
         message, hashtags = bot(input_text, current_user)
-        print(message)
-        print(hashtags)
         return JsonResponse({'responseText': message, 'hashtags': hashtags})
 
 
