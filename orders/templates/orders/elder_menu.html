@@ -180,7 +180,7 @@
             const popupImage = document.getElementById('popup-image');
             const popupName = document.getElementById('popup-name');
             const popupPrice = document.getElementById('popup-price');
-            const closePopup = document.getElementById('closePopup');
+            // const closePopup = document.getElementById('closePopup');
 
             // Function to update the menu based on hashtags
             axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
@@ -213,6 +213,9 @@
                 .catch(error => {
                     console.error('메뉴 업데이트 중 오류 발생:', error);
                 });
+                closePopup.addEventListener("click", function() {
+    popupOverlay.style.display = "none"; // Hide the popup
+});
             
             if (responseText) {
                 speak(responseText);
@@ -238,9 +241,7 @@
             totalPrice.textContent = `총 가격: ₩${currentTotal}`;
         }
 
-        closePopup.addEventListener("click", function() {
-    popupOverlay.style.display = "none"; // Hide the popup
-});
+
     </script>
 </body>
 
