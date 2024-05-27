@@ -67,8 +67,10 @@ function startSpeechRecognition() {
             .then(function (response) {
                 const responseText = response.data.responseText;
                 const hashtags = response.data.hashtags;
-                console.log('서버 응답:', responseText);
-                updateMenus(hashtags); // 메뉴 업데이트 먼저 실행
+                const recommended_menu = response.data.recommended_menu;
+                // console.log('서버 응답:', responseText);
+                // console.log('추천 메뉴:', recommended_menu);
+                updateMenus(hashtags, recommended_menu); // 메뉴 업데이트 먼저 실행
                 speak(responseText);
             })
             .catch(function (error) {

@@ -34,12 +34,14 @@ def bot(request, input_text, current_user):
         category_text = "음식점"
 
     system_instructions = f"""
-        이제부터 너는 "{category_text} 직원"이야. 
-        너는 고객의 말에 따라 메뉴를 추천해 줘야해. 우리 가게에는 {menu}가 있어.
-        그리고 아래의 카테고리 중에서 고객의 질문과 관련이 있는 항목을 선택해줘: {hashtags}.
-        선택된 항목은 '선택된 항목: [항목]' 형식으로 반환해줘. 만약에 해당하는 선택항목이 없다면 비워줘.
-        그리고 고객에게 전달할 메시지를 작성해줘. 한 문장으로 서비스를 하는 직원처럼 '메세지: "내용"'으로 작성해줘.
+    이제부터 너는 "{category_text} 직원"이야. 너는 고객의 말에 따라 메뉴를 추천해 줘야해. 우리 가게에는 {menu}가 있어. 
+    그리고 아래의 카테고리 중에서 고객의 질문과 관련이 있는 항목을 선택해줘: {hashtags}. 
+    선택된 항목은 '선택된 항목: [항목]' 형식으로 반환해줘. 
+    만약에 해당하는 선택항목이 없다면 '선택된 항목: 없음'이라고 반환해줘.
+    그리고 고객에게 전달할 메시지를 작성해줘. 한 문장으로 서비스를 하는 직원처럼 '메세지: [내용]'으로 작성해줘.
+    마지막으로, 추천하는 메뉴의 이름을 '추천 메뉴: [메뉴 이름]' 형식으로 작성해줘. 반드시 메뉴를 추천해줘.
     """
+
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -47,26 +49,33 @@ def bot(request, input_text, current_user):
             {"role": "user", "content": input_text},
         ],
     )
+
     ai_response = completion.choices[0].message.content
-
-
-    # 선택된 항목과 고객 메시지 추출
     selected_choice = None
     customer_message = ""
+    recommended_menu = ""
+
     try:
         for line in ai_response.split('\n'):
             if line.startswith('선택된 항목:'):
                 selected_choice = line.split('선택된 항목: ')[1].strip()
-            else:
-                customer_message += line.split('메세지: ')[1].strip()
+            elif line.startswith('메세지:'):
+                customer_message = line.split('메세지: ')[1].strip()
+            elif line.startswith('추천 메뉴:'):
+                recommended_menu = line.split('추천 메뉴: ')[1].strip()
+
     except IndexError:
-        selected_choice = None
+        selected_choice = "선택된 항목: 없음"
         customer_message = "죄송합니다. 다시 한 번 이야기 해주세요"
+        recommended_menu = ""
+
     # 선택된 항목이 있으면 출력
-    if selected_choice:
+    if selected_choice != "선택된 항목: 없음":
         print(f"선택된 항목: {selected_choice}")
+
     else:
         print("관련 항목을 찾지 못했습니다.")
 
     customer_message = customer_message.strip()
-    return customer_message, selected_choice
+    return customer_message, selected_choice, recommended_menu
+

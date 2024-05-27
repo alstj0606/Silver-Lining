@@ -1,26 +1,50 @@
-function updateMenus(hashtags, page = 1) {
+function updateMenus(hashtags = "", recommended_menu = "", page = 1) {
     $.ajax({
         url: '/orders/get_menus/',
-        data: { hashtags: hashtags, page: page },
+        data: {hashtags: hashtags, recommended_menu: recommended_menu, page: page},
         dataType: 'json',
         success: function (data) {
             const menus = data.menus;
+            const recommended = data.recommended;
             const menuContainer = $('#menuContainer');
+            const recommendedContainer = $('#recommendedContainer'); // 새로운 컨테이너 추가
             menuContainer.empty();
+            recommendedContainer.empty(); // 컨테이너 비우기
+
+            // 추천 메뉴 추가
+            if (recommended && recommended.length > 0) {
+                recommended.forEach(menu => {
+                    const menuItem = `
+                <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                    <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-primary">${menu.food_name}</h5>
+                        <p class="card-text text-muted">${menu.price}원</p>
+                    </div>
+                </div>
+            `;
+                    recommendedContainer.append(menuItem); // 추천 메뉴를 별도의 컨테이너에 추가
+                });
+
+            }
+
+            // 일반 메뉴 추가
             menus.forEach(menu => {
                 const menuItem = `
-                    <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
-                        <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
-                        <div class="card-body text-center">
-                            <h5 class="card-title text-primary">${menu.food_name}</h5>
-                            <p class="card-text text-muted">${menu.price}원</p>
-                        </div>
-                    </div>
-                `;
-                menuContainer.append(menuItem);
+            <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <p class="card-text text-muted">${menu.price}원</p>
+                </div>
+            </div>
+        `;
+                menuContainer.append(menuItem); // 일반 메뉴를 기존 컨테이너에 추가
             });
+
             updatePaginationButtons(data.page_count, page);
         },
+
         error: function (error) {
             console.error('메뉴 업데이트 중 오류 발생:', error);
         }
