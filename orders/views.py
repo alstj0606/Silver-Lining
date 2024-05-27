@@ -100,7 +100,7 @@ class MenusAPI(APIView):
             recommended_menu = user_menus.filter(food_name=recommended)[:1]
 
         # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
-        if hashtags:
+        if hashtags and hashtags != "없음":
             # 해당 해시태그를 포함하는 메뉴를 필터링합니다.
             menus = user_menus.filter(hashtags__hashtag=hashtags)
 

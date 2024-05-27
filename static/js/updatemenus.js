@@ -1,7 +1,7 @@
-function updateMenus(hashtags = "", recommended_menu = "", page = 1) {
+function updateMenus(hashtags = "", page = 1, recommended_menu = "") {
     $.ajax({
         url: '/orders/get_menus/',
-        data: {hashtags: hashtags, recommended_menu: recommended_menu, page: page},
+        data: {hashtags: hashtags, page: page, recommended_menu: recommended_menu},
         dataType: 'json',
         success: function (data) {
             const menus = data.menus;
@@ -41,7 +41,6 @@ function updateMenus(hashtags = "", recommended_menu = "", page = 1) {
         `;
                 menuContainer.append(menuItem); // 일반 메뉴를 기존 컨테이너에 추가
             });
-
             updatePaginationButtons(data.page_count, page);
         },
 
@@ -62,6 +61,5 @@ function updatePaginationButtons(totalPages, currentPage) {
 }
 
 function changePage(pageNumber) {
-    const hashtags = "";
-    updateMenus(hashtags, pageNumber);
+    updateMenus("",pageNumber,"");
 }
