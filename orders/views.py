@@ -47,14 +47,36 @@ def order_complete(request, order_number):
 # AIbot이 요청을 받아들여 메시지를 처리하고 응답을 반환합니다.
 class AIbot(APIView):
     @staticmethod
+    def get(request):
+        user = request.user
+        recommended_menu = request.GET.get('recommended_menu', '[]')
+
+        # JSON 문자열을 파싱하여 리스트로 변환
+        recommended_menu = json.loads(recommended_menu)
+        print(recommended_menu)
+        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        user_menus = Menu.objects.filter(store=user)
+
+        # 추천 메뉴를 미리 정의합니다.
+        recommended_list = []
+        for recommend in recommended_menu:
+            # recommended_list에 메뉴 객체 추가
+            menu_item = user_menus.filter(food_name=recommend).first()
+            if menu_item:
+                recommended_list.append(menu_item)
+
+            # 추천 메뉴를 직렬화 가능한 형태로 변환합니다.
+        recommends = [{"food_name": menu.food_name, "price": menu.price, "img_url": menu.img.url} for menu in
+                      recommended_list]
+
+        return Response({'recommends': recommends})
+
+    @staticmethod
     def post(request):
         input_text = request.data.get('inputText')
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        message, hashtags, recommended_menu = bot(request, input_text, current_user)
-        print("message re : ", message)
-        print("hashtags re : ", hashtags)
-        print("recommended_menu re : ", recommended_menu)
-        return Response({'responseText': message, 'hashtags': hashtags, 'recommended_menu': recommended_menu})
+        message, recommended_menu = bot(request, input_text, current_user)
+        return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
 
 # 메뉴 API를 제공하며 페이징된 메뉴 목록을 반환합니다.
@@ -87,39 +109,18 @@ class MenusAPI(APIView):
     def get(self, request):
         user = request.user
         hashtags = request.GET.get('hashtags', None)
-        recommended = request.GET.get('recommended_menu', None)
-        print("hashtags : ", hashtags)
-        print("recommended : ", recommended)
-
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
-
-        # 추천 메뉴를 미리 정의합니다.
-        recommended_menu = []
-        if recommended:
-            recommended_menu = user_menus.filter(food_name=recommended)[:1]
-
         # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
         if hashtags and hashtags != "없음":
             # 해당 해시태그를 포함하는 메뉴를 필터링합니다.
             menus = user_menus.filter(hashtags__hashtag=hashtags)
-
-            # 만약 추천 메뉴가 있고, 해당 추천 메뉴를 포함한 경우, 그 메뉴를 제외합니다.
-            if recommended:
-                menus = menus.exclude(food_name=recommended)
-
-            # 메뉴 리스트를 2개까지 가져옵니다.
-            menus = menus[:2]
         else:
             menus = user_menus
 
-        # 추천 메뉴를 직렬화 가능한 형태로 변환합니다.
-        recommended_menu_data = [{"food_name": menu.food_name, "price": menu.price, "img_url": menu.img.url} for menu in
-                                 recommended_menu]
-
         page_number = request.GET.get('page')
         menu_list, total_pages = self.get_paginator(menus, page_number)
-        return Response({'menus': menu_list, 'page_count': total_pages, "recommended": recommended_menu_data})
+        return Response({'menus': menu_list, 'page_count': total_pages})
 
     # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)
@@ -172,7 +173,6 @@ def face_recognition(request):
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if len(faces) > 0:
-            print("faces>>>>>>>", faces)
             break
 
     cap.release()
@@ -234,8 +234,9 @@ def face_recognition(request):
     age_message = ai_answer["choices"][0]['message']['content']
     age = age_message.split("Estimated Age: ")[1].strip()
     age_number = int(age)
+    print("당신의 얼굴나이 : ", age_number)
 
     if age_number >= 60:
-        return redirect("orders:menu")
+        return redirect("orders:elder_start")
 
     return redirect("orders:menu")

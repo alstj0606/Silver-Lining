@@ -64,18 +64,15 @@ function startSpeechRecognition() {
                     'X-CSRFToken': csrfToken
                 }
             })
-            .then(function (response) {
-                const responseText = response.data.responseText;
-                const hashtags = response.data.hashtags;
-                const recommended_menu = response.data.recommended_menu;
-                // console.log('서버 응답:', responseText);
-                // console.log('추천 메뉴:', recommended_menu);
-                updateMenus(hashtags, 1, recommended_menu); // 메뉴 업데이트 먼저 실행
-                speak(responseText);
-            })
-            .catch(function (error) {
-                console.error('에러:', error);
-            });
+                .then(function (response) {
+                    const responseText = response.data.responseText;
+                    const recommended_menu = response.data.recommended_menu;
+                    AIMenus(recommended_menu); // 메뉴 업데이트 먼저 실행
+                    speak(responseText);
+                })
+                .catch(function (error) {
+                    console.error('에러:', error);
+                });
         };
 
         // 음성 인식 종료 시 버튼 텍스트 복구 및 클릭 이벤트 리스너 추가
@@ -96,3 +93,54 @@ document.getElementById('startButton').addEventListener('click', startSpeechReco
 transcription.addEventListener('input', function () {
     const text = transcription.textContent.trim();
 });
+
+
+function AIMenus(recommended_menu = "") {
+    $.ajax({
+        url: '/orders/aibot/',
+        data: {recommended_menu: JSON.stringify(recommended_menu)},
+        dataType: 'json',
+        success: function (data) {
+            const recommends = data.recommends;
+            console.log("추천 메뉴 :", recommends);
+            const menuContainer = $('#menuContainer');
+            const recommendedContainer = $('#recommendedContainer');
+            menuContainer.empty();
+            recommendedContainer.empty();
+
+            // recommends 배열의 첫 번째 요소는 추천 메뉴로 처리
+            recommends[0].forEach(menu => {
+                const menuItem = `
+                    <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                        <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-primary">${menu.food_name}</h5>
+                            <p class="card-text text-muted">${menu.price}원</p>
+                        </div>
+                    </div>
+                `;
+                recommendedContainer.append(menuItem);
+            });
+
+            // recommends 배열의 나머지 요소는 일반 메뉴로 처리
+            for (let i = 1; i < recommends.length; i++) {
+                recommends[i].forEach(menu => {
+                    const menuItem = `
+                        <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                            <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-primary">${menu.food_name}</h5>
+                                <p class="card-text text-muted">${menu.price}원</p>
+                            </div>
+                        </div>
+                    `;
+                    menuContainer.append(menuItem);
+                });
+            }
+        },
+        error: function (error) {
+            console.error('메뉴 업데이트 중 오류 발생:', error);
+        }
+    });
+}
+
