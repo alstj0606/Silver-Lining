@@ -1,41 +1,88 @@
 {% load static %}
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주문하기</title>
+    <title>Silver Lining</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #D3C4FF;
-            margin: 0;
-        }
-
-        .container {
-            text-align: center;
-            padding: 20px;
-            background-color: #E6E6FA; /* Lavender */
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        h1 {
             font-size: 2rem;
-            color: #333;
         }
 
-        .processing {
+        .h2, h2 {
+            font-size: 4rem;
+            background-color: #ef4040;
+            color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .h3, h3 {
+            font-size: 2.75rem;
+            margin: 20px;
+        }
+
+        .h5, h5 {
+            font-size: 1.5rem;
+        }
+
+        .menu-item {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-direction: column;
+            transition: transform 0.2s;
+            width: 280px;
+        }
+
+        .menu-item img {
+            width: 250px;
+            height: 250px;
+        }
+
+        .menu-item:hover {
+            transform: scale(1.05);
+        }
+
+        .selected-item span {
+            margin: 0 5px;
+        }
+
+        .actions button {
+            margin: 5px;
+        }
+
+        .card-body {
+            text-align: center;
+        }
+
+        .fly-to-cart {
+            position: absolute;
+            z-index: 1000;
+            transition: transform 1s ease-in-out;
+        }
+
+        #selectedItemsList {
+            height: 350px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .scroll-button {
+            margin: 5px 0;
+            height: 155px;
+            width: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .selected-item {
@@ -61,21 +108,25 @@
             margin-left: 200px; /* 왼쪽으로 200px 이동 */
         }
 
-        .dot:nth-child(2) {
-            animation-delay: 0.3s;
+        .btn-page {
+            padding: .375rem 1.75rem;
+            font-size: 3rem;
         }
 
-        .dot:nth-child(3) {
-            animation-delay: 0.6s;
+        .scroll-button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 1.5rem;
         }
 
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-15px);
-            }
+        .selected-item img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .menu {
+            height: 850px;
         }
 
         .dog-helper {
@@ -167,9 +218,10 @@
 
 
     </style>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-
 <body>
 <h2 class="text-center mb-4">Silver Lining</h2>
 <div class="container mt-5">
@@ -217,8 +269,15 @@
                 <i class="fas fa-arrow-down"></i>
             </button>
         </div>
-        <p>음성 인식 중 ....</p>
     </div>
+    <div class="total-price mt-3">
+        <h3 class="text-center">총 금액: <span id="totalPrice">0원</span></h3>
+    </div>
+    <div class="actions text-center">
+        <button class="btn btn-danger btn-custom" onclick="clearItems()">전체삭제</button>
+        <button class="btn btn-success btn-custom" id="submitOrderBtn">결제하기</button>
+    </div>
+</div>
 
 <script>
     window.addEventListener('load', function () {
@@ -230,8 +289,15 @@
     });
 
 
-        // const startButton = document.getElementById('startButton');
-        // const transcription = document.getElementById('transcription');
+    function getCsrfToken() {
+        const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrfTokenElement) {
+            return csrfTokenElement.value;
+        } else {
+            console.error('CSRF 토큰을 찾을 수 없습니다.');
+            return null;
+        }
+    }
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
