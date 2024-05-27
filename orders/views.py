@@ -28,6 +28,14 @@ def menu_view(request):
     return render(request, 'orders/menu.html')
 
 
+def elder_start(request):
+    return render(request, "orders/elder_start.html")
+
+
+def elder_menu(request):
+    return render(request, "orders/elder_menu.html")
+
+
 # 주문이 완료된 페이지를 렌더링하며 주문 번호를 표시합니다.
 def order_complete(request, order_number):
     context = {
@@ -96,13 +104,14 @@ class MenusAPI(APIView):
     def post(self, request):
         try:
             # 요청의 본문을 한 번만 읽어서 사용
+            user = request.user
             data = request.data
             selected_items = data.get('items', [])
             total_price = data.get('total_price', 0)
 
             today = datetime.now().date()
 
-            last_order = Order.objects.filter(created_at__date=today).order_by('-id').first()
+            last_order = Order.objects.filter(store=user, created_at__date=today).order_by('-id').first()
             if last_order:
                 order_number = last_order.order_number + 1
             else:
@@ -112,7 +121,8 @@ class MenusAPI(APIView):
                 order_number=order_number,
                 order_menu=selected_items,
                 total_price=total_price,
-                status="A"
+                status="A",
+                store=user
             )
             return Response({'order_number': new_order.order_number}, status=201)
         except json.JSONDecodeError:
@@ -207,9 +217,3 @@ def face_recognition(request):
         return redirect("orders:menu")
 
     return redirect("orders:menu")
-
-def elder_start(request):
-    return render(request, "orders/elder_start.html")
-
-def elder_menu(request):
-    return render(request, "orders/elder_menu.html")
