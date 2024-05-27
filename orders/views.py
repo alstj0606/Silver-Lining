@@ -217,3 +217,10 @@ def face_recognition(request):
         return redirect("orders:menu")
 
     return redirect("orders:menu")
+
+class elderMenuAPI(APIView):
+    def get():
+        pass
+
+    def post():
+        pass
