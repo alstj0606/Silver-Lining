@@ -161,6 +161,9 @@
 <body>
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
+        <div>
+            <button id="voiceRestart">음성인식 버튼</button>
+        </div>
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
         </div>
@@ -219,16 +222,16 @@
                 </div>
             `;
             
-            if (index !== 0) { // Check if index is not equal to 0
-                recommendations.insertAdjacentHTML('beforeend', menuItem);
-            } else {
-                // For the first menu item, display it as a popup
+            if (index == 0) {
                 popupImage.src = menu.img_url;
                 popupName.textContent = menu.food_name;
                 popupPrice.textContent = `${menu.price}원`;
                 popupOverlay.style.display = 'flex';
                 closePopup.style.display = 'inline';
             }
+
+            recommendations.insertAdjacentHTML('beforeend', menuItem);
+
         });
     })
     .catch(error => {
@@ -265,6 +268,81 @@
     //     document.getElementById('orderBtn').addEventListener('click', function() {
     //     window.location.href = 'orders/submit_order/';
     // });
+
+    // 음성인식 재시작
+    document.getElementById('startButton').addEventListener('click', startSpeechRecognition);
+
+    function getCsrfToken() {
+        const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        return csrfTokenElement ? csrfTokenElement.value : null;
+    }
+
+    
+    function speak(text, callback) {
+        console.log(">>>>>>>>> speak 실행")
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        console.log(">>>>>>>>>> utterance", utterance)
+        utterance.lang = 'ko-KR';
+        utterance.onend = function () {
+            if (callback) {
+                callback();
+            }
+        };
+        synth.speak(utterance);
+        console.log(">>>>>>>> speak 끝 <<<<<<<<<<<")
+    }
+
+
+
+    function startSpeechRecognition() {
+        console.log(">>>>>>>>>>>>> startSpeechRecognition")
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("음성 인식이 지원되지 않는 브라우저입니다.");
+            console.log(">>>>>>>>>>>>>>>> if 탔는지")
+        } else {
+            console.log(">>>>>>>>>> else 탔는지")
+            const recognition = new webkitSpeechRecognition();
+            console.log(">>>>>>>> recognition 탔는지")
+            recognition.lang = 'ko-KR';
+            recognition.start();
+            console.log(">>>>>>>>>> start() 탔는지")
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("transcript>>>>>>>>>>>>>", transcript);
+                const csrfToken = getCsrfToken();
+                console.log("csrf 탔는지 >>>>>>>>>")
+                        console.log("csrfToken>>>>>>>>>", csrfToken)
+                        
+
+                axios.post('/orders/aibot/', { inputText: transcript },
+                    {
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        }
+                        
+                    })
+                    .then(function (response) {
+                        const responseText = response.data.responseText;
+                        const hashtags = response.data.hashtags;
+                        console.log('서버 응답:', responseText);
+                        localStorage.setItem('filteredHashtags', hashtags);
+                        localStorage.setItem('responseText', responseText);
+                        window.location.href = '/orders/elder_menu/';
+                        console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                    })
+                    .catch(function (error) {
+                        console.error('에러:', error);
+                    });
+            };
+            console.log("recognition직전>>>>>>>>>>>>>")
+            recognition.onend = function () {
+                startButton.textContent = '음성 입력 다시 시작';
+                console.log("recognition onend 탔니>>>>>>>>>>")
+                console.log("textcontent>>>>>>>", textContent)
+            };
+        }
+    }
 
     </script>
 </body>
