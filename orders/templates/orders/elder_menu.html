@@ -174,7 +174,9 @@
             <div id="totalPrice" class="total-price">총 가격: ₩0</div>
             <button id="orderBtn">결제하기</button>
         </div>
-
+        <form id="speechForm">
+            {% csrf_token %}
+        </form>
     </div>
 
 
@@ -270,29 +272,25 @@
     // });
 
     // 음성인식 재시작
-    document.getElementById('startButton').addEventListener('click', startSpeechRecognition);
+    document.getElementById('voiceRestart').addEventListener('click', speak_again);
+
 
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
+    
 
     
-    function speak(text, callback) {
-        console.log(">>>>>>>>> speak 실행")
-        const synth = window.speechSynthesis;
-        const utterance = new SpeechSynthesisUtterance(text);
-        console.log(">>>>>>>>>> utterance", utterance)
-        utterance.lang = 'ko-KR';
-        utterance.onend = function () {
-            if (callback) {
-                callback();
-            }
-        };
-        synth.speak(utterance);
-        console.log(">>>>>>>> speak 끝 <<<<<<<<<<<")
-    }
-
+    function speak_again(text) {
+            const synth = window.speechSynthesis;
+            text = "새로운 음성입력을 주세요"
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            synth.speak(utterance);
+            startSpeechRecognition();
+        }
 
 
     function startSpeechRecognition() {
@@ -336,11 +334,7 @@
                     });
             };
             console.log("recognition직전>>>>>>>>>>>>>")
-            recognition.onend = function () {
-                startButton.textContent = '음성 입력 다시 시작';
-                console.log("recognition onend 탔니>>>>>>>>>>")
-                console.log("textcontent>>>>>>>", textContent)
-            };
+
         }
     }
 
