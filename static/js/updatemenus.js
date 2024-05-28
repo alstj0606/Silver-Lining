@@ -20,8 +20,8 @@ function updateMenus(hashtags = "", page = 1) {
             // 각 해시태그로 버튼 생성
             user_hashtags.forEach(tag => {
                 const button = `
-                    <button type="button" class="btn btn-primary" onclick="filterItems('${tag.hashtag}')">
-                        ${tag.hashtag} 
+                    <button type="button" class="btn btn-primary btn-custom-large" onclick="filterItems('${tag.hashtag}')">
+                    ${tag.hashtag} 
                     </button>
                 `;
                 categoriesContainer.append(button);
