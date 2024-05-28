@@ -16,6 +16,8 @@
         }
 
         .container {
+            width: 800px;
+            height: 450px;
             text-align: center;
             padding: 20px;
             background-color:#fffebd;
@@ -25,15 +27,20 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: xxx-large;
             color: #333;
+        }
+
+        p {
+            font-size: xx-large;
+            margin-top: 40px;
         }
 
         .processing {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 40px;
         }
 
         .dot {
@@ -66,11 +73,27 @@
                 transform: translateY(-15px);
             }
         }
+
+        .startButton {
+            margin-top: 10px;
+            margin-bottom: 0px;
+            width: 200px;
+            height: 70px;
+            font-size: larger;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border-radius: 15px;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>안녕하세요, 어떤 메뉴로 주문하시겠습니까?</h1>
+        <h1>안녕하세요</h1>
+        <h1>어떤 메뉴로 주문하시겠습니까?</h1>
         <div class="processing">
             <div class="dot"></div>
             <div class="dot"></div>
@@ -83,7 +106,7 @@
             <p id="transcription"></p>
         </div>
         <p>음성 인식 중 ....</p>
-        <button id="startButton">버튼</button>
+        <button id="startButton" class="startButton hidden"></button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -178,6 +201,7 @@
                 console.log("recognition직전>>>>>>>>>>>>>");
                 recognition.onend = function () {
                     startButton.textContent = '음성 입력 다시 시작';
+                    startButton.classList.remove('hidden');
                     console.log("recognition onend 탔니>>>>>>>>>>");
                     console.log("textcontent>>>>>>>", textContent);
                 };

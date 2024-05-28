@@ -12,7 +12,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #E6E6FA; /* Lavender */
+            background-color: #fff; /* Lavender */
             margin: 0;
         }
 
@@ -40,7 +40,7 @@
         }
 
         .recommendation {
-            background-color: #FFE4E1; /* Light pink */
+            background-color: #f1eded;
             padding: 10px;
             border-radius: 10px;
             flex: 1;
@@ -55,19 +55,19 @@
         }
 
         .recommendation h2 {
-            font-size: 1.5rem;
+            font-size: 44px;
             font-weight: bold;
         }
 
         .recommendation p {
-            font-size: 1.5rem;
+            font-size: xxx-large;
             font-weight: bold;
             color: #313030;
         }
 
         .cart {
             margin-top: 30px;
-            background-color: #E1D6F7; /* light purple */
+            background-color: #fffebd;
             padding: 20px;
             border-radius: 10px;
             position: relative; /* Added to handle absolute positioning of arrows */
@@ -116,7 +116,7 @@
             font-size: 1.25rem;
             padding: 10px 20px;
             color: #FFF;
-            background-color: #FF69B4; /* Hot pink */
+            background-color: #007bff;
             border: none;
             border-radius: 10px;
             margin-top: 20px;
@@ -126,6 +126,11 @@
             justify-content: center;
             display: flex;
             align-items: center;
+        }
+
+        .cart-item {
+            font-size: x-large;
+            font-weight: bold;
         }
 
         .arrowContainer{
@@ -159,23 +164,25 @@
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 80%;
-            max-width: 600px;
+            /* width: 80%;
+            max-width: 600px; */
+            width: 700px;
+            height: 800px;
         }
 
         .popup-container h2 {
-            font-size: 1.5rem;
+            font-size: 55px;
             margin: 10px 0;
         }
 
         .popup-container img {
-            max-width: 100%;
-            height: auto;
+            max-width: 300px;
+            height: 380px;
         }
 
         .popup-container .menu-image img {
-            max-width: 75%; /* Adjust the size as desired */
-            height: auto;
+            max-width: 300px;
+            height: 380px;
         }
 
         .popup-container p {
@@ -184,16 +191,38 @@
         }
 
         .popup-container .price {
-            font-size: 40px;
+            font-size: 60px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+    
+        .popup-container .name {
+            font-size: 60px;
+            margin-top: 20px;
             font-weight: bold;
             color: #333;
         }
 
-        .popup-container .name {
-            font-size: 40px;
+        .submitOrderBtn {
+            background-color: #28a745;
+            height: 120px;
+            width: 221px;
+            font-size: larger;
+        }
+
+        .voiceRestart {
+            height: 120px;
+            width: 250px;
+            font-size: xx-large;
+        }
+
+        .closePopup {
+            width: 170px;
+            height: 100px;
+            font-size: xxx-large;
             margin-top: 10px;
-            font-weight: bold;
-            color: #333;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -207,7 +236,7 @@
         <h1>이런 음료도 추천드려요.</h1>
 
         <div>
-            <button id="voiceRestart">음성인식 버튼</button>
+            <button id="voiceRestart" class="voiceRestart">음성인식 버튼</button>
         </div>
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
@@ -226,8 +255,8 @@
         </div>
 
         <div class="submit-container">
-            <div id="totalPrice" class="total-price">총 가격: ₩0</div>
-            <button id="submitOrderBtn">결제하기</button>
+            <div id="totalPrice" class="total-price">총 가격: 0원</div>
+            <button id="submitOrderBtn" class="submitOrderBtn">결제하기</button>
         </div>
 
 
@@ -245,8 +274,8 @@
                 <img src="" alt="메뉴 이미지" id="popup-image"/>
             </div>
             <h2 class="name" id="popup-name">메뉴 이름</h2>
-            <p class="price" id="popup-price">₩0</p>
-            <button id="closePopup">닫기</button>
+            <p class="price" id="popup-price">0원</p>
+            <button id="closePopup" class="closePopup">닫기</button>
         </div>
     </div>
 
@@ -284,7 +313,7 @@
                         <div class="menu-image">
                             <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
                         </div>
-                        <p>₩${menu.price}</p>
+                        <p>${menu.price}원</p>
                     </div>
                 `;
             
@@ -292,7 +321,7 @@
                     // Populating the popup with the first recommended menu
                     popupImage.src = menu.img_url;
                     popupName.textContent = menu.food_name;
-                    popupPrice.textContent = `₩${menu.price}`;
+                    popupPrice.textContent = `${menu.price}원`;
                     popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
                     popupOverlay.style.display = 'flex';
                 } else {
@@ -347,7 +376,7 @@
         }
 
         // Update total price
-        document.getElementById('totalPrice').textContent = `총 가격: ₩${currentTotal}`;
+        document.getElementById('totalPrice').textContent = `총 가격: ${currentTotal}원`;
         handleScrollArrows();
     }
 
@@ -477,7 +506,7 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
 
     // Retrieve the total price directly from the DOM
     let totalPriceElement = document.getElementById('totalPrice');
-    let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ₩', ''), 10) || 0;
+    let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
 
     // 요청 데이터를 JSON 문자열로 변환하여 전송
     $.ajax({
