@@ -181,73 +181,76 @@
     </div>
 
 
-    <!-- Pop-up for best recommendation -->
-    <div class="popup-overlay" id="popup-overlay">
-        <div class="popup-container" id="popup-container">
-            <h2>추천 음료</h2>
-            <div class="menu-image">
-                <img src="" alt="메뉴 이미지" id="popup-image"/>
-            </div>
-            <h2 class="name" id="popup-name">메뉴 이름</h2>
-            <p class="price" id="popup-price">₩0</p>
-            <button id="closePopup">닫기</button>
+  <!-- Pop-up for best recommendation -->
+  <div class="popup-overlay" id="popup-overlay">
+    <div class="popup-container" id="popup-container">
+        <h2>추천 음료</h2>
+        <div class="menu-image">
+            <img src="" alt="메뉴 이미지" id="popup-image"/>
         </div>
+        <h2 class="name" id="popup-name">메뉴 이름</h2>
+        <p class="price" id="popup-price">₩0</p>
+        <button id="closePopup">닫기</button>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filteredHashtags = localStorage.getItem('filteredHashtags');
-            const responseText = localStorage.getItem('responseText');
-            const popupOverlay = document.getElementById('popup-overlay');
-            const popupImage = document.getElementById('popup-image');
-            const popupName = document.getElementById('popup-name');
-            const popupPrice = document.getElementById('popup-price');
-            // const closePopup = document.getElementById('closePopup');
-            console.log("filteredHashtags>>>>>>>>>>", filteredHashtags)
-            console.log("responseText>>>>>>>>>>", responseText)
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filteredHashtags = localStorage.getItem('filteredHashtags');
+        const responseText = localStorage.getItem('responseText');
+        const popupOverlay = document.getElementById('popup-overlay');
+        const popupContainer = document.getElementById('popup-container');
+        const popupImage = document.getElementById('popup-image');
+        const popupName = document.getElementById('popup-name');
+        const popupPrice = document.getElementById('popup-price');
+        const closePopup = document.getElementById('closePopup');
+        console.log("filteredHashtags>>>>>>>>>>", filteredHashtags)
+        console.log("responseText>>>>>>>>>>", responseText)
 
-            // Function to update the menu based on hashtags
-            axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
-                .then(response => {
-                    const menus = response.data.menus.slice(0, 3);
-                    const recommendations = document.getElementById('recommendations');
-                    recommendations.innerHTML = '';
+        // Function to update the menu based on hashtags
+        axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
+            .then(response => {
+                const menus = response.data.menus.slice(0, 3);
+                const recommendations = document.getElementById('recommendations');
+                recommendations.innerHTML = '';
 
-                    menus.forEach((menu, index) => {
-            const menuItem = `
-                <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-                    <h2>${menu.food_name}</h2>
-                    <div class="menu-image">
-                        <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
-                    </div>
-                    <p>₩${menu.price}</p>
-                </div>
-            `;
-            
-            if (index == 0) {
-                popupImage.src = menu.img_url;
-                popupName.textContent = menu.food_name;
-                popupPrice.textContent = `${menu.price}원`;
-                popupOverlay.style.display = 'flex';
-                closePopup.style.display = 'inline';
-            }
+                menus.forEach((menu, index) => {
+                    const menuItem = `
+                        <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                            <h2>${menu.food_name}</h2>
+                            <div class="menu-image">
+                                <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
+                            </div>
+                            <p>₩${menu.price}</p>
+                        </div>
+        `;
+        
+        if (index === 0) {
+            popupImage.src = menu.img_url;
+            popupName.textContent = menu.food_name;
+            popupPrice.textContent = `₩${menu.price}`;
+            popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
+            popupOverlay.style.display = 'flex';
+        }
 
-            recommendations.insertAdjacentHTML('beforeend', menuItem);
-
-        });
-    })
-    .catch(error => {
-        console.error('메뉴 업데이트 중 오류 발생:', error);
+        recommendations.insertAdjacentHTML('beforeend', menuItem);
     });
-                        closePopup.addEventListener("click", function() {
-            popupOverlay.style.display = "none"; // Hide the popup
-        });
-            
-        if (responseText) {
-            speak(responseText);
-            }
-        });
+
+    closePopup.addEventListener("click", function() {
+        event.stopPropagation(); // Stop event from bubbling up
+        popupOverlay.style.display = "none"; // Hide the popup
+    });
+})
+
+.catch(error => {
+    console.error('메뉴 업데이트 중 오류 발생:', error);
+});
+        
+    if (responseText) {
+        speak(responseText);
+        }
+    });
 
 
         function speak(text) {
