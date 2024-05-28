@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,20 +59,15 @@
         }
 
         @keyframes bounce {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translateY(0);
             }
-
             50% {
                 transform: translateY(-15px);
             }
         }
     </style>
-
 </head>
-
 <body>
     <div class="container">
         <h1>안녕하세요, 어떤 메뉴로 주문하시겠습니까?</h1>
@@ -97,9 +90,13 @@
 
     <script>
         window.addEventListener('load', function () {
-            console.log(">>>>>>>>>>>>> 실행")
+            console.log(">>>>>>>>>>>>> 실행");
             const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
-            speak(welcomeMessage, startSpeechRecognition);
+            requestPermissions().then(() => {
+                speak(welcomeMessage, startSpeechRecognition);
+            }).catch(error => {
+                console.error('권한 요청 실패:', error);
+            });
         });
 
         const startButton = document.getElementById('startButton');
@@ -110,12 +107,25 @@
             return csrfTokenElement ? csrfTokenElement.value : null;
         }
 
-        
+        function requestPermissions() {
+            return new Promise((resolve, reject) => {
+                navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                    .then(stream => {
+                        console.log('마이크 사용 권한이 허용되었습니다.');
+                        resolve();
+                    })
+                    .catch(error => {
+                        console.error('마이크 사용 권한을 얻지 못했습니다:', error);
+                        reject(error);
+                    });
+            });
+        }
+
         function speak(text, callback) {
-            console.log(">>>>>>>>> speak 실행")
+            console.log(">>>>>>>>> speak 실행");
             const synth = window.speechSynthesis;
             const utterance = new SpeechSynthesisUtterance(text);
-            console.log(">>>>>>>>>> utterance", utterance)
+            console.log(">>>>>>>>>> utterance", utterance);
             utterance.lang = 'ko-KR';
             utterance.onend = function () {
                 if (callback) {
@@ -123,37 +133,33 @@
                 }
             };
             synth.speak(utterance);
-            console.log(">>>>>>>> speak 끝 <<<<<<<<<<<")
+            console.log(">>>>>>>> speak 끝 <<<<<<<<<<<");
         }
 
-
-
         function startSpeechRecognition() {
-            console.log(">>>>>>>>>>>>> startSpeechRecognition")
+            console.log(">>>>>>>>>>>>> startSpeechRecognition");
             if (!('webkitSpeechRecognition' in window)) {
                 alert("음성 인식이 지원되지 않는 브라우저입니다.");
-                console.log(">>>>>>>>>>>>>>>> if 탔는지")
+                console.log(">>>>>>>>>>>>>>>> if 탔는지");
             } else {
-                console.log(">>>>>>>>>> else 탔는지")
+                console.log(">>>>>>>>>> else 탔는지");
                 const recognition = new webkitSpeechRecognition();
-                console.log(">>>>>>>> recognition 탔는지")
+                console.log(">>>>>>>> recognition 탔는지");
                 recognition.lang = 'ko-KR';
                 recognition.start();
-                console.log(">>>>>>>>>> start() 탔는지")
+                console.log(">>>>>>>>>> start() 탔는지");
                 recognition.onresult = function (event) {
                     const transcript = event.results[0][0].transcript;
                     console.log("transcript>>>>>>>>>>>>>", transcript);
                     const csrfToken = getCsrfToken();
-                    console.log("csrf 탔는지 >>>>>>>>>")
-                            console.log("csrfToken>>>>>>>>>", csrfToken)
-                            
+                    console.log("csrf 탔는지 >>>>>>>>>");
+                    console.log("csrfToken>>>>>>>>>", csrfToken);
 
                     axios.post('/orders/aibot/', { inputText: transcript },
                         {
                             headers: {
                                 'X-CSRFToken': csrfToken
                             }
-                            
                         })
                         .then(function (response) {
                             const responseText = response.data.responseText;
@@ -162,17 +168,17 @@
                             localStorage.setItem('filteredHashtags', hashtags);
                             localStorage.setItem('responseText', responseText);
                             window.location.href = '/orders/elder_menu/';
-                            console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                            console.log("중요부분 타고 있니>>>>>>>>>>>>");
                         })
                         .catch(function (error) {
                             console.error('에러:', error);
                         });
                 };
-                console.log("recognition직전>>>>>>>>>>>>>")
+                console.log("recognition직전>>>>>>>>>>>>>");
                 recognition.onend = function () {
                     startButton.textContent = '음성 입력 다시 시작';
-                    console.log("recognition onend 탔니>>>>>>>>>>")
-                    console.log("textcontent>>>>>>>", textContent)
+                    console.log("recognition onend 탔니>>>>>>>>>>");
+                    console.log("textcontent>>>>>>>", textContent);
                 };
             }
         }
@@ -182,5 +188,4 @@
         // };
     </script>
 </body>
-
 </html>

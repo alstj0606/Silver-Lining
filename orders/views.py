@@ -240,3 +240,10 @@ def face_recognition(request):
         return redirect("orders:elder_start")
 
     return redirect("orders:menu")
+
+class elderMenuAPI(APIView):
+    def get():
+        pass
+
+    def post():
+        pass

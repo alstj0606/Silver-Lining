@@ -155,12 +155,16 @@
 
 
     </style>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 
 <body>
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
+        <div>
+            <button id="voiceRestart">음성인식 버튼</button>
+        </div>
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
         </div>
@@ -169,9 +173,11 @@
                 <!-- Cart items will be populated here dynamically -->
             </div>
             <div id="totalPrice" class="total-price">총 가격: ₩0</div>
-            <button id="orderBtn">결제하기</button>
+            <button id="submitOrderBtn">결제하기</button>
         </div>
-
+        <form id="speechForm">
+            {% csrf_token %}
+        </form>
     </div>
 
 
@@ -219,16 +225,16 @@
                 </div>
             `;
             
-            if (index !== 0) { // Check if index is not equal to 0
-                recommendations.insertAdjacentHTML('beforeend', menuItem);
-            } else {
-                // For the first menu item, display it as a popup
+            if (index == 0) {
                 popupImage.src = menu.img_url;
                 popupName.textContent = menu.food_name;
                 popupPrice.textContent = `${menu.price}원`;
                 popupOverlay.style.display = 'flex';
                 closePopup.style.display = 'inline';
             }
+
+            recommendations.insertAdjacentHTML('beforeend', menuItem);
+
         });
     })
     .catch(error => {
@@ -262,9 +268,110 @@
             totalPrice.textContent = `총 가격: ₩${currentTotal}`;
         }
 
-    //     document.getElementById('orderBtn').addEventListener('click', function() {
-    //     window.location.href = 'orders/submit_order/';
-    // });
+    // 음성인식 재시작
+    document.getElementById('voiceRestart').addEventListener('click', speak_again);
+
+
+    function getCsrfToken() {
+        const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
+        return csrfTokenElement ? csrfTokenElement.value : null;
+    }
+    
+
+    
+    function speak_again(text) {
+            const synth = window.speechSynthesis;
+            text = "새로운 음성입력을 주세요"
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            synth.speak(utterance);
+            startSpeechRecognition();
+        }
+
+
+    function startSpeechRecognition() {
+        console.log(">>>>>>>>>>>>> startSpeechRecognition")
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("음성 인식이 지원되지 않는 브라우저입니다.");
+            console.log(">>>>>>>>>>>>>>>> if 탔는지")
+        } else {
+            console.log(">>>>>>>>>> else 탔는지")
+            const recognition = new webkitSpeechRecognition();
+            console.log(">>>>>>>> recognition 탔는지")
+            recognition.lang = 'ko-KR';
+            recognition.start();
+            console.log(">>>>>>>>>> start() 탔는지")
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("transcript>>>>>>>>>>>>>", transcript);
+                const csrfToken = getCsrfToken();
+                console.log("csrf 탔는지 >>>>>>>>>")
+                        console.log("csrfToken>>>>>>>>>", csrfToken)
+                        
+
+                axios.post('/orders/aibot/', { inputText: transcript },
+                    {
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        }
+                        
+                    })
+                    .then(function (response) {
+                        const responseText = response.data.responseText;
+                        const hashtags = response.data.hashtags;
+                        console.log('서버 응답:', responseText);
+                        localStorage.setItem('filteredHashtags', hashtags);
+                        localStorage.setItem('responseText', responseText);
+                        window.location.href = '/orders/elder_menu/';
+                        console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                    })
+                    .catch(function (error) {
+                        console.error('에러:', error);
+                    });
+            };
+            console.log("recognition직전>>>>>>>>>>>>>")
+
+        }
+    }
+
+    const selectedItems = {};
+
+    document.getElementById('submitOrderBtn').addEventListener('click', function () {
+        const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
+            return {name: name, count: item.count};
+        });
+
+        // Retrieve the total price directly from the DOM
+        let totalPriceElement = document.getElementById('totalPrice');
+        let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ₩', ''), 10) || 0;
+    
+        // 요청 데이터를 JSON 문자열로 변환하여 전송
+        $.ajax({
+            url: '/orders/get_menus/',
+            cache: false,
+            dataType: 'json',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({items: selectedItemsArray, total_price: currentTotal}),
+            beforeSend: function (xhr) {
+                const csrfToken = getCsrfToken();
+                if (csrfToken) {
+                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                } else {
+                    console.error('CSRF 토큰이 설정되지 않았습니다.');
+                    return false;
+                }
+            },
+            success: function (data) {
+                console.log('주문이 성공적으로 처리되었습니다.');
+                window.location.href = '/orders/order_complete/' + data.order_number + '/';
+            },
+            error: function (error) {
+                console.error('주문 처리 중 오류가 발생했습니다:', error);
+            }
+        });
+    });
 
     </script>
 </body>
