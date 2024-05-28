@@ -103,30 +103,8 @@
 
 <hr>
 
-### 1. Auth
-  - Allows users to register, log in, log out, modify their information, and withdraw membership.
-  - Provides appropriate buttons based on user authentication status, such as 'Logout', 'Edit membership information', 'Withdraw membership', 'Login', and 'Sign up'.
-
-### 2. Product_Post CRUD:
-  - Enables users to create, read, update, and delete posts (including images) about items they want to sell.
-  - Posts are accessible on the main page, full post list page, and can be viewed by non-members.
-  - Allows navigation to detailed item pages by clicking on card links.
-
-### 3. Comment CRD:
-  - Provides functionality to create, read, and delete comments on posts.
-  - Only allows comment authors to edit or delete their comments.
-
-### 4. LIKE:
-  - Allows users to like posts written by other users.
-  - Users can like or unlike posts by clicking the heart symbol on the main page.
-
-
-### 5. Profile Page & Follow:
-  - Users can navigate to an author's profile page by clicking on their name.
-  - Profiles display lists of posts made by the user and posts liked by the user, with hyperlinks to relevant post pages.
-  - Includes a Follow button to follow or unfollow users.
-  - Shows the number of followers and following users at the bottom of the Follow button.
      
 
 ## 📄 ERD:
+![SivlerLining (2)](https://github.com/billyhyunjun/Silver-Lining/assets/159408752/7ef6181b-7b38-4a7c-ae2f-6d6d880f0197)
 
