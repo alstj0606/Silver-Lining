@@ -33,40 +33,52 @@ def bot(request, input_text, current_user):
     else:
         category_text = "음식점"
 
+    system_data = f"""
+        You are considered a staff member related to {category_text}.
+        Our store offers the following menu items: {menu}.
+        Additionally, we use the following hashtags in our store: {hashtags}.
+        """
+
+    system_output = f"""
+        The format of the data I desire as a result is:
+        "Message: [content]
+        Recommended Menu: [menu_name]"
+        For the "Recommended Menu" section, select three options that are most closely related to the customer's request and rank them accordingly. 
+        For example, if there's only one recommended menu, it should be formatted as "Recommended Menu: menu_name". 
+        If there are two recommended menus, it should be "Recommended Menu: menu_name, menu_name", 
+        and if there are three recommended menus, it should be "Recommended Menu: menu_name, menu_name, menu_name", listing them in order of priority.
+        """
+
     system_instructions = f"""
-        이제부터 너는 "{category_text} 직원"이야. 
-        너는 고객의 말에 따라 메뉴를 추천해 줘야해. 우리 가게에는 {menu}가 있어.
-        그리고 아래의 카테고리 중에서 고객의 질문과 관련이 있는 항목을 선택해줘: {hashtags}.
-        선택된 항목은 '선택된 항목: [항목]' 형식으로 반환해줘. 만약에 해당하는 선택항목이 없다면 비워줘.
-        그리고 고객에게 전달할 메시지를 작성해줘. 한 문장으로 서비스를 하는 직원처럼 '메세지: "내용"'으로 작성해줘.
-    """
+        When delivering a message to the customer, 
+        kindly determine their desired menu item and keep the message concise, preferably to one sentence. 
+        The recommended menu item must be chosen from the list of {menu}.
+        """
+
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
+            {"role": "system", "content": system_data},
+            {"role": "system", "content": system_output},
             {"role": "system", "content": system_instructions},
             {"role": "user", "content": input_text},
         ],
     )
+
     ai_response = completion.choices[0].message.content
-
-
-    # 선택된 항목과 고객 메시지 추출
-    selected_choice = None
     customer_message = ""
+    recommended_menu = []
+
     try:
         for line in ai_response.split('\n'):
-            if line.startswith('선택된 항목:'):
-                selected_choice = line.split('선택된 항목: ')[1].strip()
-            else:
-                customer_message += line.split('메세지: ')[1].strip()
-    except IndexError:
-        selected_choice = None
-        customer_message = "죄송합니다. 다시 한 번 이야기 해주세요"
-    # 선택된 항목이 있으면 출력
-    if selected_choice:
-        print(f"선택된 항목: {selected_choice}")
-    else:
-        print("관련 항목을 찾지 못했습니다.")
+            line = line.strip()  # Remove whitespace from both ends
+            if line.startswith('Message:'):
+                customer_message = line.split('Message: ')[1].strip()
+            elif line.startswith('Recommended Menu:'):
+                recommended_menu = line.split('Recommended Menu: ')[1].strip().split(', ')
 
-    customer_message = customer_message.strip()
-    return customer_message, selected_choice
+    except IndexError:
+        customer_message = "죄송합니다. 다시 한 번 이야기 해주세요"
+        recommended_menu = []
+
+    return customer_message, recommended_menu
