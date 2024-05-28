@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from SilverLining.config import OPEN_API_KEY
-from menus.models import Menu
+from menus.models import Menu, Hashtag
 from .bot import bot
 from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -47,13 +47,34 @@ def order_complete(request, order_number):
 # AIbot이 요청을 받아들여 메시지를 처리하고 응답을 반환합니다.
 class AIbot(APIView):
     @staticmethod
+    def get(request):
+        user = request.user
+        recommended_menu = request.GET.get('recommended_menu', '[]')
+
+        # JSON 문자열을 파싱하여 리스트로 변환
+        recommended_menu = json.loads(recommended_menu)
+        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        user_menus = Menu.objects.filter(store=user)
+
+        # 추천 메뉴를 미리 정의합니다.
+        recommended_list = []
+        for recommend in recommended_menu:
+            # recommended_list에 메뉴 객체 추가
+            menu_items = user_menus.filter(food_name=recommend)
+            for menu_item in menu_items:
+                recommended_list.append({
+                    "food_name": menu_item.food_name,
+                    "price": menu_item.price,
+                    "img_url": menu_item.img.url
+                })
+        return Response({'recommends': recommended_list})
+
+    @staticmethod
     def post(request):
         input_text = request.data.get('inputText')
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        message, hashtags = bot(request, input_text, current_user)
-        print(message)
-        print(hashtags)
-        return Response({'responseText': message, 'hashtags': hashtags})
+        message, recommended_menu = bot(request, input_text, current_user)
+        return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
 
 # 메뉴 API를 제공하며 페이징된 메뉴 목록을 반환합니다.
@@ -88,16 +109,18 @@ class MenusAPI(APIView):
         hashtags = request.GET.get('hashtags', None)
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
-
+        user_hashtags = Hashtag.objects.filter(hashtag_author=user)
+        user_hashtags = [{'hashtag': tag.hashtag} for tag in user_hashtags]
         # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
-        if hashtags:
+        if hashtags and hashtags != "없음":
+            # 해당 해시태그를 포함하는 메뉴를 필터링합니다.
             menus = user_menus.filter(hashtags__hashtag=hashtags)
         else:
             menus = user_menus
 
         page_number = request.GET.get('page')
         menu_list, total_pages = self.get_paginator(menus, page_number)
-        return Response({'menus': menu_list, 'page_count': total_pages})
+        return Response({'menus': menu_list, 'page_count': total_pages, "hashtags": hashtags, "user_hashtags": user_hashtags})
 
     # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)
@@ -150,7 +173,6 @@ def face_recognition(request):
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if len(faces) > 0:
-            print("faces>>>>>>>", faces)
             break
 
     cap.release()
@@ -212,8 +234,9 @@ def face_recognition(request):
     age_message = ai_answer["choices"][0]['message']['content']
     age = age_message.split("Estimated Age: ")[1].strip()
     age_number = int(age)
+    print("당신의 얼굴나이 : ", age_number)
 
     if age_number >= 60:
-        return redirect("orders:menu")
+        return redirect("orders:elder_start")
 
     return redirect("orders:menu")
