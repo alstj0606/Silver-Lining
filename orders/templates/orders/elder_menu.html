@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>추천 메뉴 및 장바구니</title>
     <style>
-
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -29,8 +26,10 @@
         }
 
         h1 {
-            font-size: 2rem;
-            color: #333;
+            font-size: 3rem;
+            background-color: #ef4040;
+            color: #f7f3f3;
+            
         }
 
         .recommendations {
@@ -56,44 +55,89 @@
         }
 
         .recommendation h2 {
-            font-size: 30px;
+            font-size: 1.5rem;
             font-weight: bold;
         }
 
         .recommendation p {
-            font-size: 30px;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #313030;
         }
-
 
         .cart {
             margin-top: 30px;
             background-color: #E1D6F7; /* light purple */
             padding: 20px;
             border-radius: 10px;
+            position: relative; /* Added to handle absolute positioning of arrows */
+            max-height: 200px; /* Set a maximum height for the cart */
+            overflow-y: hidden; /* Hide overflow content */
+            box-sizing: border-box; /* Ensures padding is included in the element's width and height */
+            width: -webkit-fill-available;
+        }
+
+        #cartItems {
+            max-height: 150px; /* Adjust accordingly */
+            overflow-y: auto; /* Enable scrolling */
         }
 
         .cart-item {
-            margin: 10px 0;
-            font-size: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            font-size: 1rem;
         }
 
-        .total-price {
-            font-size: 1.75rem;
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .cart-item .remove {
+            color: red;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+        }
+
+        .total-price, .submit-container {
+            font-size: 2rem;
             font-weight: bold;
             margin-top: 20px;
+            text-align: center;
         }
 
         button {
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             padding: 10px 20px;
             color: #FFF;
             background-color: #FF69B4; /* Hot pink */
             border: none;
             border-radius: 10px;
             margin-top: 20px;
+        }
+
+        .cartarrowContainer{
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+
+        .arrowContainer{
+
+        }
+
+        .up-arrow {
+            top: 10px; /* Position above the cart */
+        }
+
+        .down-arrow {
+            bottom: 10px; /* Position below the cart */
         }
 
         .popup-overlay {
@@ -129,12 +173,11 @@
             height: auto;
         }
 
-
         .popup-container .menu-image img {
             max-width: 75%; /* Adjust the size as desired */
             height: auto;
-        
         }
+
         .popup-container p {
             font-size: 1.25rem;
             color: #555;
@@ -152,49 +195,64 @@
             font-weight: bold;
             color: #333;
         }
-
-
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 
+
+
 <body>
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
+
         <div>
             <button id="voiceRestart">음성인식 버튼</button>
         </div>
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
         </div>
-        <div class="cart">
-            <div id="cartItems" class="cart-item">
-                <!-- Cart items will be populated here dynamically -->
+
+        <div class="cartarrowContainer">        
+            <div id="cartContainer" class="cart">
+                <div id="cartItems">
+                    <!-- Cart items will be populated here dynamically -->
+                </div>
             </div>
+            <div class="arrowContainer">
+                <button class="arrow up-arrow" style="display: none;">▲</button>
+                <button class="arrow down-arrow" style="display: none;">▼</button>
+            </div>
+        </div>
+
+        <div class="submit-container">
             <div id="totalPrice" class="total-price">총 가격: ₩0</div>
             <button id="submitOrderBtn">결제하기</button>
         </div>
+
+
+
         <form id="speechForm">
             {% csrf_token %}
         </form>
     </div>
 
-
-  <!-- Pop-up for best recommendation -->
-  <div class="popup-overlay" id="popup-overlay">
-    <div class="popup-container" id="popup-container">
-        <h2>추천 음료</h2>
-        <div class="menu-image">
-            <img src="" alt="메뉴 이미지" id="popup-image"/>
+    <!-- Pop-up for best recommendation -->
+    <div class="popup-overlay" id="popup-overlay">
+        <div class="popup-container" id="popup-container">
+            <h2>추천 음료</h2>
+            <div class="menu-image">
+                <img src="" alt="메뉴 이미지" id="popup-image"/>
+            </div>
+            <h2 class="name" id="popup-name">메뉴 이름</h2>
+            <p class="price" id="popup-price">₩0</p>
+            <button id="closePopup">닫기</button>
         </div>
-        <h2 class="name" id="popup-name">메뉴 이름</h2>
-        <p class="price" id="popup-price">₩0</p>
-        <button id="closePopup">닫기</button>
     </div>
-</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const recommended_menu_string = localStorage.getItem('recommended_menu');
@@ -213,7 +271,7 @@
         // Function to update the menu based on hashtags
         // Function to update the menu based on recommended_menu_string
 
-        axios.get('/orders/aibot/', { params: { recommended_menu: recommended_menu_string } })
+    axios.get('/orders/aibot/', { params: { recommended_menu: recommended_menu_string } })
         .then(response => {
             const menuData = response.data.recommends; // assuming your API returns menus as an array
             //const recommendations = document.getElementById('recommendations');
@@ -258,39 +316,96 @@
         }
         });
 
+    let cart = {};
 
+    function addItem(name, price, imgSrc) {
+        // If item already in cart, increment count, otherwise add new item
+        if (cart[name]) {
+            cart[name].count += 1;
+        } else {
+            cart[name] = { price: price, count: 1, imgSrc: imgSrc };
+        }
+        updateCartDisplay();
+    }
 
-        // Mock addItem function for adding item to cart
+    function updateCartDisplay() {
+        let cartItems = document.getElementById('cartItems');
+        cartItems.innerHTML = ''; // Clear the cart display
+        let currentTotal = 0;
 
-        function addItem(name, price, imgUrl) {
-
-        console.log(`Adding ${name} to cart at price ₩${price}`);
-
-        // Implement cart addition logic here.
-
+        for (let name in cart) {
+            let item = cart[name];
+            currentTotal += item.price * item.count;
+            cartItems.innerHTML += `
+                <div class="cart-item">
+                    <img src="${item.imgSrc}" alt="${name}">
+                    <span>${name}</span>
+                    <span>${item.price}원</span>
+                    <span>${item.count}개</span>
+                    <button class="remove" onclick="removeItem('${name}')">삭제</button>
+                </div>`;
         }
 
+        // Update total price
+        document.getElementById('totalPrice').textContent = `총 가격: ₩${currentTotal}`;
+        handleScrollArrows();
+    }
 
-        function speak(text) {
-            const synth = window.speechSynthesis;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ko-KR';
-            synth.speak(utterance);
+    function removeItem(name) {
+        if (cart[name]) {
+            cart[name].count -= 1;
+            if (cart[name].count <= 0) delete cart[name];
         }
 
-        function addItem(name, price) {
-            // Logic to add the item to the cart
-            let cartItems = document.getElementById('cartItems');
-            let totalPrice = document.getElementById('totalPrice');
-            let currentTotal = parseInt(totalPrice.textContent.replace('총 가격: ₩', ''), 10) || 0;
+        updateCartDisplay();
+    }
 
-            cartItems.innerHTML += `<div class="cart-item">${name} - ₩${price}</div>`;
-            currentTotal += price;
-            totalPrice.textContent = `총 가격: ₩${currentTotal}`;
-        }
+// Handle visibility of the arrow buttons
 
-    // 음성인식 재시작
-    document.getElementById('voiceRestart').addEventListener('click', speak_again);
+function handleScrollArrows() {
+    const cartItems = document.getElementById('cartItems');
+    const upArrow = document.querySelector('.up-arrow');
+    const downArrow = document.querySelector('.down-arrow');
+
+    if (cartItems.scrollHeight > cartItems.clientHeight) {
+        upArrow.style.display = 'block';
+        downArrow.style.display = 'block';
+    } else {
+        upArrow.style.display = 'none';
+        downArrow.style.display = 'none';
+    }
+
+    upArrow.disabled = cartItems.scrollTop === 0;
+    downArrow.disabled = cartItems.scrollTop >= (cartItems.scrollHeight - cartItems.clientHeight);
+
+}
+
+
+document.querySelector('.up-arrow').addEventListener('click', function() {
+    const cartItems = document.getElementById('cartItems');
+    cartItems.scrollTop -= 50;
+    handleScrollArrows(); // Update the arrows' visibility based on scroll position
+});
+
+
+
+document.querySelector('.down-arrow').addEventListener('click', function() {
+    const cartItems = document.getElementById('cartItems');
+    cartItems.scrollTop += 50;
+    handleScrollArrows(); // Update the arrows' visibility based on scroll position
+});
+
+// Invoke handleScrollArrows on page load to set initial arrow states
+handleScrollArrows();
+
+function speak(text) {
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    synth.speak(utterance);
+}
+
+    document.getElementById('voiceRestart').addEventListener('click', speakAgain);
 
 
     function getCsrfToken() {
@@ -298,103 +413,100 @@
         console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
-    
 
-    
-    function speak_again(text) {
-            const synth = window.speechSynthesis;
-            text = "새로운 음성입력을 주세요"
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ko-KR';
-            synth.speak(utterance);
-            startSpeechRecognition();
-        }
-
-
-    function startSpeechRecognition() {
-        console.log(">>>>>>>>>>>>> startSpeechRecognition")
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("음성 인식이 지원되지 않는 브라우저입니다.");
-            console.log(">>>>>>>>>>>>>>>> if 탔는지")
-        } else {
-            console.log(">>>>>>>>>> else 탔는지")
-            const recognition = new webkitSpeechRecognition();
-            console.log(">>>>>>>> recognition 탔는지")
-            recognition.lang = 'ko-KR';
-            recognition.start();
-            console.log(">>>>>>>>>> start() 탔는지")
-            recognition.onresult = function (event) {
-                const transcript = event.results[0][0].transcript;
-                console.log("transcript>>>>>>>>>>>>>", transcript);
-                const csrfToken = getCsrfToken();
-                console.log("csrf 탔는지 >>>>>>>>>")
-                        console.log("csrfToken>>>>>>>>>", csrfToken)
-                        
-
-                axios.post('/orders/aibot/', { inputText: transcript },
-                    {
-                        headers: {
-                            'X-CSRFToken': csrfToken
-                        }
-                        
-                    })
-                    .then(function (response) {
-                        const responseText = response.data.responseText;
-                        const recommended_menu = response.data.recommended_menu;
-                        console.log('서버 응답:', responseText);
-                        localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
-                        localStorage.setItem('customer_message', responseText);
-                        window.location.href = '/orders/elder_menu/';
-                        console.log("중요부분 타고 있니>>>>>>>>>>>>")
-                    })
-                    .catch(function (error) {
-                        console.error('에러:', error);
-                    });
-            };
-            console.log("recognition직전>>>>>>>>>>>>>")
-
-        }
+    function speakAgain(text) {
+        const synth = window.speechSynthesis;
+        text = "새로운 음성입력을 주세요"
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        synth.speak(utterance);
+        startSpeechRecognition();
     }
 
-    const selectedItems = {};
+function startSpeechRecognition() {
+    console.log(">>>>>>>>>>>>> startSpeechRecognition")
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("음성 인식이 지원되지 않는 브라우저입니다.");
+        console.log(">>>>>>>>>>>>>>>> if 탔는지")
+    } else {
+        console.log(">>>>>>>>>> else 탔는지")
+        const recognition = new webkitSpeechRecognition();
+        console.log(">>>>>>>> recognition 탔는지")
+        recognition.lang = 'ko-KR';
+        recognition.start();
+        console.log(">>>>>>>>>> start() 탔는지")
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            console.log("transcript>>>>>>>>>>>>>", transcript);
+            const csrfToken = getCsrfToken();
+            console.log("csrf 탔는지 >>>>>>>>>")
+                    console.log("csrfToken>>>>>>>>>", csrfToken)
+                    
 
-    document.getElementById('submitOrderBtn').addEventListener('click', function () {
-        const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
-            return {name: name, count: item.count};
-        });
+            axios.post('/orders/aibot/', { inputText: transcript },
+                {
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                    
+                })
+                .then(function (response) {
+                    const responseText = response.data.responseText;
+                    const recommended_menu = response.data.recommended_menu;
+                    console.log('서버 응답:', responseText);
+                    localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                    localStorage.setItem('customer_message', responseText);
+                    window.location.href = '/orders/elder_menu/';
+                    console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                })
+                .catch(function (error) {
+                    console.error('에러:', error);
+                });
+        };
+        console.log("recognition직전>>>>>>>>>>>>>")
 
-        // Retrieve the total price directly from the DOM
-        let totalPriceElement = document.getElementById('totalPrice');
-        let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ₩', ''), 10) || 0;
-    
-        // 요청 데이터를 JSON 문자열로 변환하여 전송
-        $.ajax({
-            url: '/orders/get_menus/',
-            cache: false,
-            dataType: 'json',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({items: selectedItemsArray, total_price: currentTotal}),
-            beforeSend: function (xhr) {
-                const csrfToken = getCsrfToken();
-                if (csrfToken) {
-                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
-                } else {
-                    console.error('CSRF 토큰이 설정되지 않았습니다.');
-                    return false;
-                }
-            },
-            success: function (data) {
-                console.log('주문이 성공적으로 처리되었습니다.');
-                window.location.href = '/orders/order_complete/' + data.order_number + '/';
-            },
-            error: function (error) {
-                console.error('주문 처리 중 오류가 발생했습니다:', error);
-            }
-        });
+    }
+}
+
+const selectedItems = {};
+
+document.getElementById('submitOrderBtn').addEventListener('click', function () {
+    const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
+        return {name: name, count: item.count};
     });
 
-    </script>
+    // Retrieve the total price directly from the DOM
+    let totalPriceElement = document.getElementById('totalPrice');
+    let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ₩', ''), 10) || 0;
+
+    // 요청 데이터를 JSON 문자열로 변환하여 전송
+    $.ajax({
+        url: '/orders/get_menus/',
+        cache: false,
+        dataType: 'json',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({items: selectedItemsArray, total_price: currentTotal}),
+        beforeSend: function (xhr) {
+            const csrfToken = getCsrfToken();
+            if (csrfToken) {
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            } else {
+                console.error('CSRF 토큰이 설정되지 않았습니다.');
+                return false;
+            }
+        },
+        success: function (data) {
+            console.log('주문이 성공적으로 처리되었습니다.');
+            window.location.href = '/orders/order_complete/' + data.order_number + '/';
+        },
+        error: function (error) {
+            console.error('주문 처리 중 오류가 발생했습니다:', error);
+        }
+    });
+});
+
+</script>
 </body>
 
 </html>
