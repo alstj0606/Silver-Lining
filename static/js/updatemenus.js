@@ -5,8 +5,27 @@ function updateMenus(hashtags = "", page = 1) {
         dataType: 'json',
         success: function (data) {
             const menus = data.menus;
+            const hashtags = data.hashtags;
+            const user_hashtags = data.user_hashtags;
             const menuContainer = $('#menuContainer');
             menuContainer.empty();
+
+            const recommendedContainer = $('#recommendedContainer');
+            recommendedContainer.empty();
+
+            // 카테고리 버튼 생성
+            const categoriesContainer = $('.categories .btn-group');
+            categoriesContainer.empty();
+
+            // 각 해시태그로 버튼 생성
+            user_hashtags.forEach(tag => {
+                const button = `
+                    <button type="button" class="btn btn-primary" onclick="filterItems('${tag.hashtag}')">
+                        ${tag.hashtag} 
+                    </button>
+                `;
+                categoriesContainer.append(button);
+            });
 
             // 일반 메뉴 추가
             menus.forEach(menu => {
@@ -21,7 +40,7 @@ function updateMenus(hashtags = "", page = 1) {
                         `;
                 menuContainer.append(menuItem);
             });
-            updatePaginationButtons(data.page_count, page);
+            updatePaginationButtons(data.page_count, page, hashtags);
         },
         error: function (error) {
             console.error('메뉴 업데이트 중 오류 발생:', error);
@@ -29,16 +48,20 @@ function updateMenus(hashtags = "", page = 1) {
     });
 }
 
-function updatePaginationButtons(totalPages, currentPage) {
+function updatePaginationButtons(totalPages, currentPage, hashtags) {
     const paginationButtons = $('#paginationButtons');
     paginationButtons.empty();
 
     for (let i = 1; i <= totalPages; i++) {
-        const button = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${i})">${i}</button>`;
+        const button = `<button class="btn btn-outline-primary btn-page mr-1" onclick="changePage(${i}, '${hashtags}')">${i}</button>`;
         paginationButtons.append(button);
     }
 }
 
-function changePage(pageNumber) {
-    updateMenus("", pageNumber);
+function changePage(pageNumber, hashtags) {
+    updateMenus(hashtags, pageNumber);
+}
+
+function filterItems(hashtags) {
+    updateMenus(hashtags);
 }

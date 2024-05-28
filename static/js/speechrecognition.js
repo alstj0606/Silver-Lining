@@ -95,6 +95,36 @@ transcription.addEventListener('input', function () {
 });
 
 
+function appendRecommendedMenuItems(container, items) {
+    items.forEach(menu => {
+        const menuItem = `
+            <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <p class="card-text text-muted">${menu.price}원</p>
+                </div>
+            </div>
+        `;
+        container.append(menuItem);
+    });
+}
+
+function appendMenuItems(container, items) {
+    items.forEach(menu => {
+        const menuItem = `
+            <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <p class="card-text text-muted">${menu.price}원</p>
+                </div>
+            </div>
+        `;
+        container.append(menuItem);
+    });
+}
+
 function AIMenus(recommended_menu = "") {
     $.ajax({
         url: '/orders/aibot/',
@@ -102,40 +132,33 @@ function AIMenus(recommended_menu = "") {
         dataType: 'json',
         success: function (data) {
             const recommends = data.recommends;
-            console.log("추천 메뉴 :", recommends);
             const menuContainer = $('#menuContainer');
             const recommendedContainer = $('#recommendedContainer');
+            const paginationButtons = $('#paginationButtons');
+
             menuContainer.empty();
             recommendedContainer.empty();
+            paginationButtons.empty();
+            if (Array.isArray(recommends)) {
+                if (Array.isArray(recommends[0])) {
+                    appendRecommendedMenuItems(recommendedContainer, recommends[0]);
+                } else if (recommends[0] && typeof recommends[0] === 'object') {
+                    appendRecommendedMenuItems(recommendedContainer, [recommends[0]]);
+                } else {
+                    console.error('Expected recommends[0] to be an array or object but got:', recommends[0]);
+                }
 
-            // recommends 배열의 첫 번째 요소는 추천 메뉴로 처리
-            recommends[0].forEach(menu => {
-                const menuItem = `
-                    <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
-                        <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
-                        <div class="card-body text-center">
-                            <h5 class="card-title text-primary">${menu.food_name}</h5>
-                            <p class="card-text text-muted">${menu.price}원</p>
-                        </div>
-                    </div>
-                `;
-                recommendedContainer.append(menuItem);
-            });
-
-            // recommends 배열의 나머지 요소는 일반 메뉴로 처리
-            for (let i = 1; i < recommends.length; i++) {
-                recommends[i].forEach(menu => {
-                    const menuItem = `
-                        <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
-                            <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-primary">${menu.food_name}</h5>
-                                <p class="card-text text-muted">${menu.price}원</p>
-                            </div>
-                        </div>
-                    `;
-                    menuContainer.append(menuItem);
-                });
+                for (let i = 1; i < recommends.length; i++) {
+                    if (Array.isArray(recommends[i])) {
+                        appendMenuItems(menuContainer, recommends[i]);
+                    } else if (recommends[i] && typeof recommends[i] === 'object') {
+                        appendMenuItems(menuContainer, [recommends[i]]);
+                    } else {
+                        console.error('Expected recommends[' + i + '] to be an array or object but got:', recommends[i]);
+                    }
+                }
+            } else {
+                console.error('Expected recommends to be an array but got:', recommends);
             }
         },
         error: function (error) {
@@ -143,4 +166,3 @@ function AIMenus(recommended_menu = "") {
         }
     });
 }
-

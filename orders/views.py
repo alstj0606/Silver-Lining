@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from SilverLining.config import OPEN_API_KEY
-from menus.models import Menu
+from menus.models import Menu, Hashtag
 from .bot import bot
 from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -53,7 +53,6 @@ class AIbot(APIView):
 
         # JSON 문자열을 파싱하여 리스트로 변환
         recommended_menu = json.loads(recommended_menu)
-        print(recommended_menu)
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
 
@@ -61,15 +60,14 @@ class AIbot(APIView):
         recommended_list = []
         for recommend in recommended_menu:
             # recommended_list에 메뉴 객체 추가
-            menu_item = user_menus.filter(food_name=recommend).first()
-            if menu_item:
-                recommended_list.append(menu_item)
-
-            # 추천 메뉴를 직렬화 가능한 형태로 변환합니다.
-        recommends = [{"food_name": menu.food_name, "price": menu.price, "img_url": menu.img.url} for menu in
-                      recommended_list]
-
-        return Response({'recommends': recommends})
+            menu_items = user_menus.filter(food_name=recommend)
+            for menu_item in menu_items:
+                recommended_list.append({
+                    "food_name": menu_item.food_name,
+                    "price": menu_item.price,
+                    "img_url": menu_item.img.url
+                })
+        return Response({'recommends': recommended_list})
 
     @staticmethod
     def post(request):
@@ -111,6 +109,8 @@ class MenusAPI(APIView):
         hashtags = request.GET.get('hashtags', None)
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
+        user_hashtags = Hashtag.objects.filter(hashtag_author=user)
+        user_hashtags = [{'hashtag': tag.hashtag} for tag in user_hashtags]
         # 현재 사용자가 작성한 메뉴 중 해시태그가 포함되거나 전체인 메뉴를 필터링합니다.
         if hashtags and hashtags != "없음":
             # 해당 해시태그를 포함하는 메뉴를 필터링합니다.
@@ -120,7 +120,7 @@ class MenusAPI(APIView):
 
         page_number = request.GET.get('page')
         menu_list, total_pages = self.get_paginator(menus, page_number)
-        return Response({'menus': menu_list, 'page_count': total_pages})
+        return Response({'menus': menu_list, 'page_count': total_pages, "hashtags": hashtags, "user_hashtags": user_hashtags})
 
     # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)

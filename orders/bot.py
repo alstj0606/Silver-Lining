@@ -1,5 +1,3 @@
-import re
-
 from openai import OpenAI
 from django.conf import settings
 from menus.models import Menu, Hashtag
@@ -19,7 +17,6 @@ def get_user_menu_and_hashtags(user):
 
 
 def bot(request, input_text, current_user):
-    print(input_text)
     client = OpenAI(api_key=settings.OPEN_API_KEY)
 
     # 사용자의 카테고리 가져오기
@@ -69,14 +66,12 @@ def bot(request, input_text, current_user):
     )
 
     ai_response = completion.choices[0].message.content
-    print(ai_response)
     customer_message = ""
     recommended_menu = []
 
     try:
         for line in ai_response.split('\n'):
             line = line.strip()  # Remove whitespace from both ends
-            # line = re.sub(r'[\[\]\'\"]', '', line)  # Remove square brackets
             if line.startswith('Message:'):
                 customer_message = line.split('Message: ')[1].strip()
             elif line.startswith('Recommended Menu:'):
