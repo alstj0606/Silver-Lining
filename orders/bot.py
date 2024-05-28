@@ -44,9 +44,7 @@ def bot(request, input_text, current_user):
         "Message: [content]
         Recommended Menu: [menu_name]"
         For the "Recommended Menu" section, select three options that are most closely related to the customer's request and rank them accordingly. 
-        For example, if there's only one recommended menu, it should be formatted as "Recommended Menu: menu_name". 
-        If there are two recommended menus, it should be "Recommended Menu: menu_name, menu_name", 
-        and if there are three recommended menus, it should be "Recommended Menu: menu_name, menu_name, menu_name", listing them in order of priority.
+        For example, if there are three recommended menus, it should be "Recommended Menu: menu_name, menu_name, menu_name", listing them in order of priority.
         """
 
     system_instructions = f"""
