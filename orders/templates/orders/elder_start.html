@@ -163,12 +163,13 @@
                         })
                         .then(function (response) {
                             const responseText = response.data.responseText;
-                            const hashtags = response.data.hashtags;
+                            const recommended_menu = response.data.recommended_menu;
                             console.log('서버 응답:', responseText);
-                            localStorage.setItem('filteredHashtags', hashtags);
-                            localStorage.setItem('responseText', responseText);
+                            localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                            localStorage.setItem('customer_message', responseText);
                             window.location.href = '/orders/elder_menu/';
-                            console.log("중요부분 타고 있니>>>>>>>>>>>>");
+                            console.log("customer_message>>>>>>>", responseText);
+                            console.log("recommended_menu>>>>>>>", recommended_menu);
                         })
                         .catch(function (error) {
                             console.error('에러:', error);

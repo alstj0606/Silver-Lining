@@ -197,60 +197,78 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const filteredHashtags = localStorage.getItem('filteredHashtags');
-        const responseText = localStorage.getItem('responseText');
+        const recommended_menu_string = localStorage.getItem('recommended_menu');
+        const recommended_menu = JSON.parse(recommended_menu_string);
+        const responseText = localStorage.getItem('customer_message');
         const popupOverlay = document.getElementById('popup-overlay');
         const popupContainer = document.getElementById('popup-container');
         const popupImage = document.getElementById('popup-image');
         const popupName = document.getElementById('popup-name');
         const popupPrice = document.getElementById('popup-price');
         const closePopup = document.getElementById('closePopup');
-        console.log("filteredHashtags>>>>>>>>>>", filteredHashtags)
-        console.log("responseText>>>>>>>>>>", responseText)
+        console.log("recommended_menu_string >>>>>>>>>>>", recommended_menu_string)
+        console.log("recommended_menu>>>>>>>>>>>", recommended_menu)
+        console.log("response_text >>>>>>>>>>>>>>", responseText)
 
         // Function to update the menu based on hashtags
-        axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
-            .then(response => {
-                const menus = response.data.menus.slice(0, 3);
-                const recommendations = document.getElementById('recommendations');
-                recommendations.innerHTML = '';
+        // Function to update the menu based on recommended_menu_string
 
-                menus.forEach((menu, index) => {
-                    const menuItem = `
-                        <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-                            <h2>${menu.food_name}</h2>
-                            <div class="menu-image">
-                                <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
-                            </div>
-                            <p>₩${menu.price}</p>
+        axios.get('/orders/aibot/', { params: { recommended_menu: recommended_menu_string } })
+        .then(response => {
+            const menuData = response.data.recommends; // assuming your API returns menus as an array
+            //const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = '';
+
+            menuData.forEach((menu, index) => {
+                const menuItem = `
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                        <h2>${menu.food_name}</h2>
+                        <div class="menu-image">
+                            <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
                         </div>
-        `;
-        
-        if (index === 0) {
-            popupImage.src = menu.img_url;
-            popupName.textContent = menu.food_name;
-            popupPrice.textContent = `₩${menu.price}`;
-            popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
-            popupOverlay.style.display = 'flex';
+                        <p>₩${menu.price}</p>
+                    </div>
+                `;
+            
+                if (index === 0) {
+                    // Populating the popup with the first recommended menu
+                    popupImage.src = menu.img_url;
+                    popupName.textContent = menu.food_name;
+                    popupPrice.textContent = `₩${menu.price}`;
+                    popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
+                    popupOverlay.style.display = 'flex';
+                } else {
+                    // Inserting menu item into recommendations container
+                    recommendations.insertAdjacentHTML('beforeend', menuItem);
+                }
+            });
+
+            closePopup.addEventListener("click", function(event) {
+                event.stopPropagation(); // Stop event from bubbling up
+                popupOverlay.style.display = "none"; // Hide the popup
+            });
+        })
+        .catch(error => {
+            console.error('메뉴 업데이트 중 오류 발생:', error);
+        });
+
+        if (responseText) {
+            console.log("responseText 탔는지 >>>>>>>>>", responseText)
+            speak(responseText);
         }
+        });
 
-        recommendations.insertAdjacentHTML('beforeend', menuItem);
-    });
 
-    closePopup.addEventListener("click", function() {
-        event.stopPropagation(); // Stop event from bubbling up
-        popupOverlay.style.display = "none"; // Hide the popup
-    });
-})
 
-.catch(error => {
-    console.error('메뉴 업데이트 중 오류 발생:', error);
-});
-        
-    if (responseText) {
-        speak(responseText);
+        // Mock addItem function for adding item to cart
+
+        function addItem(name, price, imgUrl) {
+
+        console.log(`Adding ${name} to cart at price ₩${price}`);
+
+        // Implement cart addition logic here.
+
         }
-    });
 
 
         function speak(text) {
@@ -322,10 +340,10 @@
                     })
                     .then(function (response) {
                         const responseText = response.data.responseText;
-                        const hashtags = response.data.hashtags;
+                        const recommended_menu = response.data.recommended_menu;
                         console.log('서버 응답:', responseText);
-                        localStorage.setItem('filteredHashtags', hashtags);
-                        localStorage.setItem('responseText', responseText);
+                        localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                        localStorage.setItem('customer_message', responseText);
                         window.location.href = '/orders/elder_menu/';
                         console.log("중요부분 타고 있니>>>>>>>>>>>>")
                     })
