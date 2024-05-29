@@ -43,14 +43,23 @@ def bot(request, input_text, current_user):
         The format of the data I desire as a result is:
         "Message: [content]
         Recommended Menu: [menu_name]"
-        For the "Recommended Menu" section, select three options that are most closely related to the customer's request and rank them accordingly. 
-        For example, if there are three recommended menus, it should be "Recommended Menu: menu_name, menu_name, menu_name", listing them in order of priority.
+        For the "Recommended Menu" section, select three options that are most closely related to the customer's request and rank them accordingly.
+        The main format of recommended menu should be "Recommended Menu: menu_name, menu_name, menu_name".
+        The output of recommended menus must include three items. If fulfilling three items are difficult to achieve, go through the menu table to find the closest menu possible.
+        It would be easier for you consider hashtags when finding related menu.
+        When there are more than one keyword that you take into account, you should prioritize the keyword that is related to the menu.
+        For example, when the customer asks for 'iced coffee', you should consider the menu that is 'coffee', rather than 'iced' beverages.
+        For the response, since we are sure that all of the customers are Korean, make sure that you respond in Korean.
+        If you had extract the response in other languages, do not return the response in that language.
+        Rather, you should return the message in Korean that you did not understand the customer's message and ask them to speak again.
         """
 
     system_instructions = f"""
         When delivering a message to the customer, 
         kindly determine their desired menu item and keep the message concise, preferably to one sentence. 
         The recommended menu item must be chosen from the list of {menu}.
+        The message you respond should be in the format of including the menu name.
+        The menu name is the menu name of the first menu in Recommended Menu list that you suggested.
         """
 
     completion = client.chat.completions.create(
