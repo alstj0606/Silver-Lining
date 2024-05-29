@@ -16,16 +16,23 @@
 
 ## 👨‍🏫 Developement Team (Pair Programming)
 **박현준, 박소영, 박지현, 홍민서**
+
 <br><br>
+
 **Pair1: 박현준, 홍민서**
-- 음성인식 파트 구현
-- 메뉴추천 AI 메인로직 및 프롬프트 작성
-- 비고령층 음성인식 주문 template 및 로직
+- 키오스크 프론트엔드 작성
+- 템플릿 음성인식 기능 구현
+- AI메뉴 추천 모델 및 메뉴 필터링 기능
+- 장바구니 담기, 결제 후 주문번호 출력 로직 작성
+
+<br>
 
 **Pair2: 박지현, 박소영**
-- 얼굴인식 파트 구현
-- 고령층 키오스크 주문 template 및 로직
-- Django Admin Page CRUD 및 Custom
+- Django Admin Page 커스텀 (유저, 메뉴 CRUD)
+- 얼굴인식 기능 구현
+- 템플릿 레이아웃 구성
+- 고령층 템플릿 구현 (음성인식 기능 결합)
+- GPT프롬프트 수정
 
 
 <br>
@@ -59,28 +66,24 @@
    - 키오스크에 내장된 카메라를 통해 키오스크 사용자의 얼굴 사진을 찍고, 사진에서 해당 사용자의 나이를 도출한다.
    - 도출해낸 나이가 고령층인 경우와 비고령층인 경우를 구분해서 키오스크 주문 UI를 맞춤화해서 제공한다.
 
+<br>
+
 #### (2) 고령층과 비고령층 주문단계 차별화
 #### (2-1) 고령층
 1. 고령층 주문 페이지 로딩과 동시에 출력되는 안내멘트 이후에 음성인식이 시작된다
 2. 입력받은 음성데이터를 토대로 메뉴추천 AI가 추천메뉴를 띄워서 알려준다
 3. 가장 추천되는 메뉴가 팝업창에 나타나고, 사용자는 이 메뉴를 장바구니에 넣거나 다른 추천 메뉴를 볼 수 있다
 
-<br>
 
-#### (2-2) 비고령층 (음성인식 주문 ver.)
-1. 주문 방식을 음성인식으로 선택한 경우에 해당한다
-2. 안내멘트에 따라 음성인식 버튼을 누르면 메뉴추천 AI와 장바구니 담기 등을 음성으로 진행할 수 있다
+#### (2-2) 비고령층 (음성인식 주문 or 일반적인 키오스크 터치 주문)
+1. 기본적으로는 일반적인 터치 주문 방식과 동일하게 사용할 수 있다
+2. 안내멘트에 따라 음성인식 버튼을 누르면 메뉴추천 AI 기능을 음성인식으로 사용할 수 있다
 3. 고령층 주문단계와는 달리 자동으로 음성인식이 시작되는 것이 아니라 필요에 따라 원하는 주문과정에서 음성인식 기능을 ON/OFF로 사용할 수 있다
 
-#### (2-3) 비고령층 (일반적인 키오스크 터치 주문 ver.)
-1. 주문 방식을 화면터치로 선택한 경우에 해당한다
-2. 일반적인 키오스크의 사용법처럼 주문과정을 터치로 진행할 수 있다
-3. 별도의 음성인식 기능과 메뉴추천 AI기능은 제공하지 않는다
-
 <br>
 
-#### (2-4) 결제 이후 주문번호 배정
-   - 앞선 2-1 ~ 2-3까지의 과정에서 공통적으로 제공되는 기능이다
+#### (2-3) 결제 이후 주문번호 배정
+   - 앞선 2-1 ~ 2-2까지의 과정에서 공통적으로 제공되는 기능이다
    - 하루마다 주문번호가 초기화된다
 
 <br>
@@ -100,9 +103,88 @@
 #### (2) staff에 permission 부여
 - admin page내의 group을 새로 생성하여 staff가 메뉴 CRUD에만 접근가능하도록 제한한다
 
-
+<br><br>
 <hr>
 
+## 📌 Key Features
+
+### 1. Kiosk User
+
+#### (1) Age Group Identification and Customized Kiosk UI through Facial Recognition
+
+   - The kiosk, using its built-in camera, takes a photo of the kiosk user and derives the user's age from the photo.
+
+   - Depending on whether the derived age indicates an elderly user or a non-elderly user, the kiosk order UI will be customized accordingly.
+
+
+<br>
+
+#### (2) Differentiation in Order Steps for Elderly and Non-Elderly Users
+
+
+#### (2-1) Elderly Users
+
+1. As soon as the order page for elderly users loads, a guide message is played, followed by the start of voice recognition.
+
+2. Based on the voice data received, the AI menu recommendation system displays suggested menus.
+
+3. The top recommended menu appears in a popup, and the user can choose to add this menu to the cart or view other recommended menus.
+
+
+
+#### (2-2) Non-Elderly Users (Voice Recognition Order or Conventional Kiosk Touch Order)
+
+1. By default, users can use the typical touch ordering method.
+
+2. Users can activate the AI menu recommendation feature using voice recognition by pressing the voice recognition button, as instructed by the guide message.
+
+3. Unlike the order process for elderly users, voice recognition does not start automatically; users can turn the voice recognition feature on or off as needed during the ordering process.
+
+
+
+<br>
+
+
+
+#### (2-3) Assigning Order Numbers Post Payment
+
+   - This functionality is common across the stages 2-1 ~ 2-2.
+
+   - Order numbers are reset daily.
+
+
+<br>
+
+
+### 2. Store Owner (Staff)
+
+#### (1) Menu CRUD
+
+- Predefined hashtags need to be set before menu creation.
+
+- When creating a menu, the menu name, price, hashtags, and images must be uploaded.
+
+  
+
+#### (2) Order Status Related (Pending Implementation)
+
+
+
+<br><br>
+
+
+
+### 3. Admin (Superuser)
+
+#### (1) Staff CRUD and Menu CRUD
+
+- The admin can create, view, edit, and delete staff accounts as well as the menus created by staff members.
+
+#### (2) Assigning Permissions to Staff
+
+- Through the admin page, a new group can be created so that staff members are restricted to only performing menu CRUD operations.
+
+<br>
      
 
 ## 📄 ERD:
