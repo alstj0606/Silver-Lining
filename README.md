@@ -112,19 +112,19 @@
 
 #### (1) Age Group Identification and Customized Kiosk UI through Facial Recognition
 
-   - The kiosk, using its built-in camera, takes a photo of the kiosk user and derives the user's age from the photo.
+   - The kiosk, using its built-in camera, takes a photo of the kiosk user and estimates the user's age from the photo.
 
-   - Depending on whether the derived age indicates an elderly user or a non-elderly user, the kiosk order UI will be customized accordingly.
+   - Depending on whether the estimated age indicates an older user or a younger user, the kiosk order UI will be customized accordingly.
 
 
 <br>
 
-#### (2) Differentiation in Order Steps for Elderly and Non-Elderly Users
+#### (2) Differentiation in Order Steps for Older and Younger Users
 
 
-#### (2-1) Elderly Users
+#### (2-1) Older Users
 
-1. As soon as the order page for elderly users loads, a guide message is played, followed by the start of voice recognition.
+1. As soon as the order page for older users loads, a guide message is played and the voice recognition begins.
 
 2. Based on the voice data received, the AI menu recommendation system displays suggested menus.
 
@@ -132,13 +132,13 @@
 
 
 
-#### (2-2) Non-Elderly Users (Voice Recognition Order or Conventional Kiosk Touch Order)
+#### (2-2) Younger Users (Voice Recognition Order or Touch-screen Order)
 
-1. By default, users can use the typical touch ordering method.
+1. By default, users can use the typical tap-to-order method.
 
-2. Users can activate the AI menu recommendation feature using voice recognition by pressing the voice recognition button, as instructed by the guide message.
+2. Users can activate the AI menu recommendation feature using voice recognition by tapping the voice recognition button, as instructed by the guide message.
 
-3. Unlike the order process for elderly users, voice recognition does not start automatically; users can turn the voice recognition feature on or off as needed during the ordering process.
+3. Unlike the order process for older users, voice recognition does not start automatically; users can turn the voice recognition feature on or off as needed during the ordering process.
 
 
 
@@ -148,9 +148,9 @@
 
 #### (2-3) Assigning Order Numbers Post Payment
 
-   - This functionality is common across the stages 2-1 ~ 2-2.
+   - Both of the order process of older and younger user go through this process
 
-   - Order numbers are reset daily.
+   - Order numbers that are given to the customers are reset daily.
 
 
 <br>
@@ -166,7 +166,7 @@
 
   
 
-#### (2) Order Status Related (Pending Implementation)
+#### (2) Order Status Related (work in progress)
 
 
 
