@@ -224,6 +224,13 @@
             font-size: xxx-large;
             margin-top: 10px;
         }
+
+        .clearCartBtn {
+            background-color: #dc3545;
+            height: 120px;
+            width: 221px;
+            font-size: larger;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -256,6 +263,7 @@
 
         <div class="submit-container">
             <div id="totalPrice" class="total-price">총 가격: 0원</div>
+            <button id="clearCartBtn" class="clearCartBtn">전체삭제</button>
             <button id="submitOrderBtn" class="submitOrderBtn">결제하기</button>
         </div>
 
@@ -388,6 +396,12 @@
 
         updateCartDisplay();
     }
+
+    document.getElementById('clearCartBtn').addEventListener('click', function() {
+        cart = {}; // Clear the cart
+        updateCartDisplay(); // Update the UI to reflect the cleared cart
+});
+
 
 // Handle visibility of the arrow buttons
 
