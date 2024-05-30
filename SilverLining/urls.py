@@ -15,13 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+def dummy_favicon(request):
+    return HttpResponse(status=204)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('orders/', include('orders.urls')),
+    path('favicon.ico', dummy_favicon),
 ]
 
 if settings.DEBUG:

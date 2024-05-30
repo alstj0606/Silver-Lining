@@ -1,6 +1,6 @@
-
 from django.contrib import admin
 from .models import Hashtag, Menu
+
 
 # class CustomListFilterA(admin.SimpleListFilter):
 #     title = _("hashtag")
@@ -41,9 +41,9 @@ from .models import Hashtag, Menu
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    readonly_fields = ("store", "store_id")
-    list_display = ("food_name", "price", "get_hashtags")
-    search_fields = ("food_name", "price")
+    readonly_fields = ("store", "store_id")  # 읽기 전용 필드 설정
+    list_display = ("food_name", "price", "get_hashtags")  # 관리자 페이지 목록에 표시할 필드 설정
+    search_fields = ("food_name", "price")  # 검색 필드 설정
 
     # list_filter = ("hashtags",)
     # date_hierarchy = "created_at"
@@ -74,9 +74,9 @@ class MenuAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             list_filter = ("store_id",)
         else:
-                list_filter = [
-        ("hashtags", admin.RelatedOnlyFieldListFilter),
-    ]
+            list_filter = [
+                ("hashtags", admin.RelatedOnlyFieldListFilter),
+            ]
         return list_filter
 
     def get_hashtags(self, obj):
@@ -87,8 +87,9 @@ class MenuAdmin(admin.ModelAdmin):
 
 @admin.register(Hashtag)
 class HashtagAdmin(admin.ModelAdmin):
-    readonly_fields = ("hashtag_author",)
-    list_display = ("hashtag", "hashtag_author", "get_menus")
+    readonly_fields = ("hashtag_author",)  # 읽기 전용 필드 설정
+    list_display = ("hashtag", "hashtag_author", "get_menus")  # 관리자 페이지 목록에 표시할 필드 설정
+
     # list_filter = ("hashtag_author",)
 
     def save_model(self, request, obj, form, change):
@@ -100,7 +101,7 @@ class HashtagAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(hashtag_author=request.user)
-    
+
     def get_list_display(self, request):
         if request.user.is_superuser:
             list_display = ("hashtag", "hashtag_author", "get_menus")
@@ -112,14 +113,13 @@ class HashtagAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             list_filter = ("hashtag_author",)
         else:
-                list_filter = ()
+            list_filter = ()
         return list_filter
 
     def get_menus(self, obj):
         return ", ".join([menu.food_name for menu in obj.menu_items.all()])
 
     get_menus.short_description = "Menus"
-
 
 ##admin page내에서 filter
 ##admin계정 -> menu: store별로, hastag: hashtag_author별로

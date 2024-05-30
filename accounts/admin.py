@@ -7,9 +7,12 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'email', 'is_superuser', 'is_staff', 'store_name', 'tel', 'address', 'category'),
+            'fields': (
+            'username', 'password1', 'password2', 'email', 'is_superuser', 'is_staff', 'store_name', 'tel', 'address',
+            'category'),
         }),
     )
+
 
 # admin에 User 모델 등록
 admin.site.register(User, CustomUserAdmin)

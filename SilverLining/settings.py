@@ -39,16 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     ### install_app ###
-    'rest_framework',
+    'rest_framework',  # REST framework 설치
+    'modeltranslation',  # 다국어 지원을 위한 모듈
     ### custom_app ###
-    'accounts',
-    'menus',
-    'orders',
+    'accounts',  # 사용자 계정 관리 앱
+    'menus',  # 메뉴 관리 앱
+    'orders',  # 주문 관리 앱
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.middleware.locale.LocaleMiddleware",  # 다국어 지원을 위한 미들웨어
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,7 +63,7 @@ ROOT_URLCONF = 'SilverLining.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates'],  # 템플릿 디렉터리 설정
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,12 +83,12 @@ WSGI_APPLICATION = 'SilverLining.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
+        'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
     }
 }
 
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -109,13 +111,27 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko'  # 기본 언어 설정
+LANGUAGE_COOKIE_NAME = 'django_language'  # 언어 쿠키 이름
 
-TIME_ZONE = 'UTC'
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ko'  # 다국어 모델의 기본 언어 설정
 
-USE_I18N = True
+TIME_ZONE = 'UTC'  # 기본 타임존 설정
 
 USE_TZ = True
+USE_I18N = True
+USE_L10N = True
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',  # 번역 파일의 경로 설정
+]
+
+LANGUAGES = [
+    ('ko', 'Korean'),     # 한국어
+    ('en', 'English'),    # 영어
+    ('ja', 'Japanese'),   # 일본어
+    ('zh-hans', 'Chinese'),  # 중국어
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
