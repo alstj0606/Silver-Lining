@@ -423,13 +423,19 @@ function startSpeechRecognition() {
                     
                 })
                 .then(function (response) {
-                    const responseText = response.data.responseText;
-                    const recommended_menu = response.data.recommended_menu;
-                    console.log('서버 응답:', responseText);
-                    localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
-                    localStorage.setItem('customer_message', responseText);
-                    window.location.href = '/orders/elder_menu/';
-                    console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                    //const responseText = response.data.responseText;
+                    //const recommended_menu = response.data.recommended_menu;
+                    const result = response.data.result;
+                    console.log("result >>>>>>>", result);
+                    //console.log('서버 응답:', responseText);
+                    //localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                    //localStorage.setItem('customer_message', responseText);
+                    //window.location.href = '/orders/elder_menu/';
+                    //console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                    if (result == 1) {
+                    console.log("if문 탔는지 >>>>>>>>")
+                    triggerProceedToPay();
+                    }
                 })
                 .catch(function (error) {
                     console.error('에러:', error);
@@ -445,6 +451,12 @@ const redirectButton = document.getElementById('redirectButton');
         // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
         window.location.href = '/orders/menu/';
 })
+
+function triggerProceedToPay() {
+    console.log("triggerProceedToPay 탔는지 >>>>>>>")
+    // Option 1: Simulate a click event on the pay button
+    document.getElementById("submitOrderBtn").click();
+}
 
 </script>
 <script src="{% static 'js/cart.js' %}"></script>

@@ -58,7 +58,7 @@ def request_type(client, input_text, current_user):
 
     print("AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
     ai_response = completion.choices[0].message.content
-    print(ai_response)
+    print("\n\n ai response \n", ai_response)
     ## Input: 아메리카노 두 잔 넣어 줘
     ## Category: cart
     # category -> 결과값에 따라서 어느 ai 로 보낼건지: 
@@ -78,8 +78,40 @@ def request_type(client, input_text, current_user):
             category - menu -->
             category - pay -->
     """
-    return ai_response
 
+    inputText = ""
+
+    try:
+        for line in ai_response.split('\n'):
+            print()
+            line = line.strip()  # Remove whitespace from both ends
+            if line.startswith('Input:'):
+                inputText = line.split('Input: ')[1]
+                print("\n\n inputText:", inputText, "\n\n")
+            elif line.startswith('Category:'):
+                category = line.split('Category: ')[1]
+                print("\n\n Category :", category, "\n\n")
+
+    except IndexError:
+        recommended_menu = []
+    print("\n return 직전 >>>>>>", category, inputText, "\n")
+    return category, inputText
+
+
+def bot2(request, input_text, current_user):
+    client = OpenAI(api_key=settings.OPEN_API_KEY)
+
+    # Getting the recommended menus
+    recommended_menu = request_type(client, input_text, current_user)
+
+    # Generating the final response
+    customer_message = generate_final_response(client, recommended_menu, current_user)
+
+    return customer_message, recommended_menu
+
+
+
+#######################
 
 def get_recommended_menus(client, input_text, current_user):
     # 사용자의 카테고리 가져오기
