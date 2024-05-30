@@ -13,4 +13,5 @@ urlpatterns = [
     path('aibot/', views.AIbot.as_view(), name='aibot'),  # AI음성인식으로 답변 및 추천 메뉴 선정
     path('get_menus/', views.MenusAPI.as_view(), name='get_menus'),  # 데이터베이스에서 메뉴 목록을 조회 가져오는 API
     path('order_complete/<int:order_number>/', views.order_complete, name='order_complete'),  # 주문완료 후 주문 번호 알려주는 함수
+    path('orderbot/', views.orderbot.as_view(), name="orderbot"),  # 고령자 탬플릿 조건 인식 구분 봇
 ]
