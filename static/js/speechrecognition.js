@@ -99,6 +99,37 @@ transcription.addEventListener('input', function () {
     const text = transcription.textContent.trim();
 });
 
+function appendRecommendedMenuItems(container, items) {
+    items.forEach(menu => {
+        const menuItem = `
+            <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <p class="card-text text-muted">${menu.price}${won}</p>
+                </div>
+            </div>
+        `;
+        container.append(menuItem);
+    });
+}
+
+function appendMenuItems(container, items) {
+    items.forEach(menu => {
+        const menuItem = `
+            <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <p class="card-text text-muted">${menu.price}${won}</p>
+                </div>
+            </div>
+        `;
+        container.append(menuItem);
+    });
+}
+
+
 // 추천 메뉴를 가져와 화면에 업데이트합니다.
 function AIMenus(recommended_menu = "") {
     $.ajax({

@@ -21,10 +21,10 @@ function updateSelectedItemsList() {
                 <img src="${item.imgUrl}" alt="${name}">
                 <div>
                 <span>${name}</span>
-                <span>${item.price}원</span>
-                <span>${item.count}개</span>
+                <span>${item.price}${won}</span>
+                <span>${item.count}${count}</span>
                 </div>
-                <button class="btn btn-danger btn-lg" onclick="removeItem('${name}')">삭제</button>
+                <button class="btn btn-danger btn-lg" onclick="removeItem('${name}')"> ${del} </button>
             `;
         selectedItemsList.appendChild(itemElement);
         totalPrice += item.price * item.count;
