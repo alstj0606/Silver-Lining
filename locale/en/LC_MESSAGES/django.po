@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-30 16:13+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\orders\templates\orders\menu.html:349
+msgid "선택한 상품"
+msgstr "Selected Items"
+
+#: .\orders\templates\orders\menu.html:352
+#: .\orders\templates\orders\menu.html:420
+msgid "음성입력"
+msgstr "Voice Input"
+
+#: .\orders\templates\orders\menu.html:368
+msgid "총 금액"
+msgstr "Total Amount"
+
+#: .\orders\templates\orders\menu.html:368
+#: .\orders\templates\orders\menu.html:421
+msgid "원"
+msgstr "Won"
+
+# "Won" is the currency of South Korea
+#: .\orders\templates\orders\menu.html:371
+msgid "전체삭제"
+msgstr "Delete All"
+
+#: .\orders\templates\orders\menu.html:372
+msgid "결제하기"
+msgstr "Make Payment"
+
+#: .\orders\templates\orders\menu.html:379
+msgid "AI기능이 필요하시면 음성입력을 눌러주세요."
+msgstr "Press voice input if AI functionality is required."
+
+#: .\orders\templates\orders\menu.html:417
+msgid "input"
+msgstr "en-US"
+
+#: .\orders\templates\orders\menu.html:418
+msgid "output"
+msgstr "en-US"
+
+#: .\orders\templates\orders\menu.html:419
+msgid "음성입력중"
+msgstr "Inputting voice"
+

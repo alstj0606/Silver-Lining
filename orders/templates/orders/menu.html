@@ -1,4 +1,6 @@
 {% load static %}
+{% load static i18n %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -14,13 +16,6 @@
 
         .mb-4, .my-4 {
             margin-bottom: -2rem !important;
-        }
-
-        .h2, h2 {
-            font-size: 4rem;
-            background-color: #ef4040;
-            color: #f8f9fa;
-            padding: 20px;
         }
 
         .h3, h3 {
@@ -43,6 +38,7 @@
             flex-direction: column;
             transition: transform 0.2s;
             width: 280px;
+            height: 400px;
         }
 
         .menu-item img {
@@ -233,7 +229,7 @@
 
         /* 글자 크기를 2배로 키웁니다 */
         .menu-item.card.recommended .card-title {
-            font-size: 4rem;
+            font-size: 3.5rem;
         }
 
         /* 이미지 크기를 2배로 키웁니다 */
@@ -285,12 +281,30 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-<h2 class="text-center mb-4">Silver Lining</h2>
+<div class="flex flex-col items-center h-screen">
+    <div class="text-center mb-4 flex justify-between items-center" style="flex-direction: row;">
+        <div class="silver-lining" style="font-size: 4rem; background-color: #ef4040; color: #f8f9fa; padding: 20px;">
+            Silver Lining
+        </div>
+    </div>
+</div>
+
+<!-- 언어선택을 위한 버튼 -->
+<div id="language-buttons" class="flex" style="position: fixed;top: 35px;right: 60px;">
+    <button class="btn btn-light btn-lg" data-lang="ko">한국어</button>
+    <button class="btn btn-light btn-lg" data-lang="en">English</button>
+    <button class="btn btn-light btn-lg" data-lang="ja">日本語</button>
+    <button class="btn btn-light btn-lg" data-lang="zh-hans">中文</button>
+</div>
+
+
 <div class="container mt-5">
+    <!-- crsf토큰 인증을 위한 입력 -->
     <form id="speechForm">
         {% csrf_token %}
     </form>
 
+    <!-- AI 음성안내 메세시 표시해주는 부분 강아지 -->
     <div class="dog-helper">
 
         <div class="speech-bubble">
@@ -303,32 +317,44 @@
             </div>
 
         </div>
-
+        <!-- 댕댕이 -->
         <img style="width: 100px" src="{% static 'img/개.png' %}" alt="안내 도우미">
     </div>
+
+    <!-- 데이터 베이스에서 카테고리를 가져와서 반영해주는 곳 -->
     <div class="categories d-flex justify-content-center">
         <div class="btn-group" role="group" aria-label="카테고리">
         </div>
     </div>
+
+    <!-- AI추천음료 부분 -->
     <div style="display: flex; flex-direction: row; justify-content: center;">
+        <!-- 음성입력으로 추천을 해주는 음료가 있다면 해당 부분 생김 -->
         <div class="recommended-menu">
             <div class="button d-flex flex-wrap justify-content-center" id="recommendedContainer">
             </div>
         </div>
-        <!-- 메뉴를 표시할 컨테이너 -->
+        <!-- 추천음료로 메뉴를 표시할 컨테이너 -->
         <div class="menu">
             <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
             </div>
         </div>
     </div>
+
+    <!-- 페이지 네이션으로 버튼이 표시가 되는 부분 -->
     <div class="pagination justify-content-center" id="paginationButtons">
     </div>
-    <h3 class="text-center">선택한 상품 🛒
+
+    <!-- 장바구니가 담기는 부분을 표시 -->
+    <h3 class="text-center">{% trans "선택한 상품" %} 🛒
+        <!-- 음성입력 버튼 위치 -->
         <button class="gradient-btn" id="startButton">
-            <i class="fas fa-microphone-alt"></i> <!-- 이모티콘 추가 -->
-            <span>AI 음성입력</span>
+            <i class="fas fa-microphone-alt"></i>
+            <span>AI {% trans "음성입력" %}</span>
         </button>
     </h3>
+
+    <!-- 장바구니 길이가 초과 됐을때 위치 이동 버튼 -->
     <div class="selected-items mt-4 d-flex">
         <div id="selectedItemsList" class="flex-grow-1"></div>
         <div class="d-flex flex-column justify-content-center align-items-center">
@@ -340,35 +366,71 @@
             </button>
         </div>
     </div>
+
+    <!-- 장바구니에 담긴 총 금액을 표시 해주는 부분 -->
     <div class="total-price mt-3">
-        <h3 class="text-center">총 금액: <span id="totalPrice">0원</span></h3>
+        <h3 class="text-center">{% trans "총 금액" %}: <span id="totalPrice">0{% trans "원" %}</span></h3>
     </div>
+
+    <!-- 장바구니 내용물 삭제 하는 부분 -->
     <div class="actions text-center">
-        <button class="btn btn-danger btn-custom" onclick="clearItems()">전체삭제</button>
-        <button class="btn btn-success btn-custom" id="submitOrderBtn">결제하기</button>
+        <button class="btn btn-danger btn-custom" onclick="clearItems()">{% trans "전체삭제" %}</button>
+        <button class="btn btn-success btn-custom" id="submitOrderBtn">{% trans "결제하기" %}</button>
     </div>
 </div>
 
 <script>
+    // 페이지 로드 시 메뉴 업데이트 및 환영 메시지 출력
     window.addEventListener('load', function () {
-        updateMenus()
-        const welcomeMessage = "AI기능이 필요하시면 음성입력을 눌러주세요.";
-        {#시끄러워서 주석처리#}
-        speak(welcomeMessage);
+        updateMenus(); // 메뉴 업데이트
+        const welcomeMessage = "{% trans 'AI기능이 필요하시면 음성입력을 눌러주세요.' %}"; // 환영 메시지
+        speak(welcomeMessage); // 음성 메시지 출력
     });
 
+    // DOMContentLoaded 이벤트 리스너 등록
+    document.addEventListener("DOMContentLoaded", function () {
+        const languageButtons = document.querySelectorAll(".btn-light");
+        languageButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const lang = this.dataset.lang;
+                switchLanguage(lang); // 언어 변경 함수 호출
+            });
+        });
 
+        // 언어 변경 함수
+        function switchLanguage(lang) {
+            fetch(`/orders/switch-language/?lang=${lang}`) // 언어 변경 요청 보내기
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // 페이지 새로고침
+                    } else {
+                        console.error('Failed to switch language.'); // 언어 변경 실패 시 오류 메시지 출력
+                    }
+                })
+                .catch(error => console.error('Error:', error)); // 오류 발생 시 오류 메시지 출력
+        }
+    });
+
+    // CSRF 토큰 가져오는 함수
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
         if (csrfTokenElement) {
             return csrfTokenElement.value;
         } else {
-            console.error('CSRF 토큰을 찾을 수 없습니다.');
+            console.error('CSRF 토큰을 찾을 수 없습니다.'); // CSRF 토큰을 찾을 수 없을 때 오류 메시지 출력
             return null;
         }
     }
 
+    // 음성입력 및 출력에 사용되는 언어 코드 설정
+    const languageCodeIn = '{% trans 'input' %}'; // 음성입력 언어 선택
+    const languageCodeOut = '{% trans 'output' %}'; // 음성출력 언어 선택
+    const speechInputIn = "{% trans '음성입력중' %}"; // 음성입력 중 표시
+    const speechInput = "{% trans '음성입력' %}"; // 음성입력 표시
+    const won = "{% trans '원' %}"; // 원 표시
 </script>
+
+<!-- 외부 라이브러리 및 사용자 정의 스크립트 로드 -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="{% static 'js/selecteditems.js' %}"></script>

@@ -16,7 +16,8 @@ def get_user_menu_and_hashtags(user):
     return menu_list, hashtag_list
 
 
-def bot(request, input_text, current_user):
+def bot(input_text, current_user):
+    # OpenAI 클라이언트 생성
     client = OpenAI(api_key=settings.OPEN_API_KEY)
 
     # 사용자의 카테고리 가져오기
@@ -53,6 +54,7 @@ def bot(request, input_text, current_user):
         The recommended menu item must be chosen from the list of {menu}.
         """
 
+    # OpenAI API로 요청을 보냅니다.
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -63,13 +65,14 @@ def bot(request, input_text, current_user):
         ],
     )
 
+    # OpenAI 응답을 처리합니다.
     ai_response = completion.choices[0].message.content
     customer_message = ""
     recommended_menu = []
 
     try:
         for line in ai_response.split('\n'):
-            line = line.strip()  # Remove whitespace from both ends
+            line = line.strip()  # 양쪽 공백 제거
             if line.startswith('Message:'):
                 customer_message = line.split('Message: ')[1].strip()
             elif line.startswith('Recommended Menu:'):

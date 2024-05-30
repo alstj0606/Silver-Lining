@@ -10,12 +10,27 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from SilverLining.config import OPEN_API_KEY
-from menus.models import Menu, Hashtag
-from .bot import bot
-from .models import Order
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.utils.decorators import method_decorator
+from SilverLining.config import OPEN_API_KEY  # SilverLining 앱의 설정에서 OPEN_API_KEY를 가져옵니다.
+from menus.models import Menu, Hashtag  # Menu와 Hashtag 모델을 가져옵니다.
+from .bot import bot  # AI 봇 기능을 처리하는 함수를 가져옵니다.
+from .models import Order  # 주문 모델을 가져옵니다.
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 페이지네이션을 위한 라이브러리들을 가져옵니다.
+from django.utils.decorators import method_decorator  # 데코레이터를 사용하기 위한 라이브러리를 가져옵니다.
+from django.conf import settings  # Django 설정을 가져옵니다.
+from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
+
+
+# 언어를 변경하는 함수입니다.
+def switch_language(request):
+    lang = request.GET.get('lang', settings.LANGUAGE_CODE)
+    if lang:
+        # 언어 변경
+        translation.activate(lang)
+        # 언어 쿠키 설정
+        response = redirect(request.META.get('HTTP_REFERER', '/'))
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
+        return response
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 # 주문을 시작하는 페이지를 렌더링합니다.
@@ -28,6 +43,7 @@ def menu_view(request):
     return render(request, 'orders/menu.html')
 
 
+# 어르신을 위한 탬플릿 뷰
 def elder_start(request):
     return render(request, "orders/elder_start.html")
 
@@ -48,18 +64,17 @@ def order_complete(request, order_number):
 class AIbot(APIView):
     @staticmethod
     def get(request):
+        # GET 요청을 처리하는 메소드입니다.
+        # 추천 메뉴를 반환합니다.
         user = request.user
         recommended_menu = request.GET.get('recommended_menu', '[]')
-
         # JSON 문자열을 파싱하여 리스트로 변환
         recommended_menu = json.loads(recommended_menu)
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
-
-        # 추천 메뉴를 미리 정의합니다.
+        # 추천 메뉴를 가져옵니다.
         recommended_list = []
         for recommend in recommended_menu:
-            # recommended_list에 메뉴 객체 추가
             menu_items = user_menus.filter(food_name=recommend)
             for menu_item in menu_items:
                 recommended_list.append({
@@ -71,9 +86,11 @@ class AIbot(APIView):
 
     @staticmethod
     def post(request):
+        # POST 요청을 처리하는 메소드입니다.
+        # AI 봇에게 입력된 텍스트를 전달하고 응답을 받습니다.
         input_text = request.data.get('inputText')
-        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        message, recommended_menu = bot(request, input_text, current_user)
+        current_user = request.user
+        message, recommended_menu = bot(input_text, current_user)
         return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
 
@@ -90,7 +107,7 @@ class MenusAPI(APIView):
             menus = paginator.page(1)
         except EmptyPage:
             menus = paginator.page(paginator.num_pages)
-
+        # 메뉴를 JSON 형식으로 변환합니다.
         menu_list = [
             {
                 'food_name': menu.food_name,
@@ -98,7 +115,7 @@ class MenusAPI(APIView):
                 'img_url': menu.img.url if menu.img else ''
             } for menu in menus
         ]
-
+        # 전체 페이지 수를 가져옵니다.
         total_pages = paginator.num_pages
 
         return menu_list, total_pages
@@ -118,9 +135,12 @@ class MenusAPI(APIView):
         else:
             menus = user_menus
 
+        # 페이지 번호를 가져옵니다.
         page_number = request.GET.get('page')
+        # 페이징된 메뉴 목록과 전체 페이지 수를 가져옵니다.
         menu_list, total_pages = self.get_paginator(menus, page_number)
-        return Response({'menus': menu_list, 'page_count': total_pages, "hashtags": hashtags, "user_hashtags": user_hashtags})
+        return Response(
+            {'menus': menu_list, 'page_count': total_pages, "hashtags": hashtags, "user_hashtags": user_hashtags})
 
     # POST 요청에 대한 새 주문을 생성하고 주문 번호를 반환합니다.
     @method_decorator(csrf_exempt)
@@ -132,14 +152,17 @@ class MenusAPI(APIView):
             selected_items = data.get('items', [])
             total_price = data.get('total_price', 0)
 
+            # 오늘 날짜를 가져옵니다.
             today = datetime.now().date()
 
+            # 오늘 생성된 마지막 주문을 가져옵니다.
             last_order = Order.objects.filter(store=user, created_at__date=today).order_by('-id').first()
             if last_order:
                 order_number = last_order.order_number + 1
             else:
                 order_number = 1
 
+            # 새 주문을 생성합니다.
             new_order = Order.objects.create(
                 order_number=order_number,
                 order_menu=selected_items,
@@ -160,6 +183,7 @@ def face_recognition(request):
     if not cap.isOpened():
         raise Exception("Cannot open Webcam")
 
+    # 얼굴 인식을 위한 분류기를 로드합니다.
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
     # 프레임 읽기
@@ -168,15 +192,18 @@ def face_recognition(request):
 
         if not ret:
             raise Exception("Cannot read frame from webcam")
-
+        # 흑백 이미지로 변환합니다.
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # 얼굴을 감지합니다.
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if len(faces) > 0:
             break
 
+    # 웹캠을 닫습니다.
     cap.release()
 
+    # 이미지를 저장하고 base64로 변환합니다.
     image_path = "face.jpg"
     cv2.imwrite(image_path, frame)
 
@@ -185,6 +212,7 @@ def face_recognition(request):
 
     base64_image = f"data:image/jpeg;base64,{encoded_image}"
 
+    # OpenAI API에 요청합니다.
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {OPEN_API_KEY}"
@@ -220,6 +248,7 @@ def face_recognition(request):
         ],
         "max_tokens": 300
     }
+    # OpenAI API로 요청을 보냅니다.
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
     try:
@@ -229,8 +258,10 @@ def face_recognition(request):
     except FileNotFoundError:
         print(f"{image_path} 이미지를 찾을 수 없습니다.")
 
+    # OpenAI API에서 반환된 응답을 파싱합니다.
     ai_answer = response.json()
 
+    # 추정된 나이를 가져옵니다.
     age_message = ai_answer["choices"][0]['message']['content']
     age = age_message.split("Estimated Age: ")[1].strip()
     age_number = int(age)
