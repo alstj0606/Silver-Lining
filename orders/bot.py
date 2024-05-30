@@ -1,3 +1,4 @@
+
 from openai import OpenAI
 from django.conf import settings
 from menus.models import Menu, Hashtag

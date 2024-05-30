@@ -231,6 +231,20 @@
             width: 221px;
             font-size: larger;
         }
+
+        .mybtn {
+            width: 80%;
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        .redirectButton {
+            margin-bottom: 30px;
+            width: 180px;
+            height: 60px;
+            background-color: #bab6b6;
+            color: #FFF;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -239,6 +253,9 @@
 
 
 <body>
+    <div class="mybtn">
+        <button id="redirectButton" class="redirectButton">일반주문 하기</button>
+    </div>
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
 
@@ -549,6 +566,11 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
     });
 });
 
+const redirectButton = document.getElementById('redirectButton');
+    redirectButton.addEventListener('click', function() {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = '/orders/menu/';
+})
 </script>
 </body>
 
