@@ -12,6 +12,10 @@
             font-size: 2rem;
         }
 
+        .mb-4, .my-4 {
+            margin-bottom: -2rem !important;
+        }
+
         .h2, h2 {
             font-size: 4rem;
             background-color: #ef4040;
@@ -94,6 +98,11 @@
             flex-direction: row;
             margin: 5px 0;
             justify-content: space-between;
+        }
+
+        .btn-custom-large {
+            font-size: 20px;
+            padding: 15px 30px;
         }
 
         .btn-custom {
@@ -217,7 +226,7 @@
         }
 
         .menu-item.card.recommended {
-            width: 800px;
+            width: 630px;
             height: 826px;
             margin-bottom: 2rem;
         }
@@ -238,6 +247,37 @@
             transition: transform 0.3s ease; /* 부드러운 트랜지션을 추가합니다 */
         }
 
+        /* 그라디언트 효과 */
+        .gradient-btn {
+            background: linear-gradient(to right, #4e73df, #224abe); /* 그라디언트 배경색 설정 */
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: pulse 1s infinite; /* 애니메이션 효과 추가 */
+        }
+
+        .gradient-btn:hover {
+            transform: scale(1.05); /* 호버시 약간 커지는 효과 */
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+            animation: none; /* 호버시 애니메이션 중지 */
+        }
+
+        /* 애니메이션 효과 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
 
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -271,7 +311,7 @@
         <div class="btn-group" role="group" aria-label="카테고리">
         </div>
     </div>
-    <div style="display: flex; flex-direction: row;">
+    <div style="display: flex; flex-direction: row; justify-content: center;">
         <div class="recommended-menu">
             <div class="button d-flex flex-wrap justify-content-center" id="recommendedContainer">
             </div>
@@ -285,8 +325,9 @@
     <div class="pagination justify-content-center" id="paginationButtons">
     </div>
     <h3 class="text-center">선택한 상품 🛒
-        <button class="btn btn-primary btn-lg" id="startButton">
-            <span>AI음성입력</span>
+        <button class="gradient-btn" id="startButton">
+            <i class="fas fa-microphone-alt"></i> <!-- 이모티콘 추가 -->
+            <span>AI 음성입력</span>
         </button>
     </h3>
     <div class="selected-items mt-4 d-flex">
@@ -311,10 +352,9 @@
 
 <script>
     window.addEventListener('load', function () {
-        const hashtags = "";
-        updateMenus(hashtags)
-        const welcomeMessage = "AI 음성인식을 눌러주세요.";
-        // {#시끄러워서 주석처리#}
+        updateMenus()
+        const welcomeMessage = "AI기능이 필요하시면 음성입력을 눌러주세요.";
+        {#시끄러워서 주석처리#}
         speak(welcomeMessage);
     });
 

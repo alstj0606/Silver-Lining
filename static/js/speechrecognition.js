@@ -49,10 +49,10 @@ function startSpeechRecognition() {
         // 음성 인식 시작 시 스피너 표시
         recognition.onstart = function () {
             startButton.innerHTML = '<div style="display: flex; align-items: center;">' +
-                '<span>음성입력중</span>' +
-                '<span class="spinner-border" style="width: 3rem; height: 3rem; margin-left: 10px;" role="status">' +
+                '<span class="spinner-border" style="width: 2.5rem; height: 2.5rem; margin-left: 10px;" role="status">' +
                 '<span class="visually-hidden"></span>' +
                 '</span>' +
+                '<span>  음성입력중</span>' +
                 '</div>';
         };
 
@@ -77,7 +77,10 @@ function startSpeechRecognition() {
 
         // 음성 인식 종료 시 버튼 텍스트 복구 및 클릭 이벤트 리스너 추가
         recognition.onend = function () {
-            startButton.innerHTML = 'AI 음성인식';
+            startButton.innerHTML = `
+                <i class="fas fa-microphone-alt"></i> <!-- 이모티콘 추가 -->
+                <span>AI 음성입력</span>
+            `;
             startButton.addEventListener('click', startSpeechRecognition);
         };
 

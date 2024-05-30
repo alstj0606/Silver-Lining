@@ -125,7 +125,6 @@ def get_recommended_menus(client, input_text, current_user):
         It would be easier for you to consider hashtags when finding related menu.
         When there are more than one keyword that you take into account, you should prioritize the keyword that is related to the menu.
         For example, when the customer asks for 'iced coffee', you should consider the menu that is 'coffee', rather than 'iced' beverages.
-        """
 
     completion = client.chat.completions.create(
         model="gpt-4o",
