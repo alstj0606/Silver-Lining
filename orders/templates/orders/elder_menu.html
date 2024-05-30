@@ -1,13 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>추천 메뉴 및 장바구니</title>
     <style>
-
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -15,7 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #E6E6FA; /* Lavender */
+            background-color: #fff; /* Lavender */
             margin: 0;
         }
 
@@ -29,8 +27,10 @@
         }
 
         h1 {
-            font-size: 2rem;
-            color: #333;
+            font-size: 3rem;
+            background-color: #ef4040;
+            color: #f7f3f3;
+            
         }
 
         .recommendations {
@@ -41,7 +41,7 @@
         }
 
         .recommendation {
-            background-color: #FFE4E1; /* Light pink */
+            background-color: #f1eded;
             padding: 10px;
             border-radius: 10px;
             flex: 1;
@@ -56,44 +56,94 @@
         }
 
         .recommendation h2 {
-            font-size: 30px;
+            font-size: 44px;
             font-weight: bold;
         }
 
         .recommendation p {
-            font-size: 30px;
+            font-size: xxx-large;
             font-weight: bold;
             color: #313030;
         }
 
-
         .cart {
             margin-top: 30px;
-            background-color: #E1D6F7; /* light purple */
+            background-color: #fffebd;
             padding: 20px;
             border-radius: 10px;
+            position: relative; /* Added to handle absolute positioning of arrows */
+            max-height: 200px; /* Set a maximum height for the cart */
+            overflow-y: hidden; /* Hide overflow content */
+            box-sizing: border-box; /* Ensures padding is included in the element's width and height */
+            width: -webkit-fill-available;
+        }
+
+        #cartItems {
+            max-height: 150px; /* Adjust accordingly */
+            overflow-y: auto; /* Enable scrolling */
         }
 
         .cart-item {
-            margin: 10px 0;
-            font-size: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            font-size: 1rem;
         }
 
-        .total-price {
-            font-size: 1.75rem;
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .cart-item .remove {
+            color: red;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+        }
+
+        .total-price, .submit-container {
+            font-size: 2rem;
             font-weight: bold;
             margin-top: 20px;
+            text-align: center;
         }
 
         button {
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             padding: 10px 20px;
             color: #FFF;
-            background-color: #FF69B4; /* Hot pink */
+            background-color: #007bff;
             border: none;
             border-radius: 10px;
             margin-top: 20px;
+        }
+
+        .cartarrowContainer{
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+
+        .cart-item {
+            font-size: x-large;
+            font-weight: bold;
+        }
+
+        .arrowContainer{
+
+        }
+
+        .up-arrow {
+            top: 10px; /* Position above the cart */
+        }
+
+        .down-arrow {
+            bottom: 10px; /* Position below the cart */
         }
 
         .popup-overlay {
@@ -115,71 +165,132 @@
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 80%;
-            max-width: 600px;
+            /* width: 80%;
+            max-width: 600px; */
+            width: 700px;
+            height: 800px;
         }
 
         .popup-container h2 {
-            font-size: 1.5rem;
+            font-size: 55px;
             margin: 10px 0;
         }
 
         .popup-container img {
-            max-width: 100%;
-            height: auto;
+            max-width: 300px;
+            height: 380px;
         }
-
 
         .popup-container .menu-image img {
-            max-width: 75%; /* Adjust the size as desired */
-            height: auto;
-        
+            max-width: 300px;
+            height: 380px;
         }
+
         .popup-container p {
             font-size: 1.25rem;
             color: #555;
         }
 
         .popup-container .price {
-            font-size: 40px;
+            font-size: 60px;
             font-weight: bold;
             color: #333;
+            margin-top: 15px;
+            margin-bottom: 10px;
         }
-
+    
         .popup-container .name {
-            font-size: 40px;
-            margin-top: 10px;
+            font-size: 60px;
+            margin-top: 20px;
             font-weight: bold;
             color: #333;
         }
 
+        .submitOrderBtn {
+            background-color: #28a745;
+            height: 120px;
+            width: 221px;
+            font-size: larger;
+        }
 
+        .voiceRestart {
+            height: 120px;
+            width: 250px;
+            font-size: xx-large;
+        }
+
+        .closePopup {
+            width: 170px;
+            height: 100px;
+            font-size: xxx-large;
+            margin-top: 10px;
+        }
+
+        .clearCartBtn {
+            background-color: #dc3545;
+            height: 120px;
+            width: 221px;
+            font-size: larger;
+        }
+
+        .mybtn {
+            width: 80%;
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        .redirectButton {
+            margin-bottom: 30px;
+            width: 180px;
+            height: 60px;
+            background-color: #bab6b6;
+            color: #FFF;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 </head>
 
+
+
 <body>
+    <div class="mybtn">
+        <button id="redirectButton" class="redirectButton">일반주문 하기</button>
+    </div>
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
+
         <div>
-            <button id="voiceRestart">음성인식 버튼</button>
+            <button id="voiceRestart" class="voiceRestart">음성인식 버튼</button>
         </div>
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
         </div>
-        <div class="cart">
-            <div id="cartItems" class="cart-item">
-                <!-- Cart items will be populated here dynamically -->
+
+        <div class="cartarrowContainer">        
+            <div id="cartContainer" class="cart">
+                <div id="cartItems">
+                    <!-- Cart items will be populated here dynamically -->
+                </div>
             </div>
-            <div id="totalPrice" class="total-price">총 가격: ₩0</div>
-            <button id="submitOrderBtn">결제하기</button>
+            <div class="arrowContainer">
+                <button class="arrow up-arrow" style="display: none;">▲</button>
+                <button class="arrow down-arrow" style="display: none;">▼</button>
+            </div>
         </div>
+
+        <div class="submit-container">
+            <div id="totalPrice" class="total-price">총 가격: 0원</div>
+            <button id="clearCartBtn" class="clearCartBtn">전체삭제</button>
+            <button id="submitOrderBtn" class="submitOrderBtn">결제하기</button>
+        </div>
+
+
+
         <form id="speechForm">
             {% csrf_token %}
         </form>
     </div>
-
 
     <!-- Pop-up for best recommendation -->
     <div class="popup-overlay" id="popup-overlay">
@@ -189,87 +300,84 @@
                 <img src="" alt="메뉴 이미지" id="popup-image"/>
             </div>
             <h2 class="name" id="popup-name">메뉴 이름</h2>
-            <p class="price" id="popup-price">₩0</p>
-            <button id="closePopup">닫기</button>
+            <p class="price" id="popup-price">0원</p>
+            <button id="closePopup" class="closePopup">닫기</button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filteredHashtags = localStorage.getItem('filteredHashtags');
-            const responseText = localStorage.getItem('responseText');
-            const popupOverlay = document.getElementById('popup-overlay');
-            const popupImage = document.getElementById('popup-image');
-            const popupName = document.getElementById('popup-name');
-            const popupPrice = document.getElementById('popup-price');
-            // const closePopup = document.getElementById('closePopup');
-            console.log("filteredHashtags>>>>>>>>>>", filteredHashtags)
-            console.log("responseText>>>>>>>>>>", responseText)
 
-            // Function to update the menu based on hashtags
-            axios.get('/orders/get_menus/', { params: { hashtags: filteredHashtags } })
-                .then(response => {
-                    const menus = response.data.menus.slice(0, 3);
-                    const recommendations = document.getElementById('recommendations');
-                    recommendations.innerHTML = '';
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-                    menus.forEach((menu, index) => {
-            const menuItem = `
-                <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-                    <h2>${menu.food_name}</h2>
-                    <div class="menu-image">
-                        <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const recommended_menu_string = localStorage.getItem('recommended_menu');
+        const recommended_menu = JSON.parse(recommended_menu_string);
+        const responseText = localStorage.getItem('customer_message');
+        const popupOverlay = document.getElementById('popup-overlay');
+        const popupContainer = document.getElementById('popup-container');
+        const popupImage = document.getElementById('popup-image');
+        const popupName = document.getElementById('popup-name');
+        const popupPrice = document.getElementById('popup-price');
+        const closePopup = document.getElementById('closePopup');
+
+        // Function to update the menu based on hashtags
+        // Function to update the menu based on recommended_menu_string
+
+    axios.get('/orders/orderbot/', { params: { recommended_menu: recommended_menu_string } })
+        .then(response => {
+            const menuData = response.data.recommends; // assuming your API returns menus as an array
+            //const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = '';
+
+            menuData.forEach((menu, index) => {
+                const menuItem = `
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                        <h2>${menu.food_name}</h2>
+                        <div class="menu-image">
+                            <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
+                        </div>
+                        <p>${menu.price}원</p>
                     </div>
-                    <p>₩${menu.price}</p>
-                </div>
-            `;
+                `;
             
-            if (index == 0) {
-                popupImage.src = menu.img_url;
-                popupName.textContent = menu.food_name;
-                popupPrice.textContent = `${menu.price}원`;
-                popupOverlay.style.display = 'flex';
-                closePopup.style.display = 'inline';
-            }
+                if (index === 0) {
+                    // Populating the popup with the first recommended menu
+                    popupImage.src = menu.img_url;
+                    popupName.textContent = menu.food_name;
+                    popupPrice.textContent = `${menu.price}원`;
+                    popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
+                    popupOverlay.style.display = 'flex';
+                } else {
+                    // Inserting menu item into recommendations container
+                    recommendations.insertAdjacentHTML('beforeend', menuItem);
+                }
+            });
 
-            recommendations.insertAdjacentHTML('beforeend', menuItem);
+            closePopup.addEventListener("click", function(event) {
+                event.stopPropagation(); // Stop event from bubbling up
+                popupOverlay.style.display = "none"; // Hide the popup
+            });
+        })
+        .catch(error => {
+            console.error('메뉴 업데이트 중 오류 발생:', error);
+        });
 
-        });
-    })
-    .catch(error => {
-        console.error('메뉴 업데이트 중 오류 발생:', error);
-    });
-                        closePopup.addEventListener("click", function() {
-            popupOverlay.style.display = "none"; // Hide the popup
-        });
-            
         if (responseText) {
+            console.log("responseText 탔는지 >>>>>>>>>", responseText)
             speak(responseText);
-            }
+        }
         });
 
+    
 
-        function speak(text) {
-            const synth = window.speechSynthesis;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ko-KR';
-            synth.speak(utterance);
-        }
+    function speak(text) {
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    synth.speak(utterance);
+}
 
-        function addItem(name, price) {
-            // Logic to add the item to the cart
-            let cartItems = document.getElementById('cartItems');
-            let totalPrice = document.getElementById('totalPrice');
-            let currentTotal = parseInt(totalPrice.textContent.replace('총 가격: ₩', ''), 10) || 0;
-
-            cartItems.innerHTML += `<div class="cart-item">${name} - ₩${price}</div>`;
-            currentTotal += price;
-            totalPrice.textContent = `총 가격: ₩${currentTotal}`;
-        }
-
-    // 음성인식 재시작
-    document.getElementById('voiceRestart').addEventListener('click', speak_again);
+    document.getElementById('voiceRestart').addEventListener('click', speakAgain);
 
 
     function getCsrfToken() {
@@ -277,103 +385,81 @@
         console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
-    
 
-    
-    function speak_again(text) {
-            const synth = window.speechSynthesis;
-            text = "새로운 음성입력을 주세요"
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ko-KR';
-            synth.speak(utterance);
-            startSpeechRecognition();
-        }
-
-
-    function startSpeechRecognition() {
-        console.log(">>>>>>>>>>>>> startSpeechRecognition")
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("음성 인식이 지원되지 않는 브라우저입니다.");
-            console.log(">>>>>>>>>>>>>>>> if 탔는지")
-        } else {
-            console.log(">>>>>>>>>> else 탔는지")
-            const recognition = new webkitSpeechRecognition();
-            console.log(">>>>>>>> recognition 탔는지")
-            recognition.lang = 'ko-KR';
-            recognition.start();
-            console.log(">>>>>>>>>> start() 탔는지")
-            recognition.onresult = function (event) {
-                const transcript = event.results[0][0].transcript;
-                console.log("transcript>>>>>>>>>>>>>", transcript);
-                const csrfToken = getCsrfToken();
-                console.log("csrf 탔는지 >>>>>>>>>")
-                        console.log("csrfToken>>>>>>>>>", csrfToken)
-                        
-
-                axios.post('/orders/aibot/', { inputText: transcript },
-                    {
-                        headers: {
-                            'X-CSRFToken': csrfToken
-                        }
-                        
-                    })
-                    .then(function (response) {
-                        const responseText = response.data.responseText;
-                        const hashtags = response.data.hashtags;
-                        console.log('서버 응답:', responseText);
-                        localStorage.setItem('filteredHashtags', hashtags);
-                        localStorage.setItem('responseText', responseText);
-                        window.location.href = '/orders/elder_menu/';
-                        console.log("중요부분 타고 있니>>>>>>>>>>>>")
-                    })
-                    .catch(function (error) {
-                        console.error('에러:', error);
-                    });
-            };
-            console.log("recognition직전>>>>>>>>>>>>>")
-
-        }
+    function speakAgain(text) {
+        const synth = window.speechSynthesis;
+        text = "새로운 음성입력을 주세요"
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        synth.speak(utterance);
+        startSpeechRecognition();
     }
 
-    const selectedItems = {};
+function startSpeechRecognition() {
+    console.log(">>>>>>>>>>>>> startSpeechRecognition")
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("음성 인식이 지원되지 않는 브라우저입니다.");
+        console.log(">>>>>>>>>>>>>>>> if 탔는지")
+    } else {
+        console.log(">>>>>>>>>> else 탔는지")
+        const recognition = new webkitSpeechRecognition();
+        console.log(">>>>>>>> recognition 탔는지")
+        recognition.lang = 'ko-KR';
+        recognition.start();
+        console.log(">>>>>>>>>> start() 탔는지")
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            console.log("transcript>>>>>>>>>>>>>", transcript);
+            const csrfToken = getCsrfToken();
+            console.log("csrf 탔는지 >>>>>>>>>")
+                    console.log("csrfToken>>>>>>>>>", csrfToken)
+                    
 
-    document.getElementById('submitOrderBtn').addEventListener('click', function () {
-        const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
-            return {name: name, count: item.count};
-        });
+            axios.post('/orders/orderbot/', { inputText: transcript },
+                {
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                    
+                })
+                .then(function (response) {
+                    //const responseText = response.data.responseText;
+                    //const recommended_menu = response.data.recommended_menu;
+                    const result = response.data.result;
+                    console.log("result >>>>>>>", result);
+                    //console.log('서버 응답:', responseText);
+                    //localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                    //localStorage.setItem('customer_message', responseText);
+                    //window.location.href = '/orders/elder_menu/';
+                    //console.log("중요부분 타고 있니>>>>>>>>>>>>")
+                    if (result == 1) {
+                    console.log("if문 탔는지 >>>>>>>>")
+                    triggerProceedToPay();
+                    }
+                })
+                .catch(function (error) {
+                    console.error('에러:', error);
+                });
+        };
+        console.log("recognition직전>>>>>>>>>>>>>")
 
-        // Retrieve the total price directly from the DOM
-        let totalPriceElement = document.getElementById('totalPrice');
-        let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ₩', ''), 10) || 0;
-    
-        // 요청 데이터를 JSON 문자열로 변환하여 전송
-        $.ajax({
-            url: '/orders/get_menus/',
-            cache: false,
-            dataType: 'json',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({items: selectedItemsArray, total_price: currentTotal}),
-            beforeSend: function (xhr) {
-                const csrfToken = getCsrfToken();
-                if (csrfToken) {
-                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
-                } else {
-                    console.error('CSRF 토큰이 설정되지 않았습니다.');
-                    return false;
-                }
-            },
-            success: function (data) {
-                console.log('주문이 성공적으로 처리되었습니다.');
-                window.location.href = '/orders/order_complete/' + data.order_number + '/';
-            },
-            error: function (error) {
-                console.error('주문 처리 중 오류가 발생했습니다:', error);
-            }
-        });
-    });
+    }
+}
 
-    </script>
+const redirectButton = document.getElementById('redirectButton');
+    redirectButton.addEventListener('click', function() {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = '/orders/menu/';
+})
+
+function triggerProceedToPay() {
+    console.log("triggerProceedToPay 탔는지 >>>>>>>")
+    // Option 1: Simulate a click event on the pay button
+    document.getElementById("submitOrderBtn").click();
+}
+
+</script>
+<script src="{% static 'js/cart.js' %}"></script>
 </body>
 
 </html>

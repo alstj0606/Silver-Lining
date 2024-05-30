@@ -17,6 +17,8 @@ from .models import Order
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.decorators import method_decorator
 
+from .orderbot import request_type
+
 
 # 주문을 시작하는 페이지를 렌더링합니다.
 def start_order(request):
@@ -247,3 +249,65 @@ class elderMenuAPI(APIView):
 
     def post():
         pass
+
+
+class orderbot(APIView):
+    @staticmethod
+    def get(request):
+        user = request.user
+        recommended_menu = request.GET.get('recommended_menu', '[]')
+
+        # JSON 문자열을 파싱하여 리스트로 변환
+        recommended_menu = json.loads(recommended_menu)
+        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        user_menus = Menu.objects.filter(store=user)
+
+        # 추천 메뉴를 미리 정의합니다.
+        recommended_list = []
+        for recommend in recommended_menu:
+            # recommended_list에 메뉴 객체 추가
+            menu_items = user_menus.filter(food_name=recommend)
+            for menu_item in menu_items:
+                recommended_list.append({
+                    "food_name": menu_item.food_name,
+                    "price": menu_item.price,
+                    "img_url": menu_item.img.url
+                })
+        return Response({'recommends': recommended_list})
+
+    @staticmethod
+    def post(request):
+        result = 0
+        input_text = request.data.get('inputText')
+        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
+        category, inputText = request_type(request, input_text, current_user)
+        print("\n\n category >>>>>> \n\n", category)
+        if category == "cart":
+            result = cart(inputText)
+            ## orderbot.py 가서 맥락 파악 필요 (메뉴, 개수, 행동) / 정확도를 위해서 recommended_menu 도 필요
+            ## js로 넘어가서 해당 메뉴를 몇 번 클릭해서 더하거나 몇 개 빼주거나
+        elif category == "menu":
+            result = 2
+            ## orderbot.py 안 가도 됨
+            ## js로 넘어가서 음성 재인식 버튼 눌러주는 거 (speechRecognition() ~~~ 해서 메뉴추천)
+        elif category =="pay":
+            print("\n\n elif pay 들어왔는지 \n\n")
+            result = 1
+            ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서 
+            ## orderbot.py 안 가도 됨
+            ## js로 넘어가서 결제하기 버튼 눌러주기
+        return Response({'result': result})
+        
+
+def cart():
+    pass
+
+
+# def sending_post(axios.post):
+#     data = request.data
+#     if type == menu:
+#         bot()
+#     elif type == cart:
+#         function()
+#     else type == pay:
+#         pay()

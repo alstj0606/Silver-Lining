@@ -11,36 +11,43 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #D3C4FF;
+            background-color: #f9f9f9;
             margin: 0;
         }
 
         .container {
+            width: 800px;
+            height: 450px;
             text-align: center;
             padding: 20px;
-            background-color: #E6E6FA;
+            background-color:#fffebd;
             /* Lavender */
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: xxx-large;
             color: #333;
+        }
+
+        p {
+            font-size: xx-large;
+            margin-top: 40px;
         }
 
         .processing {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 40px;
         }
 
         .dot {
             height: 20px;
             width: 20px;
             margin: 0 5px;
-            background-color: #99FF99;
+            background-color:#007bff;
             border-radius: 50%;
             display: inline-block;
             animation: bounce 1.5s infinite;
@@ -66,28 +73,76 @@
                 transform: translateY(-15px);
             }
         }
+
+        .startButton {
+            margin-top: 10px;
+            margin-bottom: 0px;
+            margin-right: 10px;
+            width: 200px;
+            height: 70px;
+            font-size: larger;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border-radius: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+
+        .redirectButton {
+            margin-top: 10px;
+            margin-bottom: 0px;
+            width: 200px;
+            height: 70px;
+            font-size: larger;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border-radius: 15px;
+        }
+        .mybtn {
+            width: 840px;
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        .redirectButton {
+            margin-bottom: 30px;
+            width: 180px;
+            height: 60px;
+            background-color: #bab6b6;
+            color: #FFF;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>안녕하세요, 어떤 메뉴로 주문하시겠습니까?</h1>
-        <div class="processing">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+    <div class="container-wrapper">
+        <div class="mybtn">
+            <button id="redirectButton" class="redirectButton">일반주문 하기</button>
         </div>
-        <div>
-            <form id="speechForm">
-                {% csrf_token %}
-            </form>
-            <p id="transcription"></p>
+        <div class="container">
+            <h1>안녕하세요</h1>
+            <h1>어떤 메뉴로 주문하시겠습니까?</h1>
+            <div class="processing">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div>
+                <form id="speechForm">
+                    {% csrf_token %}
+                </form>
+                <p id="transcription"></p>
+            </div>
+            <p>음성 인식 중 ....</p>
+            <button id="startButton" class="startButton hidden"></button>
         </div>
-        <p>음성 인식 중 ....</p>
-        <button id="startButton">버튼</button>
     </div>
-
+    
+    
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
+    
     <script>
         window.addEventListener('load', function () {
             console.log(">>>>>>>>>>>>> 실행");
@@ -100,32 +155,29 @@
         });
 
         const startButton = document.getElementById('startButton');
+        const redirectButton = document.getElementById('redirectButton');
         const transcription = document.getElementById('transcription');
 
-        function getCsrfToken() {
-            const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            return csrfTokenElement ? csrfTokenElement.value : null;
-        }
 
+
+        
         function requestPermissions() {
             return new Promise((resolve, reject) => {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                    .then(stream => {
-                        console.log('마이크 사용 권한이 허용되었습니다.');
-                        resolve();
-                    })
-                    .catch(error => {
-                        console.error('마이크 사용 권한을 얻지 못했습니다:', error);
-                        reject(error);
-                    });
+                .then(stream => {
+                    console.log('마이크 사용 권한이 허용되었습니다.');
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('마이크 사용 권한을 얻지 못했습니다:', error);
+                    reject(error);
+                });
             });
         }
-
+        
         function speak(text, callback) {
-            console.log(">>>>>>>>> speak 실행");
             const synth = window.speechSynthesis;
             const utterance = new SpeechSynthesisUtterance(text);
-            console.log(">>>>>>>>>> utterance", utterance);
             utterance.lang = 'ko-KR';
             utterance.onend = function () {
                 if (callback) {
@@ -133,7 +185,11 @@
                 }
             };
             synth.speak(utterance);
-            console.log(">>>>>>>> speak 끝 <<<<<<<<<<<");
+        }
+        
+        function getCsrfToken() {
+            const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfTokenElement ? csrfTokenElement.value : null;
         }
 
         function startSpeechRecognition() {
@@ -163,29 +219,37 @@
                         })
                         .then(function (response) {
                             const responseText = response.data.responseText;
-                            const hashtags = response.data.hashtags;
+                            const recommended_menu = response.data.recommended_menu;
                             console.log('서버 응답:', responseText);
-                            localStorage.setItem('filteredHashtags', hashtags);
-                            localStorage.setItem('responseText', responseText);
+                            localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                            localStorage.setItem('customer_message', responseText);
                             window.location.href = '/orders/elder_menu/';
-                            console.log("중요부분 타고 있니>>>>>>>>>>>>");
+                            console.log("customer_message>>>>>>>", responseText);
+                            console.log("recommended_menu>>>>>>>", recommended_menu);
                         })
                         .catch(function (error) {
                             console.error('에러:', error);
                         });
                 };
-                console.log("recognition직전>>>>>>>>>>>>>");
                 recognition.onend = function () {
                     startButton.textContent = '음성 입력 다시 시작';
+                    startButton.classList.remove('hidden');
                     console.log("recognition onend 탔니>>>>>>>>>>");
                     console.log("textcontent>>>>>>>", textContent);
                 };
             }
         }
 
-        // window.onload = function () {
-        //     speak("안녕하세요, 어떤 메뉴를 주문하시겠습니까?", startSpeechRecognition);
-        // };
+        
+        startButton.addEventListener('click', function() {
+        // speak 함수 실행 (특정 메시지를 발음하도록 수정 가능)
+        speak("새로운 음성 입력을 받을 수 있습니다. 어떤 메뉴를 원하세요?", startSpeechRecognition);
+        });
+        redirectButton.addEventListener('click', function() {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = '/orders/menu/';
+});
+
     </script>
 </body>
 </html>
