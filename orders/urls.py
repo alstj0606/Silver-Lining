@@ -12,4 +12,5 @@ urlpatterns = [
     path('face_recognition/', views.face_recognition, name='face_recognition'),
     path('elder_start/', views.elder_start, name='elder_start'),
     path('elder_menu/', views.elder_menu, name='elder_menu'),
+    path('orderbot/', views.orderbot.as_view(), name="orderbot"),
 ]
