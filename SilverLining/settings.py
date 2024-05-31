@@ -15,6 +15,7 @@ from pathlib import Path
 from . import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR 설정
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -27,7 +28,7 @@ OPEN_API_KEY = config.OPEN_API_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -83,8 +84,12 @@ WSGI_APPLICATION = 'SilverLining.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
-        'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydatabase',
+        'USER': 'myuser',
+        'PASSWORD': 'mypassword',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -127,9 +132,9 @@ LOCALE_PATHS = [
 ]
 
 LANGUAGES = [
-    ('ko', 'Korean'),     # 한국어
-    ('en', 'English'),    # 영어
-    ('ja', 'Japanese'),   # 일본어
+    ('ko', 'Korean'),  # 한국어
+    ('en', 'English'),  # 영어
+    ('ja', 'Japanese'),  # 일본어
     ('zh-hans', 'Chinese'),  # 중국어
 ]
 
