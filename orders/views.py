@@ -18,7 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 페�
 from django.utils.decorators import method_decorator  # 데코레이터를 사용하기 위한 라이브러리를 가져옵니다.
 from django.conf import settings  # Django 설정을 가져옵니다.
 from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
-
+from django.http import JsonResponse
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -92,7 +92,7 @@ class AIbot(APIView):
         # AI 봇에게 입력된 텍스트를 전달하고 응답을 받습니다.
         input_text = request.data.get('inputText')
         current_user = request.user
-        message, recommended_menu = bot(input_text, current_user)
+        message, recommended_menu = bot(request, input_text, current_user)
         return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
 
@@ -287,9 +287,11 @@ class orderbot(APIView):
     def get(request):
         user = request.user
         recommended_menu = request.GET.get('recommended_menu', '[]')
-
+        print("\n\n params가 string이 붙었을 때:")
+        print("\n\n orderbot의 recommended_menu", recommended_menu)
         # JSON 문자열을 파싱하여 리스트로 변환
         recommended_menu = json.loads(recommended_menu)
+        print("\n\n recommended_menu 파싱 이후", recommended_menu)
         # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
 
@@ -304,6 +306,7 @@ class orderbot(APIView):
                     "price": menu_item.price,
                     "img_url": menu_item.img.url
                 })
+            print("\n\n orderbot의 recommended_list>>>>>>>>>>", recommended_list)
         return Response({'recommends': recommended_list})
 
     @staticmethod
@@ -313,12 +316,19 @@ class orderbot(APIView):
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
         category, inputText = request_type(request, input_text, current_user)
         print("\n\n category >>>>>> \n\n", category)
+
         if category == "cart":
             result = cart(inputText)
             ## orderbot.py 가서 맥락 파악 필요 (메뉴, 개수, 행동) / 정확도를 위해서 recommended_menu 도 필요
             ## js로 넘어가서 해당 메뉴를 몇 번 클릭해서 더하거나 몇 개 빼주거나
         elif category == "menu":
+            message, recommended_menu = bot(request, input_text, current_user)
             result = 2
+            print("message>>>>>>>>", message)
+            print("recommended_menu>>>>>>>>", recommended_menu)
+            print("result>>>>>>>>", result)
+            return Response({'responseText': message, 'recommended_menu': recommended_menu})
+            # return JsonResponse({'responseText': message, 'recommended_menu': recommended_menu})
             ## orderbot.py 안 가도 됨
             ## js로 넘어가서 음성 재인식 버튼 눌러주는 거 (speechRecognition() ~~~ 해서 메뉴추천)
         elif category =="pay":
@@ -327,6 +337,7 @@ class orderbot(APIView):
             ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서 
             ## orderbot.py 안 가도 됨
             ## js로 넘어가서 결제하기 버튼 눌러주기
+
         return Response({'result': result})
         
 
