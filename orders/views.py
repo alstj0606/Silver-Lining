@@ -32,6 +32,7 @@ def switch_language(request):
         return response
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+
 from .orderbot import request_type
 
 
@@ -274,11 +275,12 @@ def face_recognition(request):
 
     return redirect("orders:menu")
 
+
 class elderMenuAPI(APIView):
-    def get():
+    def get(self, request):
         pass
 
-    def post():
+    def post(self, request):
         pass
 
 
@@ -321,18 +323,17 @@ class orderbot(APIView):
             result = 2
             ## orderbot.py 안 가도 됨
             ## js로 넘어가서 음성 재인식 버튼 눌러주는 거 (speechRecognition() ~~~ 해서 메뉴추천)
-        elif category =="pay":
+        elif category == "pay":
             print("\n\n elif pay 들어왔는지 \n\n")
             result = 1
             ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서 
             ## orderbot.py 안 가도 됨
             ## js로 넘어가서 결제하기 버튼 눌러주기
         return Response({'result': result})
-        
 
-def cart():
+
+def cart(inputText):
     pass
-
 
 # def sending_post(axios.post):
 #     data = request.data

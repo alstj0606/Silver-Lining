@@ -275,6 +275,13 @@
             }
         }
 
+        .btn-lang {
+            padding: .5rem 1rem;
+            font-size: 1rem;
+            line-height: 1.8;
+            border-radius: .3rem;
+            width: 130px;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -291,11 +298,12 @@
 </div>
 
 <!-- 언어선택을 위한 버튼 -->
-<div id="language-buttons" class="flex" style="position: fixed;top: 35px;right: 60px;">
-    <button class="btn btn-light btn-lg" data-lang="ko">한국어</button>
-    <button class="btn btn-light btn-lg" data-lang="en">English</button>
-    <button class="btn btn-light btn-lg" data-lang="ja">日本語</button>
-    <button class="btn btn-light btn-lg" data-lang="zh-hans">中文</button>
+<div id="language-buttons" class="flex" style="position: fixed;top: 10px;right: 60px;">
+    <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
+    <button class="btn btn-light btn-lang" data-lang="en">English</button>
+    <br>
+    <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
+    <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
 </div>
 
 
