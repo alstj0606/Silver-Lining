@@ -18,9 +18,9 @@ def get_user_menu_and_hashtags(user):
 
 ### 요청을 파악해야 함
 
-def request_type(client, input_text, current_user):
-    print("\n\n\n request_type 진입 \n\n\n")
-    print("\n\n input text \n\n", input_text)
+def request_type(client, input_text, recommended_menu, current_user):
+    print("\n\n request_type의 input text \n\n", input_text)
+    print("\n\n request_type()으로 recommended_menu가 잘 들어오는지 >>>>", recommended_menu)
     # 사용자의 카테고리 가져오기
     category = current_user.category
 
@@ -40,10 +40,8 @@ def request_type(client, input_text, current_user):
         """
 
     system_output = f"""
-        Choose the input text type from the three categories I suggest: "menu", "cart", "pay".
+        Choose the input text type from the three types I suggest: "menu", "cart", "pay".
         You should also include the input_text in the format of Input: input_text.
-        If the category is cart, extract the menu, requested number of menus, and the performance to proceed with the cart such as adding, editing, or deleting.
-        For the cart, response should include category, input text and the list of three options I suggested above.
         """
 
     client = OpenAI(api_key=settings.OPEN_API_KEY)
@@ -56,9 +54,9 @@ def request_type(client, input_text, current_user):
         ],
     )
 
-    print("AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
+    print("\n\n request_type의 AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
     ai_response = completion.choices[0].message.content
-    print("\n\n ai response \n", ai_response)
+    print("\n\n ai response에서 필요한 부분만 분리 >>>>>>>", ai_response)
     ## Input: 아메리카노 두 잔 넣어 줘
     ## Category: cart
     # category -> 결과값에 따라서 어느 ai 로 보낼건지: 
@@ -87,27 +85,14 @@ def request_type(client, input_text, current_user):
             line = line.strip()  # Remove whitespace from both ends
             if line.startswith('Input:'):
                 inputText = line.split('Input: ')[1]
-                print("\n\n inputText:", inputText, "\n\n")
-            elif line.startswith('Category:'):
-                category = line.split('Category: ')[1]
-                print("\n\n Category :", category, "\n\n")
+                print("\n\n 응답에서 분리한 inputText:", inputText, "\n\n")
+            elif line.startswith('Type:'):
+                types = line.split('Type: ')[1]
+                print("\n\n 응답에서 분리한 type :", types, "\n\n")
 
     except IndexError:
         recommended_menu = []
-    print("\n return 직전 >>>>>>", category, inputText, "\n")
-    return category, inputText
-
-
-def bot2(request, input_text, current_user):
-    client = OpenAI(api_key=settings.OPEN_API_KEY)
-
-    # Getting the recommended menus
-    recommended_menu = request_type(client, input_text, current_user)
-
-    # Generating the final response
-    customer_message = generate_final_response(client, recommended_menu, current_user)
-
-    return customer_message, recommended_menu
+    return types, inputText, recommended_menu
 
 
 
@@ -222,7 +207,64 @@ def bot(request, input_text, current_user):
     return customer_message, recommended_menu
 
 
-### 카트 타입이 들어옴 inputText 받아서
-### gpt 돌리는 것: 메뉴 뽑고, 개수 뽑고, 행동 뽑고
-### 메뉴/ 개수/ 행동  각각 변수에 넣어서 return
-### "아이스 아메리카노 두잔 넣어줘" 이런 텍스트를 받았는데
+def cart_ai(request, input_text, recommended_menu, current_user):
+    category = current_user.category
+
+    # 사용자의 메뉴 및 해시태그  가져오기
+    menu, hashtags = get_user_menu_and_hashtags(current_user)
+
+    # 카테고리에 따라 시스템 지침 작성
+    if category == "CH":
+        category_text = "치킨"
+    elif category == "CA":
+        category_text = "카페"
+    else:
+        category_text = "음식점"
+
+    system_data = f"""
+        You are a distinguisher of the input text, detecting the menu, the number of the detected menu, and the action to perform.
+        """
+
+    system_output = f"""
+        Find the addressed menu from the recommended_menu.
+        Also the input text is most likely to include the number of the addressed menu.
+        If there is no indication of the number of the menu and includes only the menu name and the action, it has high possibility of indicating the number as one.
+        The action is related to cart, thus it might be adding or deleting the menu in the cart.
+        The action must be in a word, like "add" or "delete."
+        The output format should be "Menu: menu_name, Number: number_of_menus, Action: action."
+        If there are more than one menu, divide the input text into the number of menu names.
+        Such as, if the input text is "Add one americano, and two vanilla latte in the cart," 
+        you should divide this sentence into two sentences, "Add one americano" and "Add two vanilla latte" and process two sentences seperately, resulting two outputs.
+        """
+
+    client = OpenAI(api_key=settings.OPEN_API_KEY)
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_data},
+            {"role": "system", "content": system_output},
+            {"role": "user", "content": input_text},
+        ],
+    )
+
+    print("\n\n cart_ai의 AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
+    ai_response = completion.choices[0].message.content
+    print("\n\n cart_ai에서 필요한 부분만 분리 >>>>>>>", ai_response)
+
+    inputText = ""
+    ###### 우선 여기까지 작동 되는지
+    try:
+        for line in ai_response.split('\n'):
+            print()
+            line = line.strip()  # Remove whitespace from both ends
+            if line.startswith('Input:'):
+                inputText = line.split('Input: ')[1]
+                print("\n\n 응답에서 분리한 inputText:", inputText, "\n\n")
+            elif line.startswith('Type:'):
+                types = line.split('Type: ')[1]
+                print("\n\n 응답에서 분리한 type :", types, "\n\n")
+
+    except IndexError:
+        recommended_menu = []
+    return types, inputText, recommended_menu
+

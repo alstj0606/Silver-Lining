@@ -20,6 +20,8 @@ from django.conf import settings  # Django 설정을 가져옵니다.
 from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
 from django.http import JsonResponse
 
+from .orderbot import request_type, cart_ai
+
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
     lang = request.GET.get('lang', settings.LANGUAGE_CODE)
@@ -31,9 +33,6 @@ def switch_language(request):
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
         return response
     return redirect(request.META.get('HTTP_REFERER', '/'))
-
-from .orderbot import request_type
-
 
 # 주문을 시작하는 페이지를 렌더링합니다.
 def start_order(request):
@@ -300,6 +299,7 @@ class orderbot(APIView):
         for recommend in recommended_menu:
             # recommended_list에 메뉴 객체 추가
             menu_items = user_menus.filter(food_name=recommend)
+            print("\n\n recommend로 잘 필터해서 가지고 오는지 >>>>", menu_items)
             for menu_item in menu_items:
                 recommended_list.append({
                     "food_name": menu_item.food_name,
@@ -313,43 +313,33 @@ class orderbot(APIView):
     def post(request):
         result = 0
         input_text = request.data.get('inputText')
+        recommended_menu = request.data.get('recommended_menu')
+        print("\n\n input_text>>>> ", input_text)
+        print("\n\n recommended_menu>>>> ", recommended_menu)
         current_user = request.user  # POST 요청에서 'input' 값을 가져옴
-        category, inputText = request_type(request, input_text, current_user)
-        print("\n\n category >>>>>> \n\n", category)
+        types, inputText, recommended_menu = request_type(request, input_text, recommended_menu, current_user)
+        print("\n\n category >>>>>> \n\n", types)
 
-        if category == "cart":
-            result = cart(inputText)
-            ## orderbot.py 가서 맥락 파악 필요 (메뉴, 개수, 행동) / 정확도를 위해서 recommended_menu 도 필요
+        if types == "cart":
+            result = cart_ai(request, inputText, recommended_menu, current_user)
             ## js로 넘어가서 해당 메뉴를 몇 번 클릭해서 더하거나 몇 개 빼주거나
-        elif category == "menu":
+            #### category: cart, inputText: 아메리카노 두 잔 넣어줘 
+            #### gpt 가 받아서 어떤 메뉴를 , 몇 개를, 어
+            ## 1. orderbot.py에서 저장된 텍스트에서 맥락을 파악해 넘겨주는 함수가 필요함 (어떤 메뉴를/ 몇개를/ 어떻게) + 어떤 메뉴의 정확도 향상을 위해서는 recommended menu도 필요 (왼쪽 거, 처음 거 등)
+            ## 2. axios.get으로 여기서 넘겨준 결과를 가지고 장바구니 관련 기능을 실행해주어야 함. "아메리카노/두개/장바구니에 추가", "바닐라라떼/하나/장바구니에서 삭제"
+            ## 예로 Response({'menu_name':menu_name, 'number':number, 'action': action})
+            ## menu_name은 현재 우리가 가지고 있는 메뉴 내에서만 파악하라고 해야 함
+            ## 숫자 파악에서 그냥 "바닐라라떼 줘" 에도 숫자를 파악할 수 있도록 해야 함. 0개로 출력되지 않게.
+            ## action은 add, delete 등의 옵션 / 수정도 add, delete로 구현할 수 있을지도? ( ~ 넣고 ~빼줘, ~를 ~로 바꿔줘)
+            
+        elif types == "menu":
+            print("\n\n if menu의 input_text>>>> ", input_text)
+            print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
+            print("\n\n if menu의 category >>>>>> ", types)
             message, recommended_menu = bot(request, input_text, current_user)
-            result = 2
-            print("message>>>>>>>>", message)
-            print("recommended_menu>>>>>>>>", recommended_menu)
-            print("result>>>>>>>>", result)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
-            # return JsonResponse({'responseText': message, 'recommended_menu': recommended_menu})
-            ## orderbot.py 안 가도 됨
-            ## js로 넘어가서 음성 재인식 버튼 눌러주는 거 (speechRecognition() ~~~ 해서 메뉴추천)
-        elif category =="pay":
+        elif types =="pay":
             print("\n\n elif pay 들어왔는지 \n\n")
             result = 1
-            ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서 
-            ## orderbot.py 안 가도 됨
-            ## js로 넘어가서 결제하기 버튼 눌러주기
 
         return Response({'result': result})
-        
-
-def cart():
-    pass
-
-
-# def sending_post(axios.post):
-#     data = request.data
-#     if type == menu:
-#         bot()
-#     elif type == cart:
-#         function()
-#     else type == pay:
-#         pay()

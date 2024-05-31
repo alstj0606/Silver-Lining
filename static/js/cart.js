@@ -92,34 +92,11 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
     const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
         return {name: name, count: item.count};
     });
-
+    console.log("selectedItemsArray >>>>>>>>>>>>>>> ", selectedItemsArray)
     // Retrieve the total price directly from the DOM
     let totalPriceElement = document.getElementById('totalPrice');
     let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
 
     // 요청 데이터를 JSON 문자열로 변환하여 전송
-    $.ajax({
-        url: '/orders/get_menus/',
-        cache: false,
-        dataType: 'json',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({items: selectedItemsArray, total_price: currentTotal}),
-        beforeSend: function (xhr) {
-            const csrfToken = getCsrfToken();
-            if (csrfToken) {
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
-            } else {
-                console.error('CSRF 토큰이 설정되지 않았습니다.');
-                return false;
-            }
-        },
-        success: function (data) {
-            console.log('주문이 성공적으로 처리되었습니다.');
-            window.location.href = '/orders/order_complete/' + data.order_number + '/';
-        },
-        error: function (error) {
-            console.error('주문 처리 중 오류가 발생했습니다:', error);
-        }
-    });
+
 });

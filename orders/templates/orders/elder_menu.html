@@ -318,7 +318,7 @@
     const popupName = document.getElementById('popup-name');
     const popupPrice = document.getElementById('popup-price');
     const closePopup = document.getElementById('closePopup');
-    
+
     document.addEventListener('DOMContentLoaded', function() {
         // const recommendationsElement = document.getElementById('recommendations'); 
         // Function to update the menu based on hashtags
@@ -415,7 +415,7 @@ function startSpeechRecognition() {
                     console.log("csrfToken>>>>>>>>>", csrfToken)
                     
 
-            axios.post('/orders/orderbot/', { inputText: transcript },
+            axios.post('/orders/orderbot/', { inputText: transcript, recommended_menu: recommended_menu},
                 {
                     headers: {
                         'X-CSRFToken': csrfToken
@@ -423,16 +423,9 @@ function startSpeechRecognition() {
                     
                 })
                 .then(function (response) {
-                    //const responseText = response.data.responseText;
-                    //const recommended_menu = response.data.recommended_menu;
                     const result = response.data.result;
                     console.log("result인 추천메뉴>>>>>>>", result)
                     console.log("result 너니? >>>>>>>", result);
-                    //console.log('서버 응답:', responseText);
-                    //localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
-                    //localStorage.setItem('customer_message', responseText);
-                    //window.location.href = '/orders/elder_menu/';
-                    //console.log("중요부분 타고 있니>>>>>>>>>>>>")
                     if (result == 1) {
                     console.log("if문 탔는지 >>>>>>>>");
                     triggerProceedToPay();
@@ -504,44 +497,6 @@ function displayRecommendations(recommended_menu, responseText) {
         }
         };
 
-    
-    
-//     const recommendationsElement = document.getElementById('recommendations')
-//     recommendationsElement.innerHTML = '';
-
-//     recommended_menu.forEach((menu, index) => {
-//         const menuItem = `
-//             <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-//                 <h2>${menu.food_name}</h2>
-//                 <div class="menu-image">
-//                     <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
-//                 </div>
-//                 <p>${menu.price}원</p>
-//             </div>
-//         `;
-        
-//         if (index === 0) {
-//             // Populating the popup with the first recommended menu
-//             const popupImage = document.querySelector('.popupImage');
-//             const popupName = document.querySelector('.popupName');
-//             const popupPrice = document.querySelector('.popupPrice');
-//             const popupContainer = document.querySelector('.popupContainer');
-//             const popupOverlay = document.querySelector('.popupOverlay');
-
-//             popupImage.src = menu.img_url;
-//             popupName.textContent = menu.food_name;
-//             popupPrice.textContent = `${menu.price}원`;
-//             popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
-//             popupOverlay.style.display = 'flex';
-//         } else {
-//             // Inserting menu item into recommendations container
-//             recommendationsElement.insertAdjacentHTML('beforeend', menuItem);
-//         }
-//     });
-// }
-
-
-
 const redirectButton = document.getElementById('redirectButton');
     redirectButton.addEventListener('click', function() {
         // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
@@ -550,7 +505,6 @@ const redirectButton = document.getElementById('redirectButton');
 
 function triggerProceedToPay() {
     console.log("triggerProceedToPay 탔는지 >>>>>>>")
-    // Option 1: Simulate a click event on the pay button
     document.getElementById("submitOrderBtn").click();
 }
 
@@ -559,3 +513,6 @@ function triggerProceedToPay() {
 </body>
 
 </html>
+
+{% comment %} action으로 분류 -> add면 menu를 number 수만큼 눌러준다
+-> delete면 menu의 삭제 버튼을 number 수만큼 눌러준다 {% endcomment %}
