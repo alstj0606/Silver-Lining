@@ -21,6 +21,8 @@ from django.utils import translation  # Django의 다국어 지원을 위한 tra
 from django.http import JsonResponse
 
 from .orderbot import request_type, cart_ai
+from .cart import CartItem, Cart
+from .serializers import CartSerializer
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -343,3 +345,44 @@ class orderbot(APIView):
             result = 1
 
         return Response({'result': result})
+    
+
+# 장바구니 항목 추가 뷰
+@csrf_exempt
+def add_to_cart(request):
+    if request.method == "POST":
+        user_id = request.user.id
+        item_id = request.POST.get("item_id")
+        image = request.POST.get("image")
+        name = request.POST.get("name")
+        price = int(request.POST.get("price"))
+        quantity = int(request.POST.get("quantity"))
+        
+        cart = Cart(user_id)
+        item = CartItem(item_id, image, name, price, quantity)
+        serializer = CartSerializer(item)
+        cart.add_to_cart(serializer.data)
+        
+        return JsonResponse({"message": "Item added to cart"})
+
+# 장바구니 페이지 뷰
+def view_cart(request):
+    user_id = request.user.id
+    cart = Cart(user_id)
+    context = {"cart_items": cart.get_cart()}
+    print("\n\n\n context가 받아와지는지: ", context)
+    return Response({"context": context})
+    
+# 장바구니 항목 제거 뷰
+def remove_from_cart(request, item_id):
+    user_id = request.user.id
+    cart = Cart(user_id)
+    cart.remove(item_id)
+    return redirect("view_cart")
+
+# 장바구니 전체 삭제 뷰
+def clear_cart(request):
+    user_id = request.user.id
+    cart = Cart(user_id)
+    cart.clear()
+    return redirect("view_cart")
