@@ -102,7 +102,7 @@ transcription.addEventListener('input', function () {
 function appendRecommendedMenuItems(container, items) {
     items.forEach(menu => {
         const menuItem = `
-            <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+            <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
                     <h5 class="card-title text-primary">${menu.food_name}</h5>
@@ -117,7 +117,7 @@ function appendRecommendedMenuItems(container, items) {
 function appendMenuItems(container, items) {
     items.forEach(menu => {
         const menuItem = `
-            <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+            <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
                     <h5 class="card-title text-primary">${menu.food_name}</h5>

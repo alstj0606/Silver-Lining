@@ -80,12 +80,16 @@
         </div>
         <div class="status" id="status">
             <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
-            <span class="en-text">Facial recognition is being performed</span>
+            <br>
+            <span class="kr-text">Facial recognition is being performed</span>
         </div>
     </form>
 </div>
 
 <script>
+    window.addEventListener('load', function () {
+        fetch(`/orders/switch-language/?lang="ko-KR"`)
+    });
     document.getElementById("order-form").addEventListener("submit", function () {
         document.getElementById("spinner").style.display = "block";
         document.getElementById("status").style.display = "block";

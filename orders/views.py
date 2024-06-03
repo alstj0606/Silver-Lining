@@ -18,6 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # 페�
 from django.utils.decorators import method_decorator  # 데코레이터를 사용하기 위한 라이브러리를 가져옵니다.
 from django.conf import settings  # Django 설정을 가져옵니다.
 from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
+from .orderbot import request_type
 
 
 # 언어를 변경하는 함수입니다.
@@ -31,9 +32,6 @@ def switch_language(request):
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang)
         return response
     return redirect(request.META.get('HTTP_REFERER', '/'))
-
-
-from .orderbot import request_type
 
 
 # 주문을 시작하는 페이지를 렌더링합니다.
@@ -78,13 +76,15 @@ class AIbot(APIView):
         # 추천 메뉴를 가져옵니다.
         recommended_list = []
         for recommend in recommended_menu:
-            menu_items = user_menus.filter(food_name=recommend)
-            for menu_item in menu_items:
+            menus = user_menus.filter(food_name=recommend)
+            for menu in menus:
                 recommended_list.append({
-                    "food_name": menu_item.food_name,
-                    "price": menu_item.price,
-                    "img_url": menu_item.img.url
+                    "food_name_ko": getattr(menu, 'food_name_ko', ''),
+                    "food_name": menu.food_name,
+                    "price": menu.price,
+                    "img_url": menu.img.url
                 })
+
         return Response({'recommends': recommended_list})
 
     @staticmethod
@@ -113,6 +113,7 @@ class MenusAPI(APIView):
         # 메뉴를 JSON 형식으로 변환합니다.
         menu_list = [
             {
+                "food_name_ko": getattr(menu, 'food_name_ko', ''),
                 'food_name': menu.food_name,
                 'price': menu.price,
                 'img_url': menu.img.url if menu.img else ''
@@ -120,7 +121,7 @@ class MenusAPI(APIView):
         ]
         # 전체 페이지 수를 가져옵니다.
         total_pages = paginator.num_pages
-
+        print(menu_list)
         return menu_list, total_pages
 
     # GET 요청에 대한 메뉴 목록을 반환합니다.
@@ -154,7 +155,7 @@ class MenusAPI(APIView):
             data = request.data
             selected_items = data.get('items', [])
             total_price = data.get('total_price', 0)
-
+            print("selected_items : ", selected_items)
             # 오늘 날짜를 가져옵니다.
             today = datetime.now().date()
 

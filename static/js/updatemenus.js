@@ -26,15 +26,15 @@ function updateMenus(hashtags = "", page = 1) {
                 `;
                 categoriesContainer.append(button);
             });
-
+            console.log(menus)
             // 일반 메뉴 추가
             menus.forEach(menu => {
                 const menuItem = `
-                    <div class="menu-item card mb-3" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this)">
+                    <div class="menu-item card mb-3" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                         <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                         <div class="card-body text-center">
-                            <h5 class="card-title text-primary">${menu.food_name}</h5>
-                            <p class="card-text text-muted">${menu.price}${won}</p>
+                        <h5 class="card-title text-primary">${menu.food_name}</h5>
+                        <p class="card-text text-muted">${menu.price}${won}</p>
                         </div>
                     </div>
                 `;

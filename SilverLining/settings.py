@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     ### install_app ###
     'rest_framework',  # REST framework 설치
     'modeltranslation',  # 다국어 지원을 위한 모듈
+    'django_celery_beat',  # 셀러리를 위한 기능
+    'django_celery_results',  # 셀러리를 위한 기능
     ### custom_app ###
     'accounts',  # 사용자 계정 관리 앱
     'menus',  # 메뉴 관리 앱
@@ -92,6 +94,17 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
 
 AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
@@ -153,3 +166,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_ALWAYS_EAGER = True
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'
+

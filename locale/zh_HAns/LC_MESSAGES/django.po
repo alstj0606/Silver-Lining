@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-30 19:42+0900\n"
+"POT-Creation-Date: 2024-05-31 20:03+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,54 +17,57 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: .\orders\templates\orders\menu.html:349
+#: .\orders\templates\orders\menu.html:358
 msgid "선택한 상품"
 msgstr "选择的商品"
 
-#: .\orders\templates\orders\menu.html:353
-#: .\orders\templates\orders\menu.html:429
+#: .\orders\templates\orders\menu.html:362
+#: .\orders\templates\orders\menu.html:438
 msgid "음성입력"
 msgstr "语音输入"
 
-#: .\orders\templates\orders\menu.html:372
+#: .\orders\templates\orders\menu.html:381
 msgid "총 금액"
 msgstr "总金额"
 
-#: .\orders\templates\orders\menu.html:372
-#: .\orders\templates\orders\menu.html:430
+#: .\orders\templates\orders\menu.html:381
+#: .\orders\templates\orders\menu.html:439
 msgid "원"
 msgstr "韩元"
 
-#: .\orders\templates\orders\menu.html:377
+#: .\orders\templates\orders\menu.html:386
 msgid "전체삭제"
 msgstr "全部删除"
 
-#: .\orders\templates\orders\menu.html:378
+#: .\orders\templates\orders\menu.html:387
 msgid "결제하기"
 msgstr "付款"
 
-#: .\orders\templates\orders\menu.html:386
+#: .\orders\templates\orders\menu.html:395
 msgid "AI기능이 필요하시면 음성입력을 눌러주세요."
 msgstr "如果需要AI功能，请按语音输入。"
 
-#: .\orders\templates\orders\menu.html:426
+#: .\orders\templates\orders\menu.html:435
 msgid "input"
 msgstr "zh-CN"
 
-#: .\orders\templates\orders\menu.html:427
+#: .\orders\templates\orders\menu.html:436
 msgid "output"
 msgstr "zh-CN"
 
-#: .\orders\templates\orders\menu.html:428
+#: .\orders\templates\orders\menu.html:437
 msgid "음성입력중"
 msgstr "输入语音"
 
-#: .\orders\templates\orders\menu.html:431
+#: .\orders\templates\orders\menu.html:440
 msgid "개"
 msgstr "个"
 
-#: .\orders\templates\orders\menu.html:432
-#, fuzzy
-#| msgid "전체삭제"
-msgid "삭제"
+#: .\orders\templates\orders\menu.html:441
+msgid "아이템"
 msgstr "全部删除"
+
+#, fuzzy
+#~| msgid "전체삭제"
+#~ msgid "삭제"
+#~ msgstr "全部删除"
