@@ -1,10 +1,23 @@
 import redis
 from django_redis import get_redis_connection
 from django.conf import settings
+from django.core.cache import cache
 import json
 
-# Redis 연결 설정
-r = redis.StrictRedis.from_url(settings.CACHES['default']['LOCATION'])
+# # Redis 연결 설정
+# r = redis.StrictRedis.from_url(settings.CACHES['default']['LOCATION'])
+
+def redis_test(request):
+    r = redis.StrictRedis.from_url(settings.CACHES['default']['LOCATION'])
+    print("\n\n Pinging Redis...")
+    try:
+        if r.ping():
+            print("\n\n Redis connection successful.")
+    except redis.ConnectionError:
+        print("\n\n Redis connection failed.")
+
+    cache.set("cache", "됐으면 좋겠다")
+    
 
 class CartItem:
     def __init__(self, item_id, image, name, price, quantity):
@@ -24,9 +37,9 @@ class CartItem:
         }
 
 class Cart:
-    def __init__(self, store_id):
-        self.user_id = store_id
-        self.cart_key = f"cart:{self.user_id}" # 문자열 오늘의날짜 _> 오늘의날짜+ordernumber
+    def __init__(self, username):
+        self.username = username
+        self.cart_key = f"cart:{self.username}" # 문자열 오늘의날짜 _> 오늘의날짜+ordernumber
         # 아메리카노 한 개 누름 -> cart key 240601 
         # cart key 240601 -> 아메리카노 0 개 ->
         # 현재 장바구니만 cartkey로 불러오고
@@ -61,7 +74,8 @@ class Cart:
 
     def get_cart(self):
         redis_conn = get_redis_connection("default")
-        return redis_conn.hgetall(self.cart_key)
+        cart_data = redis_conn.hgetall(self.cart_key)
+        return {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
 
     # # 항목 추가
     # def add(self, item):

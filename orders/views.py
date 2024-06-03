@@ -21,8 +21,10 @@ from django.utils import translation  # Django의 다국어 지원을 위한 tra
 from django.http import JsonResponse
 
 from .orderbot import request_type, cart_ai
-from .cart import CartItem, Cart
+from .cart import CartItem, Cart, redis_test
 from .serializers import CartSerializer
+
+from rest_framework.decorators import api_view
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -350,15 +352,19 @@ class orderbot(APIView):
 # 장바구니 항목 추가 뷰
 @csrf_exempt
 def add_to_cart(request):
+    print("\n\n add to cart의 request는: ", request)
+
     if request.method == "POST":
-        user_id = request.user.id
+        # username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        # print("\n\n request user >> ", request.user)
+        username = request.POST.get("username")
         item_id = request.POST.get("item_id")
         image = request.POST.get("image")
         name = request.POST.get("name")
         price = int(request.POST.get("price"))
         quantity = int(request.POST.get("quantity"))
         
-        cart = Cart(user_id)
+        cart = Cart(username)
         item = CartItem(item_id, image, name, price, quantity)
         serializer = CartSerializer(item)
         cart.add_to_cart(serializer.data)
@@ -366,9 +372,14 @@ def add_to_cart(request):
         return JsonResponse({"message": "Item added to cart"})
 
 # 장바구니 페이지 뷰
+@api_view(['GET'])
 def view_cart(request):
-    user_id = request.user.id
-    cart = Cart(user_id)
+    print("\n\n request 객체라도 나오는지: ", request)
+    print("\n\n request의 data: ", request.data)
+    # {"username": "mega"}
+    username = request.data.get("username")
+    print("\n\n\n username 이 잘 들어왔는지: ", username)
+    cart = Cart(username)
     context = {"cart_items": cart.get_cart()}
     print("\n\n\n context가 받아와지는지: ", context)
     return Response({"context": context})
@@ -386,3 +397,11 @@ def clear_cart(request):
     cart = Cart(user_id)
     cart.clear()
     return redirect("view_cart")
+
+# redis 실행 확인
+def check_redis_connection(request):
+    try:
+        redis_test(request)
+        return JsonResponse({"message": "Redis connected successfully"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
