@@ -20,8 +20,7 @@ def redis_test(request):
     
 
 class CartItem:
-    def __init__(self, item_id, image, name, price, quantity):
-        self.item_id = item_id
+    def __init__(self, image, name, price, quantity):
         self.image = image
         self.name = name
         self.price = price
@@ -55,14 +54,40 @@ class Cart:
         print("\n\n item이 어떻게 들어왔는지 : ", item)
         menu_name = item['name']
         quantity = item['quantity']
-        print("\n\n menu_name, quantity 잘 가져와졌는지: ", menu_name, quantity)
-        redis_conn.hset(self.cart_key, menu_name, quantity)
+        price = item['price']
+        image = item['image']
+
+        item_data = json.dumps({
+            'quantity': quantity,
+            'price': price,
+            'image': image
+        })
+
+        redis_conn.hset(self.cart_key, menu_name, item_data)
         print("\n\n\n redis에 저장이 잘 됐는지: ")
 
 ## **Updating Quantity**:
-    def update_quantity(self, menu_name, quantity):
+    def update_quantity(self, item_data):
         redis_conn = get_redis_connection("default")
-        redis_conn.hincrby(self.cart_key, menu_name, quantity)
+        # dict 형식으로 받는다 : item_data {}
+        # "name"으로 해당 데이터 불러오고 "quantity"로 해당 value를 수정 ? 
+        # 이렇게 해서 hset 으로 저장하나?
+        print("\n\n item_data 잘 넘어왔나: ", item_data)
+        name = item_data["name"]
+        print("\n\n name >>> ", name)
+        update_data = json.dumps(item_data)
+        redis_conn.hset(self.cart_key, name, update_data)
+
+        # name = key, quantity =value
+        # hincrby 로 quantity 수정
+        # 해당 name의 quantity가 수정된 채로 저장됨
+
+        # value = redis_conn.hget(self.cart_key, name)
+        # print("\n\n value : ", value)
+        # quantity_key = value # byte indices must be integers or slices, not str
+        # print("\n\n name으로 value 불러오기+quantity: ", quantity_key)
+        # redis_conn.hincrby(self.cart_key, quantity_key, quantity)
+        # # 값을 덮어씌우려면 그냥 hset으로 저장하는 것이..!!
 
 
 ## **Removing an Item**:

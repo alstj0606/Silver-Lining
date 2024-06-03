@@ -353,20 +353,19 @@ class orderbot(APIView):
 @csrf_exempt
 def add_to_cart(request):
     print("\n\n add to cart의 request는: ", request)
-
     if request.method == "POST":
         # username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         # print("\n\n request user >> ", request.user)
         username = request.POST.get("username")
-        item_id = request.POST.get("item_id")
         image = request.POST.get("image")
         name = request.POST.get("name")
         price = int(request.POST.get("price"))
         quantity = int(request.POST.get("quantity"))
         
         cart = Cart(username)
-        item = CartItem(item_id, image, name, price, quantity)
+        item = CartItem(image, name, price, quantity)
         serializer = CartSerializer(item)
+        print("\n\n serializer.data: ", type(serializer.data))
         cart.add_to_cart(serializer.data)
         
         return JsonResponse({"message": "Item added to cart"})
@@ -384,6 +383,40 @@ def view_cart(request):
     print("\n\n\n context가 받아와지는지: ", context)
     return Response({"context": context})
     
+# 장바구니 항목 수량 수정
+@csrf_exempt
+@api_view(['POST'])
+def add_quantity(request):
+    if request.method == "POST":
+    # username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+    # print("\n\n request user >> ", request.user)
+        username = request.POST.get("username") # mega
+        print("\n\n add_quantity username: ", username)
+        name = request.POST.get("name") # 아메리카노
+        print("\n\n name은 잘 들어왔는지: ", name)
+        quantity = int(request.POST.get("quantity")) # 3
+        print("\n\n quantity 잘 들어왔는지: ", quantity)
+
+    cart = Cart(username)
+    # 1. name, quantity, price, img 다 redis에 저장하는 방식 {"name": {"quantity": , "price": , "img": }
+    # serializer 는 returnDict --> dict 로 바꿔서 사용
+    # 여기서 serializer로 dict 형식으로 보내준다 {"name": , "quantity": }
+    # menu = Menu.objects.get(store_id = request.user.id).filter(food_name = name)
+    menu = Menu.objects.filter(store_id = 2, food_name = name).first()
+    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu, menu.food_name, menu.img, menu.price)
+    image = menu.img
+    price = menu.price
+    item = CartItem(image, name, price, quantity)
+    serializer = CartSerializer(item)
+    item_data = serializer.data
+    # =============================
+    # 2. name, quantity 만 redis에 저장하는 방식 {"name": quantity}
+    # name과 quantity만 보내준다
+    # update_quantity에서 수정된 값 돌려주면
+    # quantity는 수정된 값으로, name 현재 name, 나머지 image, price 를 db에 접근해서 가져오기
+    cart.update_quantity(item_data)
+    return Response({"message": "장바구니 수량 수정"})
+
 # 장바구니 항목 제거 뷰
 def remove_from_cart(request, item_id):
     user_id = request.user.id
