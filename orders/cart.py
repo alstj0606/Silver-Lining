@@ -91,9 +91,15 @@ class Cart:
 
 
 ## **Removing an Item**:
-    def remove_from_cart(self, menu_name):
+    def remove(self, menu_name):
+        print("\n\n menu_name: ", menu_name)
         redis_conn = get_redis_connection("default")
         redis_conn.hdel(self.cart_key, menu_name)
+
+## Clear the cart
+    def clear(self):
+        redis_conn = get_redis_connection("default")
+        redis_conn.delete(self.cart_key)
 
 ## **Fetching Cart Data**:
 
@@ -126,7 +132,7 @@ class Cart:
     #         del cart[item_id]
     #         r.setex(self.cart_key, settings.CACHE_TTL, json.dumps(cart))
 
-    # # 전체 장바구니 삭제
+    # 전체 장바구니 삭제
     # def clear(self):
     #     r.delete(self.cart_key)
 

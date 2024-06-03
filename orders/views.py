@@ -418,18 +418,27 @@ def add_quantity(request):
     return Response({"message": "장바구니 수량 수정"})
 
 # 장바구니 항목 제거 뷰
-def remove_from_cart(request, item_id):
-    user_id = request.user.id
-    cart = Cart(user_id)
-    cart.remove(item_id)
-    return redirect("view_cart")
+@csrf_exempt
+@api_view(['POST'])
+def remove_from_cart(request, menu_name):
+    print("\n\n remove_from_cart() 타는지>>>" )
+    # username = request.user.username
+    username = request.POST.get("username")
+    print("\n\n remove() username: ", username)
+    print("\n\n menu_name: ", menu_name)
+    cart = Cart(username)
+    cart.remove(menu_name)
+    return Response({"message": "해당 메뉴 삭제"})
 
 # 장바구니 전체 삭제 뷰
+@csrf_exempt
+@api_view(['POST'])
 def clear_cart(request):
-    user_id = request.user.id
-    cart = Cart(user_id)
+    # user_id = request.user.id
+    username = request.POST.get("username")
+    cart = Cart(username)
     cart.clear()
-    return redirect("view_cart")
+    return Response({"message": "장바구니 전체 삭제"})
 
 # redis 실행 확인
 def check_redis_connection(request):
