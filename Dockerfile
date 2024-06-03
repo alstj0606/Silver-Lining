@@ -2,6 +2,9 @@ FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
 
+# GNU gettext 설치
+RUN apt-get update && apt-get install -y gettext
+
 WORKDIR /app
 
 COPY requirements.txt /app/

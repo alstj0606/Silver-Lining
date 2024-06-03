@@ -26,6 +26,7 @@ def dummy_favicon(request):
 
 
 urlpatterns = [
+    path('', include('admin_volt.urls')),
     path('admin/', admin.site.urls),
     path('orders/', include('orders.urls')),
     path('favicon.ico', dummy_favicon),
