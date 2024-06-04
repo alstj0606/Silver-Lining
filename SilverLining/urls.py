@@ -28,8 +28,8 @@ def dummy_favicon(request):
 
 
 urlpatterns = [
-    path('', views.main_page, name='mainpage'),  # 맨 처음 주문을 위해 얼굴인식 버튼을 띄어주는 템플릿
-    path('', include('admin_volt.urls')),
+    path('', views.main_page, name='mainpage'),  # 맨 처음으로 나오게 될 페이지
+    path('', include('admin_volt.urls')),  # admin_page theme
     path('admin/', admin.site.urls),
     path('orders/', include('orders.urls')),
     path('favicon.ico', dummy_favicon),

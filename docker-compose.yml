@@ -1,8 +1,9 @@
+version: '3.8'
 
 services:
   web:
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && python manage.py compilemessages && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
@@ -10,29 +11,20 @@ services:
     depends_on:
       - db
       - redis
+    environment:
+      DATABASE_URL: postgres://myuser:mypassword@db:5432/mydb
 
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_DB=mydb
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
+      POSTGRES_DB: mydb
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest
 
-  celery_worker:
-    build: .
-    command: celery -A SilverLining worker -l info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-
-  celery_beat:
-    build: .
-    command: celery -A SilverLining beat -l info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
+volumes:
+  postgres_data:
