@@ -1,41 +1,5 @@
 let cart = {};
 
-// // 장바구니 조회
-// document.addEventListener('DOMContentLoaded', function() {
-    
-// });
-
-
-
-        // cartData.forEach((menu, index) => {
-        //     const cartItem = `
-        //         <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
-        //             <h2>${menu.food_name}</h2>
-        //             <div class="menu-image">
-        //                 <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
-        //             </div>
-        //             <p>${menu.price}원</p>
-        //         </div>
-        //     `;
-        
-        //     if (index === 0) {
-        //         // Populating the popup with the first recommended menu
-        //         popupImage.src = menu.img_url;
-        //         popupName.textContent = menu.food_name;
-        //         popupPrice.textContent = `${menu.price}원`;
-        //         popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
-        //         popupOverlay.style.display = 'flex';
-        //     } else {
-        //         // Inserting menu item into recommendations container
-        //         recommendations.insertAdjacentHTML('beforeend', menuItem);
-        //     }
-        // });
-
-        // closePopup.addEventListener("click", function(event) {
-        //     event.stopPropagation(); // Stop event from bubbling up
-        //     popupOverlay.style.display = "none"; // Hide the popup
-        // });
-
         
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc) {
@@ -46,20 +10,32 @@ let cart = {};
         console.log("params >>>>", { name: name, price:price, imgSrc: imgSrc })
         axios.post('/orders/add_to_cart/', { name: name, price:price, imgSrc: imgSrc})
             .then(response => {
+                let item = {
+                    menu_name: name,
+                    price: price,
+                    quantity: 1,
+                    image: imgSrc
+                };
+                console.log("item 이 잘 구성되어 있는지 >>> ", item)
                 if (cart[name]) {
-                    cart[name].count += 1;
+                    let existingItem = JSON.parse(cart[name]);
+                    console.log("existingItem >>>>>", existingItem)
+                    existingItem.quantity += 1;
+                    cart[name] = JSON.stringify(existingItem);
                 } else {
-                    cart[name] = { price, count: 1, imgSrc };
+                    console.log("cart[name] stringify >>>>>> ", JSON.stringify(item))
+                    cart[name] = JSON.stringify(item);
+                    console.log("type 확인 >>>>>> ", typeof cart[name])
                 }
-                updateCartDisplay();
+                console.log("장바구니 새로고침 해보기 >>>> ", cart)
+                updateCartDisplay(cart);
+                
             })
             .catch(error => {
                 console.error('Error adding item to cart:', error);
             });
         }
         
-
-
 
     function submitOrder() {
         const selectedItems = Object.entries(cart).map(([name, item]) => ({
@@ -134,29 +110,33 @@ let cart = {};
     }
 
     function updateCartDisplay(cartData) {
-        const cartItems = cartData
-        console.log("cartdata 넘어왔는지 >>>> ", cartData)
         let currentTotal = 0;
-        console.log("cart가 뭐지 >>>>>", cart)
-        for (let name in cart) {
-            let item = cart[name];
-            console.log("item 확인 >>> ", item)
-            console.log("item을 메뉴 이름으로 value 부르기 >>>>", item["Iced Americano"])
-            for (let menu in item) {
-                const item_parsed = JSON.parse(item[menu])
-                console.log("parse 됐는지 확인 >>>> ", item_parsed)
-                currentTotal += item_parsed["price"] * item_parsed ["quantity"];
-                console.log("menu의 가격이 잘 찍히는 지 >>>>>", item_parsed["price"])
-                console.log("currentTotal >>>>", currentTotal)
-                cartItems.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.imgSrc}" alt="${name}">
-                        <span>${name}</span>
-                        <span>${item.price}원</span>
-                        <span>${item.count}개</span>
-                        <button class="remove" onclick="removeItem('${name}')">삭제</button>
-                    </div>`;
+        cartItems.innerHTML = '';
+        console.log("cart 확인해보기 >>>>> ", cartData)
+        for (let name in cartData) {
+            let item = cartData[name];
+            // Check if item is a string or an object
+            if (typeof item === 'string') {
+                // Parse string to object
+                item = JSON.parse(item);
             }
+            if (typeof item === 'object') {
+                console.log("Parsed item >>>", JSON.stringify(item)); // Log as string for clarity
+                console.log("item 출력 >>>> ", item)
+                if (item["price"] !== undefined) {
+                    console.log("price 가 undefined 인지 >>>>> ", item["price"])
+                    currentTotal += item["price"] * item["quantity"];
+    
+                    cartItems.innerHTML += `
+                        <div class="cart-item">
+                            <img src="${item["image"]}">
+                            <span>${item["menu_name"]}</span>
+                            <span>${item["price"]}원</span>
+                            <span>${item["quantity"]}개</span>
+                            <button class="remove" onclick="removeItem('${item["menu_name"]}')">삭제</button>
+                        </div>`;
+                }
+        }
         }
     
         document.getElementById('totalPrice').textContent = `총 가격: ${currentTotal}원`;

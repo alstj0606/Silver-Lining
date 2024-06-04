@@ -271,7 +271,6 @@
         <div class="cartarrowContainer">        
             <div id="cartContainer" class="cart">
                 <div id="cartItems">
-                    {% comment %} axios 써야 함 {% endcomment %}
                     <!-- Cart items will be populated here dynamically -->
                 </div>
             </div>
@@ -367,7 +366,7 @@
             console.error('메뉴 업데이트 중 오류 발생:', error);
         });
 
-        // 장바구니 조회}
+        // 장바구니 조회
         console.log("장바구니 조회 username >>>>> " )
         
         axios.get('/orders/cart/')
@@ -375,7 +374,6 @@
             const cartData = response.data.context;
             console.log("cartData >>>>>", cartData)
             console.log("cartData type >>>", typeof cartData)
-            cart = cartData
             ? cartData
             :{};
             updateCartDisplay(cartData);

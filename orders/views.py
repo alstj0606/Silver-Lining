@@ -364,7 +364,6 @@ def view_cart(request):
 # 장바구니 항목 추가 뷰
 @csrf_exempt
 def add_to_cart(request):
-    print("\n\n add to cart의 request는: ", request)
     if request.method == "POST":
         username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)
@@ -414,11 +413,6 @@ def add_quantity(request):
     item = CartItem(image, name, price, quantity)
     serializer = CartSerializer(item)
     item_data = serializer.data
-    # =============================
-    # 2. name, quantity 만 redis에 저장하는 방식 {"name": quantity}
-    # name과 quantity만 보내준다
-    # update_quantity에서 수정된 값 돌려주면
-    # quantity는 수정된 값으로, name 현재 name, 나머지 image, price 를 db에 접근해서 가져오기
     cart.update_quantity(item_data)
     return Response({"message": "장바구니 수량 수정"})
 
