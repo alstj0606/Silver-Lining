@@ -52,7 +52,10 @@ class Cart:
     def get_cart(self):
         redis_conn = get_redis_connection("default")
         cart_data = redis_conn.hgetall(self.cart_key)
-        return {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
+        print("\n\n cart_data를 넘겨주어야 하는데 어떻게 생겼나:", cart_data)
+        return_data = {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
+        print("\n\n 그래서 넘어갈 때는 어떻게 생긴채로 넘어가나: ", return_data)
+        return return_data
 
 ## **Adding an Item to the Cart**:
     def add_to_cart(self, item):

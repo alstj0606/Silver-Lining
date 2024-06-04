@@ -371,7 +371,7 @@
         
         axios.get('/orders/cart/')
         .then(response => {
-            const cartData = response.data.context;
+            const cartData = response.data.cart_items;
             console.log("cartData >>>>>", cartData)
             console.log("cartData type >>>", typeof cartData)
             ? cartData

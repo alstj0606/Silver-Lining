@@ -353,13 +353,14 @@ class orderbot(APIView):
 def view_cart(request):
     print("\n\n request 객체라도 나오는지: ", request)
     print("\n\n request의 data: ", request.data)
-    # {"username": "mega"}
     username = request.user.username
     print("\n\n\n username 이 잘 들어왔는지: ", username)
     cart = Cart(username)
     context = {"cart_items": cart.get_cart()}
     print("\n\n\n context가 받아와지는지: ", context)
-    return Response({"context": context})
+    cart_data = context.get("cart_items",{})
+    print("\n\n cart_data 어떻게 생겼는지 >>>> ", cart_data)
+    return Response({"cart_items": context.get("cart_items", {})})
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
@@ -385,7 +386,7 @@ def add_to_cart(request): # 무조건 하나를 더한다
         print("\n\n serializer.data: ", type(serializer.data))
         cart.add_to_cart(serializer.data)
         
-        return JsonResponse({"message": "Item added to cart"})
+        return JsonResponse({"message": "Item added to cart", "cart_items": cart.get_cart()})
 
     
 # 장바구니 항목 수량 수정

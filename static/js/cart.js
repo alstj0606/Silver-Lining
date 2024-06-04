@@ -1,5 +1,40 @@
 let cart = {};
 
+    // 장바구니 조회
+    function updateCartDisplay(cartData) {
+        let currentTotal = 0;
+        cartItems.innerHTML = '';
+        console.log("cart 확인해보기 >>>>> ", cartData)
+        for (let name in cartData) {
+            let item = cartData[name];
+            // string으로 넘어왔을 경우
+            if (typeof item === 'string') {
+                item = JSON.parse(item);
+            }
+            if (typeof item === 'object') {
+                console.log("Parsed item >>>", JSON.stringify(item));
+                console.log("item 출력 >>>> ", item)
+
+                    if (item["price"] !== undefined) {
+                        currentTotal += item["price"] * item["quantity"];
+    
+                        cartItems.innerHTML += `
+                            <div class="cart-item">
+                                <img src="${item["image"]}">
+                                <span>${item["menu_name"]}</span>
+                                <span>${item["price"]}원</span>
+                                <span>${item["quantity"]}개</span>
+                                <button class="remove" onclick="removeItem('${item["menu_name"]}')">삭제</button>
+                            </div>`;
+                    }
+                    
+                }
+        }
+        document.getElementById('totalPrice').textContent = `총 가격: ${currentTotal}원`;
+        handleScrollArrows();
+        }
+
+    
         
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc, quantity) {
@@ -31,7 +66,7 @@ let cart = {};
         axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
                 console.log("장바구니 새로고침 해보기 >>>> ", cart)
-                updateCartDisplay(cart);
+                updateCartDisplay(response.data.cart_items);
             })
             .catch(error => {
                 console.error('Error adding item to cart:', error);
@@ -111,39 +146,6 @@ let cart = {};
         });
     }
 
-    function updateCartDisplay(cartData) {
-        let currentTotal = 0;
-        cartItems.innerHTML = '';
-        console.log("cart 확인해보기 >>>>> ", cartData)
-        for (let name in cartData) {
-            let item = cartData[name];
-            // Check if item is a string or an object
-            if (typeof item === 'string') {
-                // Parse string to object
-                item = JSON.parse(item);
-            }
-            if (typeof item === 'object') {
-                console.log("Parsed item >>>", JSON.stringify(item)); // Log as string for clarity
-                console.log("item 출력 >>>> ", item)
-                if (item["price"] !== undefined) {
-                    console.log("price 가 undefined 인지 >>>>> ", item["price"])
-                    currentTotal += item["price"] * item["quantity"];
-    
-                    cartItems.innerHTML += `
-                        <div class="cart-item">
-                            <img src="${item["image"]}">
-                            <span>${item["menu_name"]}</span>
-                            <span>${item["price"]}원</span>
-                            <span>${item["quantity"]}개</span>
-                            <button class="remove" onclick="removeItem('${item["menu_name"]}')">삭제</button>
-                        </div>`;
-                }
-        }
-        }
-    
-        document.getElementById('totalPrice').textContent = `총 가격: ${currentTotal}원`;
-        handleScrollArrows();
-    }
 
     function handleScrollArrows() {
         const cartItems = document.getElementById('cartItems');
