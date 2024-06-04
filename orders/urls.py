@@ -20,4 +20,5 @@ urlpatterns = [
     path("cart/clear/", views.clear_cart, name="clear_cart"),
     path("check-redis/", views.check_redis_connection, name="check-redis-connection"),
     path("cart/update/", views.add_quantity, name="add_quantity"),
+    path("submit/", views.submit_order, name="submit_order"),
 ]

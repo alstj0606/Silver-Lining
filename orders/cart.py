@@ -48,6 +48,12 @@ class Cart:
         # cart_key : mega 광화문점
         # mega --> 장바구니 mega 광화문점 한 대만 있어야 함
 
+## **Fetching Cart Data**:
+    def get_cart(self):
+        redis_conn = get_redis_connection("default")
+        cart_data = redis_conn.hgetall(self.cart_key)
+        return {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
+
 ## **Adding an Item to the Cart**:
     def add_to_cart(self, item):
         redis_conn = get_redis_connection("default")
@@ -58,13 +64,15 @@ class Cart:
         image = item['image']
 
         item_data = json.dumps({
+            'menu_name': menu_name,
             'quantity': quantity,
             'price': price,
             'image': image
         })
-
+        print("\n\n type menu_name >>", type(menu_name))
+        print("\n\n item_data type", type(item_data))
         redis_conn.hset(self.cart_key, menu_name, item_data)
-        print("\n\n\n redis에 저장이 잘 됐는지: ")
+        print("\n\n\n redis에 저장이 잘 됐는지: ", self.cart_key, menu_name, item_data)
 
 ## **Updating Quantity**:
     def update_quantity(self, item_data):
@@ -75,6 +83,8 @@ class Cart:
         print("\n\n item_data 잘 넘어왔나: ", item_data)
         name = item_data["name"]
         print("\n\n name >>> ", name)
+        price = item_data["price"]
+        quantity = item_data["quantity"]
         update_data = json.dumps(item_data)
         redis_conn.hset(self.cart_key, name, update_data)
 
@@ -101,12 +111,6 @@ class Cart:
         redis_conn = get_redis_connection("default")
         redis_conn.delete(self.cart_key)
 
-## **Fetching Cart Data**:
-
-    def get_cart(self):
-        redis_conn = get_redis_connection("default")
-        cart_data = redis_conn.hgetall(self.cart_key)
-        return {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
 
     # # 항목 추가
     # def add(self, item):

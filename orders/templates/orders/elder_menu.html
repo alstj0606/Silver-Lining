@@ -267,9 +267,11 @@
             <!-- Menu items will be populated here dynamically -->
         </div>
 
+        {% comment %} 카트 부분 {% endcomment %}
         <div class="cartarrowContainer">        
             <div id="cartContainer" class="cart">
                 <div id="cartItems">
+                    {% comment %} axios 써야 함 {% endcomment %}
                     <!-- Cart items will be populated here dynamically -->
                 </div>
             </div>
@@ -309,6 +311,10 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+    window.addEventListener('load', function () {
+        fetch(`/orders/switch-language/?lang="ko-KR"`)
+    });
+
     const recommended_menu_string = localStorage.getItem('recommended_menu');
     const recommended_menu = JSON.parse(recommended_menu_string);
     const responseText = localStorage.getItem('customer_message');
@@ -318,12 +324,11 @@
     const popupName = document.getElementById('popup-name');
     const popupPrice = document.getElementById('popup-price');
     const closePopup = document.getElementById('closePopup');
+    const username = 
 
     document.addEventListener('DOMContentLoaded', function() {
-        // const recommendationsElement = document.getElementById('recommendations'); 
-        // Function to update the menu based on hashtags
-
-    console.log("Calling axios.get with parameters:", { params: { recommended_menu: recommended_menu_string } });
+    console.log("페이지 로딩 후 메뉴 조회, 장바구니 조회 >>> ")
+    // 메뉴 조회
     axios.get('/orders/orderbot/', { params: { recommended_menu: recommended_menu_string } })
         .then(response => {
             const menuData = response.data.recommends; // assuming your API returns menus as an array
@@ -362,12 +367,32 @@
             console.error('메뉴 업데이트 중 오류 발생:', error);
         });
 
-        if (responseText) {
-            console.log("responseText 탔는지 >>>>>>>>>", responseText)
-            speak(responseText);
-        }
+        // 장바구니 조회}
+        console.log("장바구니 조회 username >>>>> " )
+        
+        axios.get('/orders/cart/')
+        .then(response => {
+            const cartData = response.data.context;
+            console.log("cartData >>>>>", cartData)
+            console.log("cartData type >>>", typeof cartData)
+            cart = cartData
+            ? cartData
+            :{};
+            updateCartDisplay(cartData);
+        })
+        .catch(error => {
+            console.error('카트 데이터 fetch 실패:', error);
         });
-
+        
+        // Handle event listeners for buttons
+        document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+        document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
+    });
+    
+    if (responseText) {
+        console.log("responseText 탔는지 >>>>>>>>>", responseText)
+        speak(responseText);
+    }
     
 
     function speak(text) {

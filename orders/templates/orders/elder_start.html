@@ -145,6 +145,10 @@
     
     <script>
         window.addEventListener('load', function () {
+            fetch(`/orders/switch-language/?lang="ko-KR"`)
+        });
+        
+        window.addEventListener('load', function () {
             console.log(">>>>>>>>>>>>> 실행");
             const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
             requestPermissions().then(() => {

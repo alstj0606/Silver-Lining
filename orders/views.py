@@ -348,21 +348,40 @@ class orderbot(APIView):
 
         return Response({'result': result})
     
+# 장바구니 페이지 뷰
+@api_view(['GET'])
+def view_cart(request):
+    print("\n\n request 객체라도 나오는지: ", request)
+    print("\n\n request의 data: ", request.data)
+    # {"username": "mega"}
+    username = request.user.username
+    print("\n\n\n username 이 잘 들어왔는지: ", username)
+    cart = Cart(username)
+    context = {"cart_items": cart.get_cart()}
+    print("\n\n\n context가 받아와지는지: ", context)
+    return Response({"context": context})
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
 def add_to_cart(request):
     print("\n\n add to cart의 request는: ", request)
     if request.method == "POST":
-        # username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-        # print("\n\n request user >> ", request.user)
-        username = request.POST.get("username")
-        image = request.POST.get("image")
-        name = request.POST.get("name")
-        price = int(request.POST.get("price"))
-        quantity = int(request.POST.get("quantity"))
+        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        data = json.loads(request.body)
+        print("\n\n data >>>>", data)
+        print("\n\n request user >>>> ", request.user)
+        name = data["name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+        print("\n\n name: " , name)
+        # if 이미 장바구니에 있으면 quantity += 1, 없으면 quantity = 1
+        # quantity = int(data["quantity"])
         
         cart = Cart(username)
+        store_id = request.user.id
+        menu = Menu.objects.get(store_id = store_id, food_name = name)
+        print("\n\n add_to_cart 의 menu 필터링", menu)
+        image = menu.img
+        price = menu.price
+        quantity = 1
         item = CartItem(image, name, price, quantity)
         serializer = CartSerializer(item)
         print("\n\n serializer.data: ", type(serializer.data))
@@ -370,40 +389,26 @@ def add_to_cart(request):
         
         return JsonResponse({"message": "Item added to cart"})
 
-# 장바구니 페이지 뷰
-@api_view(['GET'])
-def view_cart(request):
-    print("\n\n request 객체라도 나오는지: ", request)
-    print("\n\n request의 data: ", request.data)
-    # {"username": "mega"}
-    username = request.data.get("username")
-    print("\n\n\n username 이 잘 들어왔는지: ", username)
-    cart = Cart(username)
-    context = {"cart_items": cart.get_cart()}
-    print("\n\n\n context가 받아와지는지: ", context)
-    return Response({"context": context})
     
 # 장바구니 항목 수량 수정
 @csrf_exempt
 @api_view(['POST'])
 def add_quantity(request):
     if request.method == "POST":
-    # username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-    # print("\n\n request user >> ", request.user)
-        username = request.POST.get("username") # mega
+        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        print("\n\n request.user.username: ", username)
         print("\n\n add_quantity username: ", username)
-        name = request.POST.get("name") # 아메리카노
+        name = request.POST.get("name") # 카페라떼
         print("\n\n name은 잘 들어왔는지: ", name)
-        quantity = int(request.POST.get("quantity")) # 3
+        quantity = int(request.POST.get("quantity")) # 8
         print("\n\n quantity 잘 들어왔는지: ", quantity)
 
     cart = Cart(username)
-    # 1. name, quantity, price, img 다 redis에 저장하는 방식 {"name": {"quantity": , "price": , "img": }
-    # serializer 는 returnDict --> dict 로 바꿔서 사용
-    # 여기서 serializer로 dict 형식으로 보내준다 {"name": , "quantity": }
-    # menu = Menu.objects.get(store_id = request.user.id).filter(food_name = name)
-    menu = Menu.objects.filter(store_id = 2, food_name = name).first()
-    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu, menu.food_name, menu.img, menu.price)
+    menu = Menu.objects.get(store_id = 2, food_name = name)
+    print("\n\n get으로 id, food_name 같이: ", menu)
+    # filter_menu = Menu.objects.filter(store_id = 2, food_name = name).first()
+    # print("\n\n filter로 id, food_name 같이: ", filter_menu)
+    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu.food_name, menu.img, menu.price)
     image = menu.img
     price = menu.price
     item = CartItem(image, name, price, quantity)
@@ -422,8 +427,7 @@ def add_quantity(request):
 @api_view(['POST'])
 def remove_from_cart(request, menu_name):
     print("\n\n remove_from_cart() 타는지>>>" )
-    # username = request.user.username
-    username = request.POST.get("username")
+    username = request.user.username
     print("\n\n remove() username: ", username)
     print("\n\n menu_name: ", menu_name)
     cart = Cart(username)
@@ -434,11 +438,23 @@ def remove_from_cart(request, menu_name):
 @csrf_exempt
 @api_view(['POST'])
 def clear_cart(request):
-    # user_id = request.user.id
-    username = request.POST.get("username")
+    username = request.user.username
     cart = Cart(username)
     cart.clear()
     return Response({"message": "장바구니 전체 삭제"})
+
+@csrf_exempt
+@api_view(['POST'])
+def submit_order(request):
+    # Handle order submission logic
+    username = request.user.username
+    items = request.data.get("items")
+    total = request.data.get("total")
+
+    # Process the order (database operations, etc.)
+    cart = Cart(username)
+    cart.clear()
+    return Response({"message": "Order submitted successfully"})
 
 # redis 실행 확인
 def check_redis_connection(request):
@@ -447,3 +463,11 @@ def check_redis_connection(request):
         return JsonResponse({"message": "Redis connected successfully"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+# 1. html 장바구니와 연결
+# 4. 장바구니의 데이터 결제하기 누르면 order에 전달되도록 (지금 [] 전달 되고 있음)
+
+
+# 2. 음성으로 뽑아낸 것 전달 -> views.py 에서 실행 하는 것
+# 3. drf API로... ?? 후순위 (현재 작동이 잘 되고 있음)
+# 5. 음성 대기 - speak() & startSpeechRecognition() 무한 반복 while 사용하면 될 듯
