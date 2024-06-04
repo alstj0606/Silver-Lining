@@ -17,6 +17,11 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
+# 사용자 추가 및 권한 설정
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
+    adduser appuser video && \
+    chown -R appuser /app
+
 # 애플리케이션 코드 복사
 COPY . /app/
 
