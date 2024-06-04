@@ -10,16 +10,6 @@ services:
     depends_on:
       - db
       - redis
-      - migration
-
-  migration:
-    command:
-      - python3 manage.py migrate
-      - python3 manage.py compilemessgae
-    volumes:
-      - .:/app
-    depends_on:
-      - db
 
   db:
     image: postgres:latest
