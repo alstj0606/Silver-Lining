@@ -34,6 +34,10 @@ def switch_language(request):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+def main_page(requset):
+    return render(requset, 'orders/mainpage.html')
+
+
 # 주문을 시작하는 페이지를 렌더링합니다.
 def start_order(request):
     return render(request, 'orders/start_order.html')
