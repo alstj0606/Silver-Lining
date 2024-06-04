@@ -69,6 +69,7 @@ class Cart:
             'price': price,
             'image': image
         })
+        print("\n\n item_data 는 잘 들어온건지 >>>> ", item_data)
         print("\n\n type menu_name >>", type(menu_name))
         print("\n\n item_data type", type(item_data))
         redis_conn.hset(self.cart_key, menu_name, item_data)

@@ -2,34 +2,36 @@ let cart = {};
 
         
     // 장바구니에 메뉴 추가
-    function addItem(name, price, imgSrc) {
+    function addItem(name, price, imgSrc, quantity) {
         // const username = 'mega'; // Replace with actual logic to get current username
         console.log("addItem name 들어오는지 >>>>>>", name) // 잘 찍히고 있음
         console.log("price 들어오는지 >>>>>", price) //
         console.log("imgSrc >>>>>", imgSrc) //
-        console.log("params >>>>", { name: name, price:price, imgSrc: imgSrc })
-        axios.post('/orders/add_to_cart/', { name: name, price:price, imgSrc: imgSrc})
+
+        let item = {
+            menu_name: name,
+            price: price,
+            quantity: quantity,
+            image: imgSrc
+        };
+        if (cart[name]) {
+            let existingItem = JSON.parse(cart[name]);
+            existingItem.quantity += 1;
+            cart[name] = JSON.stringify(existingItem);
+            console.log("existingItem 을 거친 cart[name]", cart[name])
+        } else {
+            cart[name] = JSON.stringify(item);
+            console.log("else를 거친 cart[name] >>>> ", cart[name])
+        }
+
+        console.log("cart[name]으로 js 상의 수량이 잘 전달 되는지 >>>>> ", cart[name])
+
+        let cartItem = JSON.parse(cart[name])
+
+        axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
-                let item = {
-                    menu_name: name,
-                    price: price,
-                    quantity: 1,
-                    image: imgSrc
-                };
-                console.log("item 이 잘 구성되어 있는지 >>> ", item)
-                if (cart[name]) {
-                    let existingItem = JSON.parse(cart[name]);
-                    console.log("existingItem >>>>>", existingItem)
-                    existingItem.quantity += 1;
-                    cart[name] = JSON.stringify(existingItem);
-                } else {
-                    console.log("cart[name] stringify >>>>>> ", JSON.stringify(item))
-                    cart[name] = JSON.stringify(item);
-                    console.log("type 확인 >>>>>> ", typeof cart[name])
-                }
                 console.log("장바구니 새로고침 해보기 >>>> ", cart)
                 updateCartDisplay(cart);
-                
             })
             .catch(error => {
                 console.error('Error adding item to cart:', error);

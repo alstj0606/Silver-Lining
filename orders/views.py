@@ -363,16 +363,14 @@ def view_cart(request):
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
-def add_to_cart(request):
+def add_to_cart(request): # 무조건 하나를 더한다
     if request.method == "POST":
         username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)
         print("\n\n data >>>>", data)
         print("\n\n request user >>>> ", request.user)
-        name = data["name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+        name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
         print("\n\n name: " , name)
-        # if 이미 장바구니에 있으면 quantity += 1, 없으면 quantity = 1
-        # quantity = int(data["quantity"])
         
         cart = Cart(username)
         store_id = request.user.id
@@ -380,8 +378,9 @@ def add_to_cart(request):
         print("\n\n add_to_cart 의 menu 필터링", menu)
         image = menu.img
         price = menu.price
-        quantity = 1
+        quantity = data["quantity"]
         item = CartItem(image, name, price, quantity)
+        print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
         serializer = CartSerializer(item)
         print("\n\n serializer.data: ", type(serializer.data))
         cart.add_to_cart(serializer.data)

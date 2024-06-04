@@ -335,7 +335,7 @@
 
             menuData.forEach((menu, index) => {
                 const menuItem = `
-                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', ${1})">
                         <h2>${menu.food_name}</h2>
                         <div class="menu-image">
                             <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
@@ -349,7 +349,7 @@
                     popupImage.src = menu.img_url;
                     popupName.textContent = menu.food_name;
                     popupPrice.textContent = `${menu.price}원`;
-                    popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`);
+                    popupContainer.setAttribute('onclick', `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', ${1})`);
                     popupOverlay.style.display = 'flex';
                 } else {
                     // Inserting menu item into recommendations container
