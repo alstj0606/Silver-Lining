@@ -86,33 +86,33 @@ WSGI_APPLICATION = 'SilverLining.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
+#         'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
-        'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
+        'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
+        'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
+        'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
+        'PORT': '5432',
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
-#         'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
-#         'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
-#         'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
-#         'PORT': '5432',
-#     }
-# }
-
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://redis:6379/1',
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
@@ -179,12 +179,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-#
-# CELERY_ALWAYS_EAGER = True
-# CELERY_BROKER_URL = 'redis://redis:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-# CELERY_ACCEPT_CONTENT = ['application/json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Asia/Seoul'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_ALWAYS_EAGER = True
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'
