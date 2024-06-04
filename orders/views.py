@@ -121,7 +121,6 @@ class MenusAPI(APIView):
         ]
         # 전체 페이지 수를 가져옵니다.
         total_pages = paginator.num_pages
-        print(menu_list)
         return menu_list, total_pages
 
     # GET 요청에 대한 메뉴 목록을 반환합니다.
@@ -155,7 +154,6 @@ class MenusAPI(APIView):
             data = request.data
             selected_items = data.get('items', [])
             total_price = data.get('total_price', 0)
-            print("selected_items : ", selected_items)
             # 오늘 날짜를 가져옵니다.
             today = datetime.now().date()
 
