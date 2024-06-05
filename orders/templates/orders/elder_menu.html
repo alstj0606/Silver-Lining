@@ -457,7 +457,8 @@ function startSpeechRecognition() {
                     console.log("recommended_menu>>>>>>>>>>>>>>>", recommended_menu)
                     displayRecommendations(recommended_menu, responseText);
                 } else {
-                    console.warn("Unexpected response data format:", response.data);
+                    refreshCart();
+                    // console.warn("Unexpected response data format:", response.data);
                 }
             })
             .catch(function (error) {

@@ -26,7 +26,6 @@ from .serializers import CartSerializer
 
 from rest_framework.decorators import api_view
 
-from django.http import QueryDict
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -279,14 +278,6 @@ def face_recognition(request):
 
     return redirect("orders:menu")
 
-class elderMenuAPI(APIView):
-    def get():
-        pass
-
-    def post():
-        pass
-
-
 class orderbot(APIView):
     @staticmethod
     def get(request):
@@ -327,16 +318,39 @@ class orderbot(APIView):
         print("\n\n category >>>>>> \n\n", types)
 
         if types == "cart":
-            result = cart_ai(request, inputText, recommended_menu, current_user)
-            ## js로 넘어가서 해당 메뉴를 몇 번 클릭해서 더하거나 몇 개 빼주거나
-            #### category: cart, inputText: 아메리카노 두 잔 넣어줘 
-            #### gpt 가 받아서 어떤 메뉴를 , 몇 개를, 어
-            ## 1. orderbot.py에서 저장된 텍스트에서 맥락을 파악해 넘겨주는 함수가 필요함 (어떤 메뉴를/ 몇개를/ 어떻게) + 어떤 메뉴의 정확도 향상을 위해서는 recommended menu도 필요 (왼쪽 거, 처음 거 등)
-            ## 2. axios.get으로 여기서 넘겨준 결과를 가지고 장바구니 관련 기능을 실행해주어야 함. "아메리카노/두개/장바구니에 추가", "바닐라라떼/하나/장바구니에서 삭제"
-            ## 예로 Response({'menu_name':menu_name, 'number':number, 'action': action})
-            ## menu_name은 현재 우리가 가지고 있는 메뉴 내에서만 파악하라고 해야 함
-            ## 숫자 파악에서 그냥 "바닐라라떼 줘" 에도 숫자를 파악할 수 있도록 해야 함. 0개로 출력되지 않게.
-            ## action은 add, delete 등의 옵션 / 수정도 add, delete로 구현할 수 있을지도? ( ~ 넣고 ~빼줘, ~를 ~로 바꿔줘)
+            # view_cart로 장바구니 정보를 가져옴
+            current_cart = Cart(current_user.username)
+            current_cart_get = current_cart.get_cart()
+            print("\n\n\n current_cart가 어떤 형태로 들어오는지 : ", current_cart_get)
+
+            result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
+
+            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
+            username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+            name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+            # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
+            print("\n current_cart_get의 타입", type(current_cart_get))
+            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+            get_menu = json.loads(current_cart_get[name])
+            print("\n\n get_menu 의 타입 : ", type(get_menu))
+            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
+            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
+
+            # store_id = request.user.id
+            # menu = Menu.objects.get(store_id = store_id, food_name = name)
+            # print("\n\n add_to_cart 의 menu 필터링", menu)
+            # image = menu.img
+            # price = menu.price
+            # quantity = data["quantity"]
+            # item = CartItem(image, name, price, quantity)
+            # print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+            # serializer = CartSerializer(item)
+            # print("\n\n serializer.data: ", type(serializer.data))
+            cart = Cart(username)
+            cart.add_to_cart(get_menu)
+            
+            return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
+
             """
             ex ) "바닐라라떼 한 개로 바꿔줘."
             cart_ai를 거쳐서 quantity 값을 받고, action도 받고, 메뉴 이름도 받아와야 함 (음성 인식한 것을 분석하는 함수)
@@ -371,6 +385,13 @@ def view_cart(request):
     print("\n\n\n username 이 잘 들어왔는지: ", username)
     cart = Cart(username)
     context = {"cart_items": cart.get_cart()}
+    """
+    context >>>>>> 
+    {'cart_items': 
+    {'Vanilla Latte': '{"menu_name": "Vanilla Latte", "quantity": 2, "price": 5000, "image": "/media/menu_images/348719d11ab5b_j8HnmzP.png"}', 
+    '카페라떼': '{"menu_name": "\\uce74\\ud398\\ub77c\\ub5bc", "quantity": 4, "price": 4500, "image": "/media/menu_images/unnamed_iSy0wsw.png"}', 
+    'Iced Americano': '{"menu_name": "Iced Americano", "quantity": 2, "price": 5000, "image": "/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg"}'}}
+    """
     print("\n\n\n context가 받아와지는지: ", context)
     cart_data = context.get("cart_items",{})
     print("\n\n cart_data 어떻게 생겼는지 >>>> ", cart_data)
@@ -384,17 +405,17 @@ def add_to_cart(request):
         data = json.loads(request.body)
         print("\n\n data >>>>", data)
         print("\n\n request user >>>> ", request.user)
-        name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
-        print("\n\n name: " , name)
+        menu_name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+        print("\n\n name: " , menu_name)
         
         cart = Cart(username)
         store_id = request.user.id
-        menu = Menu.objects.get(store_id = store_id, food_name = name)
+        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
         print("\n\n add_to_cart 의 menu 필터링", menu)
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
-        item = CartItem(image, name, price, quantity)
+        item = CartItem(image, menu_name, price, quantity)
         print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
         serializer = CartSerializer(item)
         print("\n\n serializer.data: ", type(serializer.data))

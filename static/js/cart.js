@@ -34,11 +34,22 @@ let cart = {};
         handleScrollArrows();
         }
 
+    function refreshCart() {
+        axios.get('/orders/cart/')
+        .then(response => {
+            const cartData = response.data.cart_items ? response.data.cart_items : {};
+            console.log("cartData type >>>", typeof cartData)
+            console.log("cartData here >>>>> ",cartData)
+            updateCartDisplay(cartData);
+        })
+        .catch(error => {
+            console.error('카트 데이터 fetch 실패:', error);
+        });
+    }
     
         
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc, quantity) {
-        // const username = 'mega'; // Replace with actual logic to get current username
         console.log("addItem name 들어오는지 >>>>>>", name) // 잘 찍히고 있음
         console.log("price 들어오는지 >>>>>", price) //
         console.log("imgSrc >>>>>", imgSrc) //
@@ -67,8 +78,9 @@ let cart = {};
 
         axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
+                console.log("Unexpected Response Data Format >>>")
                 console.log("장바구니 새로고침 해보기 >>>> ", cart)
-                updateCartDisplay(response.data.cart_items);
+                refreshCart();
             })
             .catch(error => {
                 console.error('Error adding item to cart:', error);
@@ -127,16 +139,7 @@ let cart = {};
                 console.log("cart[name] >>>>>> ", cart[name])
                 delete cart[name];
                 console.log("cart[name] 2번째 >>>>>> ", cart[name])
-                axios.get('/orders/cart/')
-                .then(response => {
-                    const cartData = response.data.cart_items ? response.data.cart_items : {};
-                    console.log("cartData type >>>", typeof cartData)
-                    console.log("cartData here >>>>> ",cartData)
-                    updateCartDisplay(cartData);
-                })
-                .catch(error => {
-                    console.error('카트 데이터 fetch 실패:', error);
-                });
+                refreshCart();
             })
             .catch(error => {
                 console.error('Error removing item from cart:', error);
@@ -148,7 +151,7 @@ let cart = {};
         axios.post('/cart/clear/', { username })
             .then(response => {
                 cart = {};
-                updateCartDisplay();
+                refreshCart();
             })
             .catch(error => {
                 console.error('Error clearing cart:', error);

@@ -20,9 +20,9 @@ def redis_test(request):
     
 
 class CartItem:
-    def __init__(self, image, name, price, quantity):
+    def __init__(self, image, menu_name, price, quantity):
         self.image = image
-        self.name = name
+        self.menu_name = menu_name
         self.price = price
         self.quantity = quantity
 
@@ -30,7 +30,7 @@ class CartItem:
         return {
             "item_id": self.item_id,
             "image": self.image,
-            "name": self.name,
+            "menu_name": self.menu_name,
             "price": self.price,
             "quantity": self.quantity
         }
@@ -61,7 +61,7 @@ class Cart:
     def add_to_cart(self, item):
         redis_conn = get_redis_connection("default")
         print("\n\n item이 어떻게 들어왔는지 : ", item)
-        menu_name = item['name']
+        menu_name = item['menu_name']
         quantity = item['quantity']
         price = item['price']
         image = item['image']

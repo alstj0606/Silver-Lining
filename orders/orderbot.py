@@ -2,7 +2,7 @@
 from openai import OpenAI
 from django.conf import settings
 from menus.models import Menu, Hashtag
-
+import json
 
 def get_user_menu_and_hashtags(user):
     # 현재 로그인된 사용자의 메뉴 가져오기
@@ -78,6 +78,7 @@ def request_type(client, input_text, recommended_menu, current_user):
     """
 
     inputText = ""
+    types = ""
 
     try:
         for line in ai_response.split('\n'):
@@ -207,11 +208,12 @@ def bot(request, input_text, current_user):
 
     return customer_message, recommended_menu
 
-
-def cart_ai(request, input_text, recommended_menu, current_user):
+# inputText가 장바구니 안의 데이터를 수정하는 cart 유형일 때:
+def cart_ai(request, input_text, recommended_menu, current_user, current_cart_get):
+    # 사용자의 업종
     category = current_user.category
 
-    # 사용자의 메뉴 및 해시태그  가져오기
+    # 사용자의 메뉴 및 해시태그 가져오기
     menu, hashtags = get_user_menu_and_hashtags(current_user)
 
     # 카테고리에 따라 시스템 지침 작성
@@ -222,8 +224,11 @@ def cart_ai(request, input_text, recommended_menu, current_user):
     else:
         category_text = "음식점"
 
+    print("\n\n json으로 current_cart 잘 풀어줬는지", current_cart_get)
+
     system_data = f"""
         You are a distinguisher of the input text, detecting the menu, the number of the detected menu, and the action to perform.
+        When extracting the menu, number, and action, {current_cart_get} should be considered.
         """
 
     system_output = f"""
@@ -231,8 +236,15 @@ def cart_ai(request, input_text, recommended_menu, current_user):
         Also the input text is most likely to include the number of the addressed menu.
         If there is no indication of the number of the menu and includes only the menu name and the action, it has high possibility of indicating the number as one.
         The action is related to cart, thus it might be adding or deleting the menu in the cart.
-        The action must be in a word, like "add" or "delete."
-        The output format should be "Menu: menu_name, Number: number_of_menus, Action: action."
+        The action must be one of these two: add or delete, other action is not allowed.
+        There is a information of the menu's quantity in {current_cart_get}, so based on the information calculate the resulting quantity after the input text is performed.
+        For example, when there is 2 Iced Americano and input text asks to add 1 Iced Americano, you should return the quantity as 3, resulting from adding 1 to 2.
+
+        The output format should be: 
+        Menu: menu_name
+        Calculate: quantity
+
+        You must return quantity as a integer, no other information included in the quantity part.
         If there are more than one menu, divide the input text into the number of menu names.
         Such as, if the input text is "Add one americano, and two vanilla latte in the cart," 
         you should divide this sentence into two sentences, "Add one americano" and "Add two vanilla latte" and process two sentences seperately, resulting two outputs.
@@ -252,21 +264,21 @@ def cart_ai(request, input_text, recommended_menu, current_user):
     ai_response = completion.choices[0].message.content
     print("\n\n cart_ai에서 필요한 부분만 분리 >>>>>>>", ai_response)
 
-    inputText = ""
+    calculate = 0
 
     try:
         for line in ai_response.split('\n'):
-            print()
+            print("\n\n 각 line >>> ", line)
             line = line.strip()  # Remove whitespace from both ends
-            if line.startswith('Input:'):
-                inputText = line.split('Input: ')[1]
-                print("\n\n 응답에서 분리한 inputText:", inputText, "\n\n")
-            elif line.startswith('Type:'):
-                types = line.split('Type: ')[1]
-                print("\n\n 응답에서 분리한 type :", types, "\n\n")
+            if line.startswith('Menu:'):
+                menu = line.split('Menu: ')[1]
+                print("\n\n 응답에서 분리한 inputText:", menu, "\n\n")
+            elif line.startswith('Calculate:'):
+                calculate = line.split('Calculate: ')[1]
+                print("\n\n 응답에서 분리한 type :", calculate, "\n\n")
 
     except IndexError:
         recommended_menu = []
         
-    return types, inputText, recommended_menu
+    return calculate, menu, recommended_menu
 
