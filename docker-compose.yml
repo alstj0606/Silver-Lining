@@ -13,6 +13,8 @@ services:
       - redis
     environment:
       DATABASE_URL: postgres://myuser:mypassword@db:5432/mydb
+    devices:
+      - "/dev/video0:/dev/video0"  # 호스트의 웹캠을 컨테이너에 마운트합니다.
 
 
   db:
