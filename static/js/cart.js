@@ -42,7 +42,8 @@ let cart = {};
         console.log("addItem name 들어오는지 >>>>>>", name) // 잘 찍히고 있음
         console.log("price 들어오는지 >>>>>", price) //
         console.log("imgSrc >>>>>", imgSrc) //
-
+        console.log("quantity >>>>", quantity)
+        console.log("레모네이드 10개 아니라고... >>>", cart[name])
         let item = {
             menu_name: name,
             price: price,
@@ -55,6 +56,7 @@ let cart = {};
             cart[name] = JSON.stringify(existingItem);
             console.log("existingItem 을 거친 cart[name]", cart[name])
         } else {
+            item.quantity = 1
             cart[name] = JSON.stringify(item);
             console.log("else를 거친 cart[name] >>>> ", cart[name])
         }
@@ -107,7 +109,6 @@ let cart = {};
                 'X-CSRFToken': csrfToken
             }
         }).then(response => {
-            alert('Order placed successfully');
             console.log("submitorder 후 data >>> ", response.data)
             window.location.href = '/orders/order_complete/' + response.data.order_number + '/';
         }).catch(error => {
@@ -123,17 +124,14 @@ let cart = {};
                 'X-CSRFToken': csrfToken
             }})
             .then(response => {
-                if (cart[name]) {
-                    cart[name].count -= 1;
-                    if (cart[name].count <= 0) delete cart[name];
-                }
+                console.log("cart[name] >>>>>> ", cart[name])
+                delete cart[name];
+                console.log("cart[name] 2번째 >>>>>> ", cart[name])
                 axios.get('/orders/cart/')
                 .then(response => {
-                    const cartData = response.data.cart_items;
-                    console.log("cartData >>>>>", cartData)
+                    const cartData = response.data.cart_items ? response.data.cart_items : {};
                     console.log("cartData type >>>", typeof cartData)
-                    ? cartData
-                    :{};
+                    console.log("cartData here >>>>> ",cartData)
                     updateCartDisplay(cartData);
                 })
                 .catch(error => {

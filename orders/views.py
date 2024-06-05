@@ -337,6 +337,18 @@ class orderbot(APIView):
             ## menu_name은 현재 우리가 가지고 있는 메뉴 내에서만 파악하라고 해야 함
             ## 숫자 파악에서 그냥 "바닐라라떼 줘" 에도 숫자를 파악할 수 있도록 해야 함. 0개로 출력되지 않게.
             ## action은 add, delete 등의 옵션 / 수정도 add, delete로 구현할 수 있을지도? ( ~ 넣고 ~빼줘, ~를 ~로 바꿔줘)
+            """
+            ex ) "바닐라라떼 한 개로 바꿔줘."
+            cart_ai를 거쳐서 quantity 값을 받고, action도 받고, 메뉴 이름도 받아와야 함 (음성 인식한 것을 분석하는 함수)
+            ex )  바닐라라떼, redis - x = 요청한 quantity, 바꿔줘 == 수량 감소
+            --> 여기로 넘겨주면
+            redis에 넘길 데이터를 지정해주어야 한다. add_to_cart()
+            ex ) 바닐라라떼, 1, 나머지 메뉴 정보
+            --> cart.py에서 redis에 그대로 저장해줌. 같은 키값이면 set 으로 덮어씌워준다.
+            --> 이 정보가 redis에 저장되어 있으므로 updateCartDisplay()를 해주면 반영 끝.
+
+            """
+            
             
         elif types == "menu":
             print("\n\n if menu의 input_text>>>> ", input_text)
@@ -366,7 +378,7 @@ def view_cart(request):
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
-def add_to_cart(request): # 무조건 하나를 더한다
+def add_to_cart(request):
     if request.method == "POST":
         username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)

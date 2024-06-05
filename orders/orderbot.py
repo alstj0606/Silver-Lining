@@ -92,6 +92,7 @@ def request_type(client, input_text, recommended_menu, current_user):
 
     except IndexError:
         recommended_menu = []
+
     return types, inputText, recommended_menu
 
 
@@ -252,7 +253,7 @@ def cart_ai(request, input_text, recommended_menu, current_user):
     print("\n\n cart_ai에서 필요한 부분만 분리 >>>>>>>", ai_response)
 
     inputText = ""
-    ###### 우선 여기까지 작동 되는지
+
     try:
         for line in ai_response.split('\n'):
             print()
@@ -266,5 +267,6 @@ def cart_ai(request, input_text, recommended_menu, current_user):
 
     except IndexError:
         recommended_menu = []
+        
     return types, inputText, recommended_menu
 

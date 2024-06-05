@@ -324,7 +324,6 @@
     const popupName = document.getElementById('popup-name');
     const popupPrice = document.getElementById('popup-price');
     const closePopup = document.getElementById('closePopup');
-    const username = 
 
     document.addEventListener('DOMContentLoaded', function() {
     console.log("페이지 로딩 후 메뉴 조회, 장바구니 조회 >>> ")
@@ -372,11 +371,9 @@
         
         axios.get('/orders/cart/')
         .then(response => {
-            const cartData = response.data.cart_items;
+            const cartData = response.data.cart_items ? response.data.cart_items : {};
             console.log("cartData >>>>>", cartData)
             console.log("cartData type >>>", typeof cartData)
-            ? cartData
-            :{};
             updateCartDisplay(cartData);
         })
         .catch(error => {
