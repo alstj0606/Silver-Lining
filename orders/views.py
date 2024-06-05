@@ -26,6 +26,8 @@ from .serializers import CartSerializer
 
 from rest_framework.decorators import api_view
 
+from django.http import QueryDict
+
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
     lang = request.GET.get('lang', settings.LANGUAGE_CODE)
@@ -442,17 +444,43 @@ def clear_cart(request):
 def submit_order(request):
     if request.method == "POST":
         username = request.user.username
-        data = request.data
-        print("\n\n request.body가 잘 왔는지 : ", data)
-        items = data["items"]
-        total = data["total"]
+        user = request.user
+        json_data = request.data
+        print("\n\n json_data보기 : ", json_data)
+        items = json_data.get('items')
+        total = json_data.get('total')
         print("\n\n items : ", items)
         print("\n\n total : ", total)
 
     # Process the order (database operations, etc.)
     cart = Cart(username)
+    # 데이터베이스에 저장
+
+    today = datetime.now().date()
+
+    # 오늘 생성된 마지막 주문을 가져옵니다.
+    last_order = Order.objects.filter(store=user, created_at__date=today).order_by('-id').first()
+    if last_order:
+        order_number = last_order.order_number + 1
+    else:
+        order_number = 1
+
+    # 새 주문을 생성합니다.
+    new_order = Order.objects.create(
+        order_number=order_number,
+        order_menu=items,
+        total_price=total,
+        status="A",
+        store=user,
+    )
+
     cart.clear()
-    return Response({"message": "Order submitted successfully"})
+    
+    return Response({'order_number': new_order.order_number}, status=201)
+
+
+
+
 
 # redis 실행 확인
 def check_redis_connection(request):

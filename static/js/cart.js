@@ -96,15 +96,15 @@ let cart = {};
         console.log("submitOrder의 Selected Items >>>>", selectedItems)
         console.log("submitOrder의 currentTotal >>>>", currentTotal)
         console.log("csrftoken 가져와지는지 >>>> ", csrfToken)
-        axios({
-            method: 'POST',
-            url: "/orders/submit/",
-            data: JSON.stringify({ 
-                items: selectedItems,
-                total: currentTotal
-            }),
+        console.log("axios post data >>>>>>> ")
+        
+        axios.post("/orders/submit/", JSON.stringify({
+            items: selectedItems,
+            total: currentTotal
+        }), {
             headers: {
-                'X-CSRFToken' : csrfToken
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             }
         }).then(response => {
             alert('Order placed successfully');
@@ -116,14 +116,29 @@ let cart = {};
     }
     
     function removeItem(name) {
-        const username = 'mega';
-        axios.post(`/cart/remove/${name}/`, { username })
+        const csrfToken = getCsrfToken();
+        console.log("menu_name 받아와지는지 >>>> ", name)
+        axios.post(`/orders/cart/remove/${name}/`, {}, 
+            {headers: {
+                'X-CSRFToken': csrfToken
+            }})
             .then(response => {
                 if (cart[name]) {
                     cart[name].count -= 1;
                     if (cart[name].count <= 0) delete cart[name];
                 }
-                updateCartDisplay();
+                axios.get('/orders/cart/')
+                .then(response => {
+                    const cartData = response.data.cart_items;
+                    console.log("cartData >>>>>", cartData)
+                    console.log("cartData type >>>", typeof cartData)
+                    ? cartData
+                    :{};
+                    updateCartDisplay(cartData);
+                })
+                .catch(error => {
+                    console.error('카트 데이터 fetch 실패:', error);
+                });
             })
             .catch(error => {
                 console.error('Error removing item from cart:', error);
