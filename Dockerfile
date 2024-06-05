@@ -6,7 +6,12 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y gettext
 
 # OpenCV와 기타 필요한 패키지 설치
-RUN apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 libopencv-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libopencv-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # 작업 디렉토리 설정
 WORKDIR /app
