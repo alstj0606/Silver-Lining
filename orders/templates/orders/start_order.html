@@ -1,65 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/개.png">
+    <title>Silver Lining</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            color: #ef4040;
+            margin-top: 70px;
+            font-size: 70px;
+        }
+
+        p {
+            font-size: 45px;
+            margin: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 70px;
+        }
+
+        button {
+            width: 800px;
+            height: 900px;
+            font-size: 120px;
+            font-weight: bold;
+            padding: 40px 80px;
+            color: white;
+            background-color: #ef4040;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d93636;
+        }
+
+        .spinner-container {
+            display: none;
+        }
+
+        .status {
+            font-size: 50px;
+            margin-top: 100px;
+            display: none;
+        }
+
+        .en-text {
+            font-size: 0.5em; /* "Place an order" 텍스트 크기 줄이기 */
+        }
+
+        #video {
+            display: none; /* 웹캠 비디오 요소 숨기기 */
+        }
+    </style>
 </head>
 <body>
-<h1>Face Recognition</h1>
-<video id="video" width="640" height="480" autoplay></video>
-<button onclick="startFaceRecognition()">얼굴 인식</button>
+<h1>여기에서 주문하세요!</h1>
+<p>화면을 터치해 주세요</p>
+<p>Please touch the screen</p>
+<div class="button-container">
+    <form id="order-form" method="post" action="{% url 'orders:face_recognition' %}">
+        {% csrf_token %}
+        <button type="submit" id="order-button">
+            <span class="kr-text">주문하기</span>
+            <span class="en-text">Place an order</span>
+        </button>
+        <div class="spinner-container" id="spinner">
+            <div class="spinner-border" style="width: 15rem; height: 15rem;" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+        <div class="status" id="status">
+            <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
+            <br>
+            <span class="kr-text">Facial recognition is being performed</span>
+        </div>
+    </form>
+</div>
 
-{% csrf_token %}
+<!-- 얼굴을 인식할 비디오 요소 -->
+<video id="video" width="320" height="240" autoplay></video>
+<!-- 비디오 스트림을 캡처하여 얼굴 이미지를 표시할 캔버스 요소 -->
+<canvas id="canvas" width="320" height="240"></canvas>
 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-cpu"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // 웹캠 스트림 가져오기
-    navigator.mediaDevices.getUserMedia({video: true})
-        .then(function (stream) {
-            var video = document.getElementById('video');
-            video.srcObject = stream;
-            video.play();
-        })
-        .catch(function (err) {
-            console.error('Error accessing webcam:', err);
-        });
+    window.addEventListener('load', function () {
+        fetch(`/orders/switch-language/?lang="ko-KR"`)
+    });
 
-    // 얼굴 인식 후 이미지 데이터 전송
-    function sendImageToBackend(imageData) {
-        var csrfToken = $('#csrf_token').val();
+    // 웹캠에서 비디오를 가져오고 얼굴을 감지하는 함수
+    async function detectFaceAndSubmit() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const stream = await navigator.mediaDevices.getUserMedia({video: {}});
+        video.srcObject = stream;
+
+        const faceModel = await blazeface.load();
+
+        // setInterval 함수가 반환하는 ID를 저장하여 clearInterval을 통해 멈출 수 있도록 합니다.
+        const intervalId = setInterval(async () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const predictions = await faceModel.estimateFaces(video);
+            if (predictions.length > 0) {
+                const faceImageData = canvas.toDataURL('image/jpeg');
+                submitForm(faceImageData); // 얼굴 감지가 완료되면 자동으로 서버로 데이터를 전송
+                clearInterval(intervalId); // 얼굴이 감지되면 감지 함수를 멈춥니다.
+            }
+        }, 100);
+    }
+
+    // AJAX를 사용하여 폼 제출하는 함수
+    function submitForm(imageData) {
+        // FormData 객체 생성
+        var formData = new FormData();
+
+        // 이미지 데이터를 FormData 객체에 추가
+        var blob = dataURItoBlob(imageData);
+        formData.append('faceImageData', blob, 'face_image.jpeg');
+
+        // CSRF 토큰 가져오기
+        const csrftoken = getCookie('csrftoken');
+
+        // 이미지 데이터가 있는 경우 AJAX 요청 보냄
         $.ajax({
             url: '/orders/face_recognition/',
-            type: 'POST',
-            headers: {'X-CSRFToken': csrfToken},  // CSRF 토큰을 헤더에 포함
-            data: {image_data: imageData},
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+            data: formData,
+            processData: false,  // jQuery가 데이터를 쿼리 문자열로 변환하는 것을 방지
+            contentType: false,   // jQuery가 contentType을 설정하는 것을 방지
             success: function (response) {
+                // 서버 응답을 성공적으로 받은 후에 수행할 작업
                 console.log('Success:', response);
-                // 처리 결과에 따른 동작 수행
+                // 얼굴 나이 확인
+                var ageNumber = response.age_number;
+                // 나이에 따라 페이지 리디렉션
+                if (ageNumber >= 60) {
+                    window.location.href = "{% url 'orders:elder_start' %}";
+                } else {
+                    window.location.href = "{% url 'orders:menu' %}";
+                }
             },
             error: function (xhr, status, error) {
                 console.error('Error:', error);
-                // 에러 처리
+                // 오류 처리
             }
         });
     }
 
-    // 얼굴 인식 버튼 클릭 시 호출되는 함수
-    function startFaceRecognition() {
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        var video = document.getElementById('video');
+    // base64 데이터를 Blob 객체로 변환
+    function dataURItoBlob(dataURI) {
+        // base64를 raw 이진 데이터로 변환
+        var byteString = atob(dataURI.split(',')[1]);
 
-        // 비디오 프레임을 캔버스에 그려서 이미지 데이터 획득
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // mime 컴포넌트 분리
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
 
-        var imageData = canvas.toDataURL('image/jpeg');
+        // 이진 데이터의 바이트를 ArrayBuffer에 작성
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
 
-        // 얼굴 인식 결과를 백엔드로 전송
-        sendImageToBackend(imageData);
+        // ArrayBuffer에서 Blob 객체 생성
+        return new Blob([ab], {type: mimeString});
     }
+
+
+    // CSRF 토큰 가져오는 함수
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.getElementById("order-button").addEventListener("click", function (event) {
+        document.getElementById("spinner").style.display = "block";
+        document.getElementById("status").style.display = "block";
+        document.getElementById("order-button").style.display = "none";
+        event.preventDefault(); // 기본 폼 제출 동작 방지
+        detectFaceAndSubmit(); // 얼굴 감지 및 제출 함수 호출
+    });
 </script>
 </body>
 </html>

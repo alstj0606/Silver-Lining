@@ -65,6 +65,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'SilverLining.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
