@@ -115,21 +115,30 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        const stream = await navigator.mediaDevices.getUserMedia({video: {}});
-        video.srcObject = stream;
+        // 먼저 웹캠 액세스 권한을 확인합니다.
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.error('getUserMedia is not supported');
+            return;
+        }
 
-        const faceModel = await blazeface.load();
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({video: {}});
+            video.srcObject = stream;
 
-        // setInterval 함수가 반환하는 ID를 저장하여 clearInterval을 통해 멈출 수 있도록 합니다.
-        const intervalId = setInterval(async () => {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const predictions = await faceModel.estimateFaces(video);
-            if (predictions.length > 0) {
-                const faceImageData = canvas.toDataURL('image/jpeg');
-                submitForm(faceImageData); // 얼굴 감지가 완료되면 자동으로 서버로 데이터를 전송
-                clearInterval(intervalId); // 얼굴이 감지되면 감지 함수를 멈춥니다.
-            }
-        }, 100);
+            const faceModel = await blazeface.load();
+
+            const intervalId = setInterval(async () => {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const predictions = await faceModel.estimateFaces(video);
+                if (predictions.length > 0) {
+                    const faceImageData = canvas.toDataURL('image/jpeg');
+                    submitForm(faceImageData);
+                    clearInterval(intervalId);
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Error accessing webcam:', error);
+        }
     }
 
     // AJAX를 사용하여 폼 제출하는 함수
