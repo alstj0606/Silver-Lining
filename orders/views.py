@@ -5,6 +5,7 @@ from datetime import datetime
 
 import cv2
 import requests
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
@@ -183,100 +184,68 @@ class MenusAPI(APIView):
 
 # 얼굴 인식을 수행하고 추정된 연령에 따라 리디렉션을 수행합니다.
 def face_recognition(request):
-    # 웹캠 열기
-    cap = cv2.VideoCapture(0)
+    # 이미지 데이터 확인
+    if 'faceImageData' in request.FILES:
+        # 이미지 파일을 받아옴
+        base64_image = request.FILES['faceImageData']
+        # 이미지 파일 처리 로직 추가
+        # 예) 이미지 저장, 처리 등
+        # OpenAI API에 요청합니다.
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {OPEN_API_KEY}"
+        }
 
-    if not cap.isOpened():
-        raise Exception("Cannot open Webcam")
+        instruction = """
+                    Although age can be difficult to predict, please provide an approximate number for how old the person in the photo appears to be. 
+                    Please consider that Asians tend to look younger than you might think.
+                    And Please provide an approximate age in 10-year intervals such as teens, 20s, 30s, 40s, 50s, 60s, 70s, or 80s.
+                    When you return the value, remove the 's' in the end of the age interval.
+                    For example, when you find the person to be in their 20s, just return the value as 20.
+                    Please return the inferred age in the format 'Estimated Age: [inferred age]'.
+                    """
 
-    # 얼굴 인식을 위한 분류기를 로드합니다.
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-    # 프레임 읽기
-    while True:
-        ret, frame = cap.read()
-
-        if not ret:
-            raise Exception("Cannot read frame from webcam")
-        # 흑백 이미지로 변환합니다.
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # 얼굴을 감지합니다.
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
-        if len(faces) > 0:
-            break
-
-    # 웹캠을 닫습니다.
-    cap.release()
-
-    # 이미지를 저장하고 base64로 변환합니다.
-    image_path = "face.jpg"
-    cv2.imwrite(image_path, frame)
-
-    with open(image_path, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-
-    base64_image = f"data:image/jpeg;base64,{encoded_image}"
-
-    # OpenAI API에 요청합니다.
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OPEN_API_KEY}"
-    }
-
-    instruction = """
-                Although age can be difficult to predict, please provide an approximate number for how old the person in the photo appears to be. 
-                Please consider that Asians tend to look younger than you might think.
-                And Please provide an approximate age in 10-year intervals such as teens, 20s, 30s, 40s, 50s, 60s, 70s, or 80s.
-                When you return the value, remove the 's' in the end of the age interval.
-                For example, when you find the person to be in their 20s, just return the value as 20.
-                Please return the inferred age in the format 'Estimated Age: [inferred age]'.
-                """
-
-    payload = {
-        "model": "gpt-4o",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": instruction,
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": base64_image
+        payload = {
+            "model": "gpt-4o",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": instruction,
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": base64_image
+                            }
                         }
-                    }
-                ]
-            }
-        ],
-        "max_tokens": 300
-    }
-    # OpenAI API로 요청을 보냅니다.
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+                    ]
+                }
+            ],
+            "max_tokens": 300
+        }
+        # OpenAI API로 요청을 보냅니다.
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-    try:
-        os.remove(image_path)
-        print(f"{image_path} 이미지가 삭제되었습니다.")
+        # OpenAI API에서 반환된 응답을 파싱합니다.
+        ai_answer = response.json()
+        # 추정된 나이를 가져옵니다.
+        age_message = ai_answer["choices"][0]['message']['content']
+        age = age_message.split("Estimated Age: ")[1].strip()
+        age_number = int(age)
+        print("당신의 얼굴나이 : ", age_number)
 
-    except FileNotFoundError:
-        print(f"{image_path} 이미지를 찾을 수 없습니다.")
+        if age_number >= 60:
+            return redirect("orders:elder_start")
 
-    # OpenAI API에서 반환된 응답을 파싱합니다.
-    ai_answer = response.json()
+        return redirect("orders:menu")
+    else:
+        # 이미지가 없음 에러 응답
+        response_data = {'error': 'No image file received'}
+        return JsonResponse(response_data, status=400)
 
-    # 추정된 나이를 가져옵니다.
-    age_message = ai_answer["choices"][0]['message']['content']
-    age = age_message.split("Estimated Age: ")[1].strip()
-    age_number = int(age)
-    print("당신의 얼굴나이 : ", age_number)
-
-    if age_number >= 60:
-        return redirect("orders:elder_start")
-
-    return redirect("orders:menu")
 
 
 class elderMenuAPI(APIView):
@@ -329,7 +298,7 @@ class orderbot(APIView):
         elif category == "pay":
             print("\n\n elif pay 들어왔는지 \n\n")
             result = 1
-            ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서 
+            ## 결제해줘, 라고 했는데 (장바구니가 비어있으면 안 됨) --> js 에서
             ## orderbot.py 안 가도 됨
             ## js로 넘어가서 결제하기 버튼 눌러주기
         return Response({'result': result})
