@@ -438,12 +438,16 @@ def clear_cart(request):
     return Response({"message": "장바구니 전체 삭제"})
 
 @csrf_exempt
-@api_view(['POST'])
+@api_view(["POST"])
 def submit_order(request):
-    # Handle order submission logic
-    username = request.user.username
-    items = request.data.get("items")
-    total = request.data.get("total")
+    if request.method == "POST":
+        username = request.user.username
+        data = request.data
+        print("\n\n request.body가 잘 왔는지 : ", data)
+        items = data["items"]
+        total = data["total"]
+        print("\n\n items : ", items)
+        print("\n\n total : ", total)
 
     # Process the order (database operations, etc.)
     cart = Cart(username)
@@ -457,11 +461,3 @@ def check_redis_connection(request):
         return JsonResponse({"message": "Redis connected successfully"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
-# 1. html 장바구니와 연결
-# 4. 장바구니의 데이터 결제하기 누르면 order에 전달되도록 (지금 [] 전달 되고 있음)
-
-
-# 2. 음성으로 뽑아낸 것 전달 -> views.py 에서 실행 하는 것
-# 3. drf API로... ?? 후순위 (현재 작동이 잘 되고 있음)
-# 5. 음성 대기 - speak() & startSpeechRecognition() 무한 반복 while 사용하면 될 듯

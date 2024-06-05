@@ -73,25 +73,43 @@ let cart = {};
             });
         }
         
+    function getCsrfToken() {
+        const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        return csrfTokenElement ? csrfTokenElement.value : null;
+    }
+    
+    const csrfToken = getCsrfToken();
+    console.log("csrfToken 정의 이후 바로 >>>>", csrfToken)
 
     function submitOrder() {
-        const selectedItems = Object.entries(cart).map(([name, item]) => ({
-            name,
-            count: item.count
-        }));
+        console.log("submitOrder >>>>>>> ")
+        const csrfToken = getCsrfToken();
+        const selectedItems = Object.entries(cart).map(([name, item]) => {
+            item = JSON.parse(item)
+            return {name: name, count: item.quantity, food_name_ko: item.menu_name};
+        });
+        console.log("원하는 형태의 selectedItems 인지 >>>> ", selectedItems)
     
         // Retrieve the total price directly from the DOM
         let totalPriceElement = document.getElementById('totalPrice');
         let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
         console.log("submitOrder의 Selected Items >>>>", selectedItems)
         console.log("submitOrder의 currentTotal >>>>", currentTotal)
-        axios.post('/orders/submit/', {
-            items: selectedItems,
-            total: currentTotal,
-            username: 'mega'
+        console.log("csrftoken 가져와지는지 >>>> ", csrfToken)
+        axios({
+            method: 'POST',
+            url: "/orders/submit/",
+            data: JSON.stringify({ 
+                items: selectedItems,
+                total: currentTotal
+            }),
+            headers: {
+                'X-CSRFToken' : csrfToken
+            }
         }).then(response => {
             alert('Order placed successfully');
-            clearCart();
+            console.log("submitorder 후 data >>> ", response.data)
+            window.location.href = '/orders/order_complete/' + response.data.order_number + '/';
         }).catch(error => {
             console.error('Error submitting order:', error);
         });
@@ -124,27 +142,7 @@ let cart = {};
             });
     }
     
-    function submitOrder() {
-        const selectedItems = Object.entries(cart).map(([name, item]) => ({
-            name,
-            count: item.count
-        }));
-    
-        // Retrieve the total price directly from the DOM
-        let totalPriceElement = document.getElementById('totalPrice');
-        let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
-    
-        axios.post('/orders/submit/', {
-            items: selectedItems,
-            total: currentTotal,
-            username: 'mega'
-        }).then(response => {
-            alert('Order placed successfully');
-            clearCart();
-        }).catch(error => {
-            console.error('Error submitting order:', error);
-        });
-    }
+
 
 
     function handleScrollArrows() {
