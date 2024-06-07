@@ -1,3 +1,5 @@
+# Dockerfile 내용
+
 # 베이스 이미지 설정
 FROM python:3.10
 
@@ -22,7 +24,3 @@ RUN pip install --upgrade pip && \
 
 # 애플리케이션 코드 복사
 COPY . /app/
-
-# 컨테이너 시작 시 실행할 명령 설정
-CMD ["sh", "-c", "python manage.py migrate && python manage.py compilemessages && gunicorn --bind 0.0.0.0:8000 SilverLining.wsgi:application"]
-
