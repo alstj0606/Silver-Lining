@@ -146,6 +146,10 @@
     
     <script>
         window.addEventListener('load', function () {
+            fetch(`/orders/switch-language/?lang="ko-KR"`)
+        });
+        
+        window.addEventListener('load', function () {
             console.log(">>>>>>>>>>>>> 실행");
             const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
             requestPermissions().then(() => {
@@ -197,14 +201,10 @@
             console.log(">>>>>>>>>>>>> startSpeechRecognition");
             if (!('webkitSpeechRecognition' in window)) {
                 alert("음성 인식이 지원되지 않는 브라우저입니다.");
-                console.log(">>>>>>>>>>>>>>>> if 탔는지");
             } else {
-                console.log(">>>>>>>>>> else 탔는지");
                 const recognition = new webkitSpeechRecognition();
-                console.log(">>>>>>>> recognition 탔는지");
                 recognition.lang = 'ko-KR';
                 recognition.start();
-                console.log(">>>>>>>>>> start() 탔는지");
                 recognition.onresult = function (event) {
                     const transcript = event.results[0][0].transcript;
                     console.log("transcript>>>>>>>>>>>>>", transcript);
@@ -235,8 +235,6 @@
                 recognition.onend = function () {
                     startButton.textContent = '음성 입력 다시 시작';
                     startButton.classList.remove('hidden');
-                    console.log("recognition onend 탔니>>>>>>>>>>");
-                    console.log("textcontent>>>>>>>", textContent);
                 };
             }
         }

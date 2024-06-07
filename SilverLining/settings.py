@@ -115,6 +115,19 @@ CACHES = {
     }
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",  # Redis 서버의 위치
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# 캐시 타임아웃
+CACHE_TTL = 30
+
 AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
 # Password validation
