@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from SilverLining.config import OPEN_API_KEY  # SilverLining 앱의 설정에서 OPEN_API_KEY를 가져옵니다.
+from django.conf import settings  # SilverLining 앱의 설정에서 OPEN_API_KEY를 가져옵니다.
 from menus.models import Menu, Hashtag  # Menu와 Hashtag 모델을 가져옵니다.
 from .bot import bot  # AI 봇 기능을 처리하는 함수를 가져옵니다.
 from .models import Order  # 주문 모델을 가져옵니다.
@@ -223,7 +223,7 @@ def face_recognition(request):
             # OpenAI API에 요청합니다.
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {OPEN_API_KEY}"
+                "Authorization": f"Bearer {settings.OPEN_API_KEY}"
             }
 
             instruction = """
@@ -326,16 +326,17 @@ class orderbot(APIView):
 
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
 
-            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
-            username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-            name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+            print("\n\n\n result >>>>> ", result)  # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
+            username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
+            name = result[1]  # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
             # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
             print("\n current_cart_get의 타입", type(current_cart_get))
-            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get)
             get_menu = json.loads(current_cart_get[name])
             print("\n\n get_menu 의 타입 : ", type(get_menu))
-            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
-            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
+            get_menu["quantity"] = result[0]  # 'str' object does not support item assignment
+            print("\n\n quantity의 값이 업데이트 됐는지 : ",
+                  get_menu)  # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
 
             # store_id = request.user.id
             # menu = Menu.objects.get(store_id = store_id, food_name = name)
@@ -361,7 +362,6 @@ class orderbot(APIView):
             ex ) 바닐라라떼, 1, 나머지 메뉴 정보
             --> cart.py에서 redis에 그대로 저장해줌. 같은 키값이면 set 으로 덮어씌워준다.
             --> 이 정보가 redis에 저장되어 있으므로 updateCartDisplay()를 해주면 반영 끝.
-
             """
 
 
@@ -371,11 +371,12 @@ class orderbot(APIView):
             print("\n\n if menu의 category >>>>>> ", types)
             message, recommended_menu = bot(request, input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
-        elif types =="pay":
+        elif types == "pay":
             print("\n\n elif pay 들어왔는지 \n\n")
             result = 1
 
         return Response({'result': result})
+
 
 # 장바구니 페이지 뷰
 @api_view(['GET'])
@@ -394,24 +395,25 @@ def view_cart(request):
     'Iced Americano': '{"menu_name": "Iced Americano", "quantity": 2, "price": 5000, "image": "/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg"}'}}
     """
     print("\n\n\n context가 받아와지는지: ", context)
-    cart_data = context.get("cart_items",{})
+    cart_data = context.get("cart_items", {})
     print("\n\n cart_data 어떻게 생겼는지 >>>> ", cart_data)
     return Response({"cart_items": context.get("cart_items", {})})
+
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
 def add_to_cart(request):
     if request.method == "POST":
-        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)
         print("\n\n data >>>>", data)
         print("\n\n request user >>>> ", request.user)
-        menu_name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
-        print("\n\n name: " , menu_name)
+        menu_name = data["menu_name"]  # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+        print("\n\n name: ", menu_name)
 
         cart = Cart(username)
         store_id = request.user.id
-        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
+        menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
         print("\n\n add_to_cart 의 menu 필터링", menu)
         image = menu.img
         price = menu.price
@@ -430,16 +432,16 @@ def add_to_cart(request):
 @api_view(['POST'])
 def add_quantity(request):
     if request.method == "POST":
-        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
         print("\n\n request.user.username: ", username)
         print("\n\n add_quantity username: ", username)
-        name = request.POST.get("name") # 카페라떼
+        name = request.POST.get("name")  # 카페라떼
         print("\n\n name은 잘 들어왔는지: ", name)
-        quantity = int(request.POST.get("quantity")) # 8
+        quantity = int(request.POST.get("quantity"))  # 8
         print("\n\n quantity 잘 들어왔는지: ", quantity)
 
     cart = Cart(username)
-    menu = Menu.objects.get(store_id = 2, food_name = name)
+    menu = Menu.objects.get(store_id=2, food_name=name)
     print("\n\n get으로 id, food_name 같이: ", menu)
     # filter_menu = Menu.objects.filter(store_id = 2, food_name = name).first()
     # print("\n\n filter로 id, food_name 같이: ", filter_menu)
@@ -452,17 +454,19 @@ def add_quantity(request):
     cart.update_quantity(item_data)
     return Response({"message": "장바구니 수량 수정"})
 
+
 # 장바구니 항목 제거 뷰
 @csrf_exempt
 @api_view(['POST'])
 def remove_from_cart(request, menu_name):
-    print("\n\n remove_from_cart() 타는지>>>" )
+    print("\n\n remove_from_cart() 타는지>>>")
     username = request.user.username
     print("\n\n remove() username: ", username)
     print("\n\n menu_name: ", menu_name)
     cart = Cart(username)
     cart.remove(menu_name)
     return Response({"message": "해당 메뉴 삭제"})
+
 
 # 장바구니 전체 삭제 뷰
 @csrf_exempt
@@ -472,6 +476,7 @@ def clear_cart(request):
     cart = Cart(username)
     cart.clear()
     return Response({"message": "장바구니 전체 삭제"})
+
 
 @csrf_exempt
 @api_view(["POST"])
@@ -511,9 +516,6 @@ def submit_order(request):
     cart.clear()
 
     return Response({'order_number': new_order.order_number}, status=201)
-
-
-
 
 
 # redis 실행 확인

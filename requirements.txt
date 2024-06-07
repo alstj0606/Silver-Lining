@@ -33,6 +33,7 @@ google-cloud-translate==3.15.3
 googleapis-common-protos==1.63.0
 grpcio==1.64.0
 grpcio-status==1.62.2
+gunicorn==22.0.0
 h11==0.14.0
 h2==3.2.0
 hpack==3.0.0
@@ -45,6 +46,7 @@ kombu==5.3.7
 numpy==1.26.4
 openai==1.30.3
 opencv-python==4.9.0.80
+packaging==24.0
 pillow==10.3.0
 prompt_toolkit==3.0.45
 proto-plus==1.23.0
