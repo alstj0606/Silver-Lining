@@ -53,7 +53,7 @@ function scrollSelectedItemsList(amount) {
 
 document.getElementById('submitOrderBtn').addEventListener('click', function () {
     const selectedItemsArray = Object.entries(selectedItems).map(([name, item]) => {
-        return {name: name, count: item.count};  // 선택된 항목 배열로 변환
+        return {name: name, count: item.count, food_name_ko: item.food_name_ko};  // 선택된 항목 배열로 변환
     });
 
     const totalPrice = calculateTotalPrice(selectedItems);  // 총 가격 계산
@@ -84,6 +84,14 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
         }
     });
 });
+
+function calculateTotalPrice(selectedItems) {
+    let totalPrice = 0;
+    for (const item of Object.values(selectedItems)) {
+        totalPrice += item.price * item.count;  // 선택된 항목의 가격 합산
+    }
+    return totalPrice;
+}
 
 function calculateTotalPrice(selectedItems) {
     let totalPrice = 0;

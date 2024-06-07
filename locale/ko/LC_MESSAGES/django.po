@@ -54,7 +54,7 @@ msgstr "ko-KR"
 
 #: .\orders\templates\orders\menu.html:427
 msgid "output"
-msgstr "en-US"
+msgstr "ko-KR"
 
 #: .\orders\templates\orders\menu.html:428
 msgid "음성입력중"

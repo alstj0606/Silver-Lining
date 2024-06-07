@@ -14,4 +14,11 @@ urlpatterns = [
     path('get_menus/', views.MenusAPI.as_view(), name='get_menus'),  # 데이터베이스에서 메뉴 목록을 조회 가져오는 API
     path('order_complete/<int:order_number>/', views.order_complete, name='order_complete'),  # 주문완료 후 주문 번호 알려주는 함수
     path('orderbot/', views.orderbot.as_view(), name="orderbot"),  # 고령자 탬플릿 조건 인식 구분 봇
+    path("add_to_cart/", views.add_to_cart, name="add_to_cart"),
+    path("cart/", views.view_cart, name="view_cart"),
+    path("cart/remove/<str:menu_name>/", views.remove_from_cart, name="remove_from_cart"),
+    path("cart/clear/", views.clear_cart, name="clear_cart"),
+    path("check-redis/", views.check_redis_connection, name="check-redis-connection"),
+    path("cart/update/", views.add_quantity, name="add_quantity"),
+    path("submit/", views.submit_order, name="submit_order"),
 ]
