@@ -4,6 +4,7 @@ from django.test import TestCase
 from django_redis import get_redis_connection
 from .cart import Cart  # Adjust the import as necessary based on your project structure.
 
+
 # Create your tests here.
 
 class CartTestCase(TestCase):
@@ -11,7 +12,7 @@ class CartTestCase(TestCase):
         # Set up initial conditions for tests
         self.user_id = 'testuser_1'
         self.cart = Cart(self.user_id)
-        
+
         # Ensure the cart is empty at the beginning of each test
         redis_conn = get_redis_connection("default")
         redis_conn.delete(self.cart.cart_key)
@@ -32,7 +33,7 @@ class CartTestCase(TestCase):
         self.cart.remove_from_cart('americano')
         cart_data = self.cart.get_cart()
         self.assertFalse(b'americano' in cart_data, "Failed to remove item from cart")
-        
+
     def test_get_cart(self):
         self.cart.add_to_cart('americano', 1)
         self.cart.add_to_cart('latte', 2)

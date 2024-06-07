@@ -43,8 +43,6 @@ INSTALLED_APPS = [
     ### install_app ###
     'rest_framework',  # REST framework 설치
     'modeltranslation',  # 다국어 지원을 위한 모듈
-    'django_celery_beat',  # 셀러리를 위한 기능
-    'django_celery_results',  # 셀러리를 위한 기능
     'rangefilter',  # 날짜 기간 판별
     ### custom_app ###
     'accounts',  # 사용자 계정 관리 앱
@@ -102,16 +100,6 @@ DATABASES = {
         'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
         'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
         'PORT': '5432',
-    }
-}
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
     }
 }
 
