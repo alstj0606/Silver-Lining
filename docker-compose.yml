@@ -3,9 +3,6 @@ version: '3.8'
 services:
   web:
     build: .
-    command: sh -c "if [ ! -f /app/.initialized ]; then python manage.py migrate --noinput && python manage.py compilemessages && touch /app/.initialized; fi && gunicorn --bind 0.0.0.0:8000 SilverLining.wsgi:application"
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     depends_on:

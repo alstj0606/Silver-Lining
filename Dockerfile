@@ -24,3 +24,9 @@ RUN pip install --upgrade pip && \
 
 # 애플리케이션 코드 복사
 COPY . /app/
+
+# 초기화 작업 추가
+RUN python manage.py migrate --noinput && python manage.py compilemessages
+
+# Gunicorn 실행
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "SilverLining.wsgi:application"]
