@@ -147,11 +147,16 @@ let cart = {};
     }
 
     function clearCart() {
-        const username = 'mega';
-        axios.post('/cart/clear/', { username })
+        console.log("\n\n clearCart 진입했는지 >>>>>>>>")
+        const username = "mega"
+        axios.post('/orders/cart/clear/', {},
+            {headers: {
+                'X-CSRFToken': csrfToken
+            }})
             .then(response => {
                 cart = {};
                 refreshCart();
+                console.log("\n\n clearCart 잘 되고 있나 >>>>>>>>")
             })
             .catch(error => {
                 console.error('Error clearing cart:', error);

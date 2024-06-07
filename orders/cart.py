@@ -114,6 +114,8 @@ class Cart:
     def clear(self):
         redis_conn = get_redis_connection("default")
         redis_conn.delete(self.cart_key)
+        print("\n\n cart.py의 clear>>>>>>>>>", self.cart_key)
+        return "clear다녀감.."
 
 
     # # 항목 추가

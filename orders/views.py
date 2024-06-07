@@ -330,46 +330,43 @@ class orderbot(APIView):
             username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
             name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
             # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
-            print("\n current_cart_get의 타입", type(current_cart_get))
-            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
-            get_menu = json.loads(current_cart_get[name])
+            
+            if name not in current_cart_get:
+                store_id = request.user.id
+                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                print("\n\n add_to_cart 의 menu 필터링", menu)
+                image = menu.img
+                price = menu.price
+                quantity = result[0]
+                item = CartItem(image, name, price, quantity)
+                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+                serializer = CartSerializer(item)
+                get_menu = serializer.data
+                print("\n\n serializer.data: ", type(serializer.data))
+            else:
+                print("\n current_cart_get의 타입", type(current_cart_get))
+                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+                get_menu = json.loads(current_cart_get[name])
             print("\n\n get_menu 의 타입 : ", type(get_menu))
             get_menu["quantity"] = result[0] # 'str' object does not support item assignment
             print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
 
-            # store_id = request.user.id
-            # menu = Menu.objects.get(store_id = store_id, food_name = name)
-            # print("\n\n add_to_cart 의 menu 필터링", menu)
-            # image = menu.img
-            # price = menu.price
-            # quantity = data["quantity"]
-            # item = CartItem(image, name, price, quantity)
-            # print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
-            # serializer = CartSerializer(item)
-            # print("\n\n serializer.data: ", type(serializer.data))
+
             cart = Cart(username)
-            cart.add_to_cart(get_menu)
+            if get_menu["quantity"] == '0' or 0:
+                cart.remove(get_menu["menu_name"])
+                print("\n\n cart.remove 잘 되고 있는지 >>>>>>>>>", get_menu)
+            else:
+                cart.add_to_cart(get_menu)
 
             return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
-
-            """
-            ex ) "바닐라라떼 한 개로 바꿔줘."
-            cart_ai를 거쳐서 quantity 값을 받고, action도 받고, 메뉴 이름도 받아와야 함 (음성 인식한 것을 분석하는 함수)
-            ex )  바닐라라떼, redis - x = 요청한 quantity, 바꿔줘 == 수량 감소
-            --> 여기로 넘겨주면
-            redis에 넘길 데이터를 지정해주어야 한다. add_to_cart()
-            ex ) 바닐라라떼, 1, 나머지 메뉴 정보
-            --> cart.py에서 redis에 그대로 저장해줌. 같은 키값이면 set 으로 덮어씌워준다.
-            --> 이 정보가 redis에 저장되어 있으므로 updateCartDisplay()를 해주면 반영 끝.
-
-            """
 
 
         elif types == "menu":
             print("\n\n if menu의 input_text>>>> ", input_text)
             print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
             print("\n\n if menu의 category >>>>>> ", types)
-            message, recommended_menu = bot(request, input_text, current_user)
+            message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
         elif types =="pay":
             print("\n\n elif pay 들어왔는지 \n\n")
@@ -470,7 +467,9 @@ def remove_from_cart(request, menu_name):
 def clear_cart(request):
     username = request.user.username
     cart = Cart(username)
-    cart.clear()
+    print("\n\n cart>>>>>>>>>", cart)
+    res = cart.clear()
+    print("\n\n cart.clear 잘 가는지>>>>>>>>>", res)
     return Response({"message": "장바구니 전체 삭제"})
 
 @csrf_exempt

@@ -369,7 +369,7 @@
         // 장바구니 조회
         console.log("장바구니 조회 username >>>>> " )
 
-        refreshCart();
+        clearCart();
 
         // Handle event listeners for buttons
         document.getElementById('clearCartBtn').addEventListener('click', clearCart);
@@ -520,6 +520,25 @@ function triggerProceedToPay() {
     console.log("triggerProceedToPay 탔는지 >>>>>>>")
     document.getElementById("submitOrderBtn").click();
 }
+
+(function () {
+    let timeout;
+
+    function resetTimeout() {
+        // 기존의 타임아웃을 클리어
+        clearTimeout(timeout);
+        
+        // 새로운 타임아웃 설정 (30초 후에 페이지 리다이렉트)
+        timeout = setTimeout(() => {
+            clearCart()
+            window.location.href = '/orders/start_order/'; 
+        }, 30000);  // 1분 = 60,000 밀리초
+    }
+
+    // 페이지가 로드될 때와 사용자가 페이지에서 클릭할 때마다 타임아웃을 리셋
+    window.onload = resetTimeout;
+    document.onclick = resetTimeout;
+})();
 
 </script>
 <script src="{% static 'js/cart.js' %}"></script>
