@@ -369,16 +369,7 @@
         // 장바구니 조회
         console.log("장바구니 조회 username >>>>> " )
         
-        axios.get('/orders/cart/')
-        .then(response => {
-            const cartData = response.data.cart_items ? response.data.cart_items : {};
-            console.log("cartData >>>>>", cartData)
-            console.log("cartData type >>>", typeof cartData)
-            updateCartDisplay(cartData);
-        })
-        .catch(error => {
-            console.error('카트 데이터 fetch 실패:', error);
-        });
+        refreshCart();
         
         // Handle event listeners for buttons
         document.getElementById('clearCartBtn').addEventListener('click', clearCart);
