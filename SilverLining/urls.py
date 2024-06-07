@@ -20,12 +20,16 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from orders import views
+
 
 def dummy_favicon(request):
     return HttpResponse(status=204)
 
 
 urlpatterns = [
+    path('', views.main_page, name='mainpage'),  # 맨 처음으로 나오게 될 페이지
+    path('', include('admin_volt.urls')),  # admin_page theme
     path('admin/', admin.site.urls),
     path('orders/', include('orders.urls')),
     path('favicon.ico', dummy_favicon),

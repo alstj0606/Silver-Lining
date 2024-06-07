@@ -22,7 +22,7 @@ def get_recommended_menus(client, input_text, current_user):
 
     # 사용자의 메뉴 및 해시태그  가져오기
     menu, hashtags = get_user_menu_and_hashtags(current_user)
-
+    print(input_text)
     # 카테고리에 따라 시스템 지침 작성
     if category == "CH":
         category_text = "치킨"
@@ -69,20 +69,20 @@ def get_recommended_menus(client, input_text, current_user):
     except IndexError:
         recommended_menu = []
 
-    print("recommended_men >>>>>>>", recommended_menu)
+    print("recommended_menu >>>>>>>", recommended_menu)
     return recommended_menu
 
 
-def generate_final_response(client, recommended_menu, current_user):
+def generate_final_response(client, recommended_menu, input_text):
     system_instructions = f"""
-        When delivering a message to the customer,
-        kindly determine their desired menu item and keep the message concise, preferably to one sentence.
-        The message you respond must include the menu name of recommended_menu[0].
-        The message must be in Korean, and think that you are having a small talk with your customer.
-        There should not be a greetings, though.
         The format of the data I desire as a result is:
         "Message: [content]
         Recommended Menu: {', '.join(recommended_menu)}"
+        When delivering a message to the customer,
+        kindly determine their desired menu item and keep the message concise, preferably to one sentence.
+        The message you respond must include the menu name of recommended_menu[0].
+        Please write the [content] in a language related to {input_text}, and think that you are having a small talk with your customer.
+        There should not be a greetings, though.
         """
 
     # OpenAI API로 요청을 보냅니다.
@@ -112,13 +112,13 @@ def generate_final_response(client, recommended_menu, current_user):
     return customer_message
 
 
-def bot(request, input_text, current_user):
+def bot(input_text, current_user):
     client = OpenAI(api_key=settings.OPEN_API_KEY)
 
     # Getting the recommended menus
     recommended_menu = get_recommended_menus(client, input_text, current_user)
 
     # Generating the final response
-    customer_message = generate_final_response(client, recommended_menu, current_user)
+    customer_message = generate_final_response(client, recommended_menu, input_text)
 
     return customer_message, recommended_menu

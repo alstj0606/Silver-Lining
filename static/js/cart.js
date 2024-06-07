@@ -17,7 +17,7 @@ let cart = {};
 
                     if (item["price"] !== undefined) {
                         currentTotal += item["price"] * item["quantity"];
-    
+
                         cartItems.innerHTML += `
                             <div class="cart-item">
                                 <img src="${item["image"]}">
@@ -27,7 +27,7 @@ let cart = {};
                                 <button class="remove" onclick="removeItem('${item["menu_name"]}')">삭제</button>
                             </div>`;
                     }
-                    
+
                 }
         }
         document.getElementById('totalPrice').textContent = `총 가격: ${currentTotal}원`;
@@ -46,8 +46,8 @@ let cart = {};
             console.error('카트 데이터 fetch 실패:', error);
         });
     }
-    
-        
+
+
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc, quantity) {
         console.log("addItem name 들어오는지 >>>>>>", name) // 잘 찍히고 있음
@@ -86,12 +86,12 @@ let cart = {};
                 console.error('Error adding item to cart:', error);
             });
         }
-        
+
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
-    
+
     const csrfToken = getCsrfToken();
     console.log("csrfToken 정의 이후 바로 >>>>", csrfToken)
 
@@ -103,7 +103,7 @@ let cart = {};
             return {name: name, count: item.quantity, food_name_ko: item.menu_name};
         });
         console.log("원하는 형태의 selectedItems 인지 >>>> ", selectedItems)
-    
+
         // Retrieve the total price directly from the DOM
         let totalPriceElement = document.getElementById('totalPrice');
         let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
@@ -111,7 +111,7 @@ let cart = {};
         console.log("submitOrder의 currentTotal >>>>", currentTotal)
         console.log("csrftoken 가져와지는지 >>>> ", csrfToken)
         console.log("axios post data >>>>>>> ")
-        
+
         axios.post("/orders/submit/", JSON.stringify({
             items: selectedItems,
             total: currentTotal
@@ -127,11 +127,11 @@ let cart = {};
             console.error('Error submitting order:', error);
         });
     }
-    
+
     function removeItem(name) {
         const csrfToken = getCsrfToken();
         console.log("menu_name 받아와지는지 >>>> ", name)
-        axios.post(`/orders/cart/remove/${name}/`, {}, 
+        axios.post(`/orders/cart/remove/${name}/`, {},
             {headers: {
                 'X-CSRFToken': csrfToken
             }})
@@ -157,7 +157,7 @@ let cart = {};
                 console.error('Error clearing cart:', error);
             });
     }
-    
+
 
 
 
@@ -165,7 +165,7 @@ let cart = {};
         const cartItems = document.getElementById('cartItems');
         const upArrow = document.querySelector('.up-arrow');
         const downArrow = document.querySelector('.down-arrow');
-    
+
         if (cartItems.scrollHeight > cartItems.clientHeight) {
             upArrow.style.display = 'block';
             downArrow.style.display = 'block';
@@ -173,23 +173,23 @@ let cart = {};
             upArrow.style.display = 'none';
             downArrow.style.display = 'none';
         }
-    
+
         upArrow.disabled = cartItems.scrollTop === 0;
         downArrow.disabled = cartItems.scrollTop >= (cartItems.scrollHeight - cartItems.clientHeight);
     }
-    
+
     document.querySelector('.up-arrow').addEventListener('click', function() {
         const cartItems = document.getElementById('cartItems');
         cartItems.scrollTop -= 50;
         handleScrollArrows();
     });
-    
+
     document.querySelector('.down-arrow').addEventListener('click', function() {
         const cartItems = document.getElementById('cartItems');
         cartItems.scrollTop += 50;
         handleScrollArrows();
     });
-    
+
     // Invoke handleScrollArrows on page load to set initial arrow states
     handleScrollArrows();
 

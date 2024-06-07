@@ -15,6 +15,7 @@ from pathlib import Path
 from . import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR 설정
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -27,11 +28,12 @@ OPEN_API_KEY = config.OPEN_API_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_volt.apps.AdminVoltConfig',  # admin_page theme 적용
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +43,9 @@ INSTALLED_APPS = [
     ### install_app ###
     'rest_framework',  # REST framework 설치
     'modeltranslation',  # 다국어 지원을 위한 모듈
+    'django_celery_beat',  # 셀러리를 위한 기능
+    'django_celery_results',  # 셀러리를 위한 기능
+    'rangefilter',  # 날짜 기간 판별
     ### custom_app ###
     'accounts',  # 사용자 계정 관리 앱
     'menus',  # 메뉴 관리 앱
@@ -59,6 +64,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'SilverLining.urls'
+
 
 TEMPLATES = [
     {
@@ -81,10 +87,31 @@ WSGI_APPLICATION = 'SilverLining.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
+#         'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
-        'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
+        'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
+        'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
+        'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
+        'PORT': '5432',
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
@@ -121,6 +148,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# admin-page 테마스킨
+LOGIN_REDIRECT_URL = '/'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -140,9 +173,9 @@ LOCALE_PATHS = [
 ]
 
 LANGUAGES = [
-    ('ko', 'Korean'),     # 한국어
-    ('en', 'English'),    # 영어
-    ('ja', 'Japanese'),   # 일본어
+    ('ko', 'Korean'),  # 한국어
+    ('en', 'English'),  # 영어
+    ('ja', 'Japanese'),  # 일본어
     ('zh-hans', 'Chinese'),  # 중국어
 ]
 
@@ -157,7 +190,3 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -269,7 +269,7 @@
         </div>
 
         {% comment %} 카트 부분 {% endcomment %}
-        <div class="cartarrowContainer">        
+        <div class="cartarrowContainer">
             <div id="cartContainer" class="cart">
                 <div id="cartItems">
                     <!-- Cart items will be populated here dynamically -->
@@ -368,14 +368,14 @@
 
         // 장바구니 조회
         console.log("장바구니 조회 username >>>>> " )
-        
+
         refreshCart();
-        
+
         // Handle event listeners for buttons
         document.getElementById('clearCartBtn').addEventListener('click', clearCart);
         document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
     });
-    
+
     if (responseText) {
         console.log("responseText 탔는지 >>>>>>>>>", responseText)
         speak(responseText);
@@ -432,7 +432,7 @@ function startSpeechRecognition() {
                     headers: {
                         'X-CSRFToken': csrfToken
                     }
-                    
+
                 })
                 .then(function (response) {
                     const result = response.data.result;
@@ -480,7 +480,7 @@ function displayRecommendations(recommended_menu, responseText) {
                         <p>${menu.price}원</p>
                     </div>
                 `;
-            
+
                 if (index === 0) {
                     // Populating the popup with the first recommended menu
                     popupImage.src = menu.img_url;

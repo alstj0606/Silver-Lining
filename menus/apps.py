@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 from modeltranslation.decorators import register
 
+
 class MenusConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'  # 기본 자동 필드를 설정합니다.
     name = 'menus'  # 앱의 이름을 지정합니다.
