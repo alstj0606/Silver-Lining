@@ -53,8 +53,41 @@
   
 <br>
 
-## 📝 Project Result
+## 📝 Project
 
+  - Notion : https://www.notion.so/teamsparta/8-silver-lining-f9ee581e81e8456c8d78729434c5ca06
+
+  - Figma : https://www.figma.com/board/CUporczK2kYaCbjQQIDoVO/final-project?node-id=0-1&t=99pB1pcpflZp4QJg-0
+
+
+<br>
+
+## 💭 기술적 의사결정
+
+- OpenAI GPT-3.5-turbo 적용
+    
+    OpenAI의 GPT-3.5-turbo 모델을 사용하여 대화형 인터페이스에서 고객과의 대화를 처리
+    구현 결과: 고객과의 대화에서 자연스러운 대화를 유도하고, 적절한 답변을 제공하는 데 성공
+    
+- 얼굴인식 모델 변경
+    
+    GPT-4o 모델을 사용하여 얼굴인식 기능을 구현
+    구현 결과: 사용자의 얼굴을 정확하게 인식하고, 해당 사용자에게 맞춤형 서비스를 제공하는 데 성공
+    
+- STT, TTS 브라우저 기능 활용
+    
+    브라우저의 기본 STT 및 TTS 기능을 JavaScript를 통해 활용하여 음성인식 및 음성출력 기능을 구현
+    구현 결과: 브라우저 상에서 음성인식과 음성출력이 가능하도록 변경하여 사용자에게 더욱 편리한 환경을 제공하는 데 성공
+    
+- JSON 데이터 전송 및 부트스트랩 활용
+    
+    JavaScript를 통해 JSON 형식으로 데이터를 주고 받으며, 부트스트랩을 활용하여 프론트엔드를 빠르게 개발
+    구현 결과: 페이지를 새로 고치지 않고도 메뉴 변경 및 장바구니 기능을 구현하여 사용자가 원활하게 주문을 진행
+    
+- Admin 페이지 활용
+    
+    Django의 Admin 페이지 기능을 활용하여 User 및 Menu 관련 데이터를 관리
+    핵심 기능: Admin 페이지를 통해 데이터를 쉽게 추가 및 수정할 수 있도록 하여 프로젝트 개발 단계를 진행
 
 <br>
 
