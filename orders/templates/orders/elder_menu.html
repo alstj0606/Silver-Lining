@@ -230,13 +230,6 @@
             margin-top: 10px;
         }
 
-        .clearCartBtn {
-            background-color: #dc3545;
-            height: 120px;
-            width: 221px;
-            font-size: larger;
-        }
-
         .mybtn {
             width: 80%;
             display: flex;
@@ -264,9 +257,7 @@
     <div class="container">
         <h1>이런 음료도 추천드려요.</h1>
 
-        <div>
-            <button id="voiceRestart" class="voiceRestart">음성인식 버튼</button>
-        </div>
+
         <div class="recommendations" id="recommendations">
             <!-- Menu items will be populated here dynamically -->
         </div>
@@ -286,7 +277,7 @@
 
         <div class="submit-container">
             <div id="totalPrice" class="total-price">총 가격: 0원</div>
-            <button id="clearCartBtn" class="clearCartBtn">전체삭제</button>
+            <button id="voiceRestart" class="voiceRestart">음성인식 버튼</button>
             <button id="submitOrderBtn" class="submitOrderBtn">결제하기</button>
         </div>
 
@@ -389,7 +380,6 @@
         clearCart();
 
         // Handle event listeners for buttons
-        document.getElementById('clearCartBtn').addEventListener('click', clearCart);
         document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
     });
 

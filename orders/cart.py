@@ -85,34 +85,3 @@ class Cart:
         print("\n\n cart.py의 clear>>>>>>>>>", self.cart_key)
         return "clear다녀감.."
 
-
-    # # 항목 추가
-    # def add(self, item):
-    #     cart = self.get_cart()
-    #     cart[item.item_id] = item.to_dict()
-    #     r.setex(self.cart_key, settings.CACHE_TTL, json.dumps(cart)) 
-
-    # # 값이 들어간 시점으로부터 지정 캐싱 시간 동안 살아있음
-    # # 값을 수정했을 때 수정 시점으로부터 캐싱 시간이 새롭게 늘어나는 것이 아님
-
-
-    # # 장바구니 가져오기
-    # def get_cart(self):
-    #     cart_data = r.get(self.cart_key)
-    #     if cart_data:
-    #         return json.loads(cart_data)
-    #     return {}
-
-    # # 항목 제거
-    # def remove(self, item_id):
-    #     cart = self.get_cart()
-    #     if item_id in cart:
-    #         del cart[item_id]
-    #         r.setex(self.cart_key, settings.CACHE_TTL, json.dumps(cart))
-
-    # 전체 장바구니 삭제
-    # def clear(self):
-    #     r.delete(self.cart_key)
-
-    #     # 결제하기 누르면 order 테이블 보내서 저장
-    #     # clear()를 작동시켜서 장바구니 캐시를 모두 삭제해준다.
