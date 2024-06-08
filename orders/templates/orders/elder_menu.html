@@ -134,11 +134,7 @@
             font-size: x-large;
             font-weight: bold;
         }
-
-        .arrowContainer{
-
-        }
-
+        
         .up-arrow {
             top: 10px; /* Position above the cart */
         }
@@ -226,6 +222,13 @@
             font-size: xxx-large;
             margin-top: 10px;
         }
+        .restart {
+            width: 250px;
+            height: 100px;
+            font-size: xxx-large;
+            margin-left: 15px;
+            margin-top: 10px;
+        }
 
         .clearCartBtn {
             background-color: #dc3545;
@@ -304,6 +307,7 @@
             <h2 class="name" id="popup-name">메뉴 이름</h2>
             <p class="price" id="popup-price">0원</p>
             <button id="closePopup" class="closePopup">닫기</button>
+            <button id="restart" class="restart">음성인식</button>
         </div>
     </div>
 
@@ -324,6 +328,7 @@
     const popupName = document.getElementById('popup-name');
     const popupPrice = document.getElementById('popup-price');
     const closePopup = document.getElementById('closePopup');
+    // const voiceRestart = document.getElementById('voiceRestart');
 
     document.addEventListener('DOMContentLoaded', function() {
     console.log("페이지 로딩 후 메뉴 조회, 장바구니 조회 >>> ")
@@ -361,10 +366,22 @@
                 event.stopPropagation(); // Stop event from bubbling up
                 popupOverlay.style.display = "none"; // Hide the popup
             });
+            document.getElementById('restart').addEventListener("click", function(event) {
+                console.log("restartt로 func실행>>>>>>>>>")
+                event.stopPropagation(); // Stop event from bubbling up
+                console.log("stopPropagation 되고있나>>>>>>>>>")
+                speakAgain();
+                console.log("spearAgain222 되고있나>>>>>>>>>")
+                popupOverlay.style.display = "none"; // Hide the popup
+            });
+
         })
         .catch(error => {
             console.error('메뉴 업데이트 중 오류 발생:', error);
         });
+
+        document.getElementById('voiceRestart').addEventListener('click', speakAgain);
+
 
         // 장바구니 조회
         console.log("장바구니 조회 username >>>>> " )
@@ -389,8 +406,6 @@
     synth.speak(utterance);
 }
 
-    document.getElementById('voiceRestart').addEventListener('click', speakAgain);
-
 
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -400,7 +415,7 @@
 
     function speakAgain(text) {
         const synth = window.speechSynthesis;
-        text = "새로운 음성입력을 주세요"
+        text = "무엇을 도와드릴까요?"
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ko-KR';
         synth.speak(utterance);
@@ -449,7 +464,7 @@ function startSpeechRecognition() {
                     displayRecommendations(recommended_menu, responseText);
                 } else {
                     refreshCart();
-                    // console.warn("Unexpected response data format:", response.data);
+
                 }
             })
             .catch(function (error) {
@@ -531,7 +546,7 @@ function triggerProceedToPay() {
         // 새로운 타임아웃 설정 (30초 후에 페이지 리다이렉트)
         timeout = setTimeout(() => {
             clearCart()
-            window.location.href = '/orders/start_order/'; 
+            // window.location.href = '/orders/start_order/'; 
         }, 30000);  // 1분 = 60,000 밀리초
     }
 
@@ -545,6 +560,3 @@ function triggerProceedToPay() {
 </body>
 
 </html>
-
-{% comment %} action으로 분류 -> add면 menu를 number 수만큼 눌러준다
--> delete면 menu의 삭제 버튼을 number 수만큼 눌러준다 {% endcomment %}

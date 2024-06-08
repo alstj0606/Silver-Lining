@@ -327,14 +327,14 @@ class orderbot(APIView):
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
 
             print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
-            username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-            name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+            username = request.user.username 
+            name = result[1]
             # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
             
             if name not in current_cart_get:
                 store_id = request.user.id
                 menu = Menu.objects.get(store_id = store_id, food_name = name)
-                print("\n\n add_to_cart 의 menu 필터링", menu)
+                print("\n\n update_cart_menu 의 menu 필터링", menu)
                 image = menu.img
                 price = menu.price
                 quantity = result[0]
@@ -397,7 +397,7 @@ def view_cart(request):
 
 # 장바구니 항목 추가 뷰
 @csrf_exempt
-def add_to_cart(request):
+def update_cart_menu(request):
     if request.method == "POST":
         username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)
@@ -409,7 +409,7 @@ def add_to_cart(request):
         cart = Cart(username)
         store_id = request.user.id
         menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
-        print("\n\n add_to_cart 의 menu 필터링", menu)
+        print("\n\n update_cart_menu 의 menu 필터링", menu)
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
@@ -438,8 +438,6 @@ def add_quantity(request):
     cart = Cart(username)
     menu = Menu.objects.get(store_id = 2, food_name = name)
     print("\n\n get으로 id, food_name 같이: ", menu)
-    # filter_menu = Menu.objects.filter(store_id = 2, food_name = name).first()
-    # print("\n\n filter로 id, food_name 같이: ", filter_menu)
     print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu.food_name, menu.img, menu.price)
     image = menu.img
     price = menu.price

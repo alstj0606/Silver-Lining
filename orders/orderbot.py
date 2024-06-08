@@ -57,25 +57,7 @@ def request_type(client, input_text, recommended_menu, current_user):
     print("\n\n request_type의 AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
     ai_response = completion.choices[0].message.content
     print("\n\n ai response에서 필요한 부분만 분리 >>>>>>>", ai_response)
-    ## Input: 아메리카노 두 잔 넣어 줘
-    ## Category: cart
-    # category -> 결과값에 따라서 어느 ai 로 보낼건지: 
-    """
-    메뉴 추천이면 bot() -> 메뉴 추천, 메시지 -> 음성 메시지 출력, 추천 메뉴 보여주기
-    장바구니면 bot2() -> 대상, 행동을 input에서 뽑아낸다(아메리카노/ 개수 / 넣는 거) ->  대상: 아메리카노, 개수: 2개, 행동: 넣는 거 ---(js로 넣어줄 수 있나?)---> 눌러주면 되는 것
-    아메리카노/ 2개/ 넣는 거 --> views.py ? orderbot --> views.py post() db 아메리카노, 2잔 추가 --> 
-    
-    responseText, category
 
-    views.py:
-            if category == cart:
-                responseText --> 쪼개는거: 메뉴, 개수, 행위
-            elif == menu:
-                response ? ? ? 다시 음성인식 speak() -> speechRecognition() - >
-            category - cart --> 
-            category - menu -->
-            category - pay -->
-    """
 
     inputText = ""
     types = ""
@@ -96,9 +78,6 @@ def request_type(client, input_text, recommended_menu, current_user):
 
     return types, inputText, recommended_menu
 
-
-
-#######################
 
 def get_recommended_menus(client, input_text, current_user):
     # 사용자의 카테고리 가져오기
