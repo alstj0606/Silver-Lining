@@ -3,6 +3,7 @@
 
 ### Custom File ###
 config.py
+.initialized
 
 ### Django ###
 *.log

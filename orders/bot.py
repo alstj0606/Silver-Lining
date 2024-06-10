@@ -1,6 +1,11 @@
 from openai import OpenAI
 from django.conf import settings
 from menus.models import Menu, Hashtag
+import cv2
+import numpy as np
+import requests
+import os
+import base64
 
 
 def get_user_menu_and_hashtags(user):
@@ -22,7 +27,6 @@ def get_recommended_menus(client, input_text, current_user):
 
     # 사용자의 메뉴 및 해시태그  가져오기
     menu, hashtags = get_user_menu_and_hashtags(current_user)
-    print(input_text)
     # 카테고리에 따라 시스템 지침 작성
     if category == "CH":
         category_text = "치킨"
@@ -69,7 +73,6 @@ def get_recommended_menus(client, input_text, current_user):
     except IndexError:
         recommended_menu = []
 
-    print("recommended_menu >>>>>>>", recommended_menu)
     return recommended_menu
 
 
@@ -108,7 +111,6 @@ def generate_final_response(client, recommended_menu, input_text):
     except IndexError:
         customer_message = "죄송합니다. 다시 한 번 이야기 해주세요"
 
-    print("customer_message >>>>>>>>>>>>", customer_message)
     return customer_message
 
 
@@ -122,3 +124,86 @@ def bot(input_text, current_user):
     customer_message = generate_final_response(client, recommended_menu, input_text)
 
     return customer_message, recommended_menu
+
+
+def face(uploaded_image):
+    # Read the image using OpenCV
+    image_data = uploaded_image.read()
+    nparr = np.frombuffer(image_data, np.uint8)
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # 얼굴 인식을 위한 분류기를 로드합니다.
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+    # 흑백 이미지로 변환합니다.
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # 얼굴을 감지합니다.
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    if len(faces) > 0:
+        # 이미지를 저장하고 base64로 변환합니다.
+        image_path = "face.jpg"
+        cv2.imwrite(image_path, frame)
+
+        with open(image_path, "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+        base64_image = f"data:image/jpeg;base64,{encoded_image}"
+
+        # OpenAI API에 요청합니다.
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.OPEN_API_KEY}"
+        }
+
+        instruction = """
+                                    Although age can be difficult to predict, please provide an approximate number for how old the person in the photo appears to be. 
+                                    Please consider that Asians tend to look younger than you might think.
+                                    And Please provide an approximate age in 10-year intervals such as teens, 20s, 30s, 40s, 50s, 60s, 70s, or 80s.
+                                    When you return the value, remove the 's' in the end of the age interval.
+                                    For example, when you find the person to be in their 20s, just return the value as 20.
+                                    Please return the inferred age in the format 'Estimated Age: [inferred age]'.
+                                    """
+
+        payload = {
+            "model": "gpt-4o",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": instruction,
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": base64_image
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 300
+        }
+        # OpenAI API로 요청을 보냅니다.
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+        try:
+            os.remove(image_path)
+            print(f"{image_path} 이미지가 삭제되었습니다.")
+
+        except FileNotFoundError:
+            print(f"{image_path} 이미지를 찾을 수 없습니다.")
+
+        # OpenAI API에서 반환된 응답을 파싱합니다.
+        ai_answer = response.json()
+        print("ai_answer", ai_answer)
+        # 추정된 나이를 가져옵니다.
+        age_message = ai_answer["choices"][0]['message']['content']
+        age = age_message.split("Estimated Age: ")[1].strip()
+        age_number = int(age)
+        print("당신의 얼굴나이 : ", age_number)
+        return age_number
+    return 20

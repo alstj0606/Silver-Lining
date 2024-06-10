@@ -148,7 +148,7 @@ let cart = {};
 
     function clearCart() {
         console.log("clearCart 진입했는지")
-        axios.post('/orders/cart/clear/', {}, 
+        axios.post('/orders/cart/clear/', {},
         {headers: {
             'X-CSRFToken': csrfToken
         }})
@@ -169,13 +169,6 @@ let cart = {};
         const upArrow = document.querySelector('.up-arrow');
         const downArrow = document.querySelector('.down-arrow');
 
-        // if (cartItems.scrollHeight > cartItems.clientHeight) {
-        //     upArrow.style.display = 'block';
-        //     downArrow.style.display = 'block';
-        // } else {
-        //     upArrow.style.display = 'none';
-        //     downArrow.style.display = 'none';
-        // }
 
         upArrow.disabled = cartItems.scrollTop === 0;
         downArrow.disabled = cartItems.scrollTop >= (cartItems.scrollHeight - cartItems.clientHeight);
