@@ -23,7 +23,7 @@ function updateSelectedItemsList() {
                 <span>${item.price}${won}</span>
                 <span>${item.count}${count}</span>
                 </div>
-                <button class="btn btn-danger btn-lg" onclick="removeItem('${name}')"> ${DelItem} </button>
+                <button class="btn btn-lg" style="color:red;" onclick="removeItem('${name}')"> ${DelItem} </button>
             `;
         selectedItemsList.appendChild(itemElement);
         totalPrice += item.price * item.count;

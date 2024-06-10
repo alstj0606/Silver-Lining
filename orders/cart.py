@@ -112,7 +112,9 @@ class Cart:
 
 ## Clear the cart
     def clear(self):
+        print("\n\n cart.py의 clear 들어왔는지: ")
         redis_conn = get_redis_connection("default")
+        print("\n redis 잘 연결 됐는지: ", redis_conn)
         redis_conn.delete(self.cart_key)
 
 

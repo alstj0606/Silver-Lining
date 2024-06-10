@@ -330,25 +330,34 @@ class orderbot(APIView):
             username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
             name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
             # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
-            print("\n current_cart_get의 타입", type(current_cart_get))
-            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
-            get_menu = json.loads(current_cart_get[name])
+            
+            if name not in current_cart_get:
+                store_id = request.user.id
+                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                print("\n\n add_to_cart 의 menu 필터링", menu)
+                image = menu.img
+                price = menu.price
+                quantity = result[0]
+                item = CartItem(image, name, price, quantity)
+                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+                serializer = CartSerializer(item)
+                get_menu = serializer.data
+                print("\n\n serializer.data: ", type(serializer.data))
+            else:
+                print("\n current_cart_get의 타입", type(current_cart_get))
+                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+                get_menu = json.loads(current_cart_get[name])
             print("\n\n get_menu 의 타입 : ", type(get_menu))
             get_menu["quantity"] = result[0] # 'str' object does not support item assignment
             print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
 
-            # store_id = request.user.id
-            # menu = Menu.objects.get(store_id = store_id, food_name = name)
-            # print("\n\n add_to_cart 의 menu 필터링", menu)
-            # image = menu.img
-            # price = menu.price
-            # quantity = data["quantity"]
-            # item = CartItem(image, name, price, quantity)
-            # print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
-            # serializer = CartSerializer(item)
-            # print("\n\n serializer.data: ", type(serializer.data))
             cart = Cart(username)
-            cart.add_to_cart(get_menu)
+            print("\n\n\n 메뉴의 수량 확인 : ", get_menu["quantity"])
+            if get_menu["quantity"]=='0' or 0:
+                print("\n if문 잘 진입했는지:")
+                cart.remove(get_menu["menu_name"])
+            else:
+                cart.add_to_cart(get_menu)
 
             return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
 
@@ -369,7 +378,7 @@ class orderbot(APIView):
             print("\n\n if menu의 input_text>>>> ", input_text)
             print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
             print("\n\n if menu의 category >>>>>> ", types)
-            message, recommended_menu = bot(request, input_text, current_user)
+            message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
         elif types =="pay":
             print("\n\n elif pay 들어왔는지 \n\n")

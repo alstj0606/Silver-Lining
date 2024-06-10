@@ -20,7 +20,7 @@ function updateMenus(hashtags = "", page = 1) {
             // 각 해시태그로 버튼 생성
             user_hashtags.forEach(tag => {
                 const button = `
-                    <button type="button" class="btn btn-primary btn-custom-large" onclick="filterItems('${tag.hashtag}')">
+                    <button type="button" class="btn btn-custom-large" onclick="filterItems('${tag.hashtag}')">
                     ${tag.hashtag} 
                     </button>
                 `;
@@ -33,7 +33,7 @@ function updateMenus(hashtags = "", page = 1) {
                     <div class="menu-item card mb-3" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                         <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                         <div class="card-body text-center">
-                        <h5 class="card-title text-primary">${menu.food_name}</h5>
+                        <h5 class="card-title">${menu.food_name}</h5>
                         <p class="card-text text-muted">${menu.price}${won}</p>
                         </div>
                     </div>

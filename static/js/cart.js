@@ -147,8 +147,11 @@ let cart = {};
     }
 
     function clearCart() {
-        const username = 'mega';
-        axios.post('/cart/clear/', { username })
+        console.log("clearCart 진입했는지")
+        axios.post('/orders/cart/clear/', {}, 
+        {headers: {
+            'X-CSRFToken': csrfToken
+        }})
             .then(response => {
                 cart = {};
                 refreshCart();
@@ -166,13 +169,13 @@ let cart = {};
         const upArrow = document.querySelector('.up-arrow');
         const downArrow = document.querySelector('.down-arrow');
 
-        if (cartItems.scrollHeight > cartItems.clientHeight) {
-            upArrow.style.display = 'block';
-            downArrow.style.display = 'block';
-        } else {
-            upArrow.style.display = 'none';
-            downArrow.style.display = 'none';
-        }
+        // if (cartItems.scrollHeight > cartItems.clientHeight) {
+        //     upArrow.style.display = 'block';
+        //     downArrow.style.display = 'block';
+        // } else {
+        //     upArrow.style.display = 'none';
+        //     downArrow.style.display = 'none';
+        // }
 
         upArrow.disabled = cartItems.scrollTop === 0;
         downArrow.disabled = cartItems.scrollTop >= (cartItems.scrollHeight - cartItems.clientHeight);

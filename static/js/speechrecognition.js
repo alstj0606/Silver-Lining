@@ -105,7 +105,7 @@ function appendRecommendedMenuItems(container, items) {
             <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
-                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <h5 class="card-title">${menu.food_name}</h5>
                     <p class="card-text text-muted">${menu.price}${won}</p>
                 </div>
             </div>
@@ -120,7 +120,7 @@ function appendMenuItems(container, items) {
             <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
-                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <h5 class="card-title">${menu.food_name}</h5>
                     <p class="card-text text-muted">${menu.price}${won}</p>
                 </div>
             </div>
