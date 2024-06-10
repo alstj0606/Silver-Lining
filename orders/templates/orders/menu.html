@@ -63,13 +63,11 @@
         .silver-lining {
             font-family: "SokchoBadaDotum";
             font-size: 4rem;
-            background-color: #adddeb;
             color: #f8f9fa;
             padding: 20px;
             display: flex;
             align-items: center;
             justify-content: flex-start; /* Align items to the start of the container */
-            margin-left: 20px;
         }
 
         .silver-lining img {
@@ -318,10 +316,9 @@
 
         .btn-lang {
             padding: 0.5rem 1rem;
-            font-size: 1rem;
+            font-size: 2rem;
             line-height: 1.8;
             border-radius: 0.3rem;
-            width: 130px;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -329,7 +326,8 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-<div class="flex flex-col items-center h-screen">
+
+<div class="flex flex-col items-center h-screen" style="display: flex; background-color: #adddeb; justify-content: space-between;">
     <div
             class="text-center mb-4 flex justify-between items-center"
             style="flex-direction: row"
@@ -343,20 +341,19 @@
             Silver Lining
         </div>
     </div>
+    <!-- 언어선택을 위한 버튼 -->
+    <div
+            id="language-buttons"
+            class="flex"
+            style="top: 10px; right: 60px; margin: 45px"
+    >
+        <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
+        <button class="btn btn-light btn-lang" data-lang="en">English</button>
+        <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
+        <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
+    </div>
 </div>
 
-<!-- 언어선택을 위한 버튼 -->
-<div
-        id="language-buttons"
-        class="flex"
-        style="position: fixed; top: 10px; right: 60px"
->
-    <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
-    <button class="btn btn-light btn-lang" data-lang="en">English</button>
-    <br/>
-    <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
-    <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
-</div>
 
 <div class="container mt-5">
     <!-- crsf토큰 인증을 위한 입력 -->
