@@ -62,8 +62,9 @@
             font-size: 0.5em; /* "Place an order" 텍스트 크기 줄이기 */
         }
 
-        #video {
-            display: none; /* 웹캠 비디오 요소 숨기기 */
+        /* 웹캠과 캔버스를 감싸는 div 숨기기 */
+        .hidden-container {
+            display: none; /* 요소를 숨김 */
         }
     </style>
 </head>
@@ -91,10 +92,13 @@
     </form>
 </div>
 
-<!-- 얼굴을 인식할 비디오 요소 -->
-<video id="video" width="320" height="240" autoplay></video>
-<!-- 비디오 스트림을 캡처하여 얼굴 이미지를 표시할 캔버스 요소 -->
-<canvas id="canvas" width="320" height="240"></canvas>
+<!-- 웹캠과 캔버스를 감싸는 div -->
+<div class="hidden-container">
+    <!-- 얼굴을 인식할 비디오 요소 -->
+    <video id="video" width="320" height="240" autoplay></video>
+    <!-- 비디오 스트림을 캡처하여 얼굴 이미지를 표시할 캔버스 요소 -->
+    <canvas id="canvas" width="320" height="240"></canvas>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
