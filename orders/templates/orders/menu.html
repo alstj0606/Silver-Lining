@@ -316,9 +316,11 @@
 
         .btn-lang {
             padding: 0.5rem 1rem;
-            font-size: 2rem;
-            line-height: 1.8;
+            font-size: 1rem;
+            line-height: 2.5;
             border-radius: 0.3rem;
+            width: 130px;
+            margin: 5px;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -327,7 +329,8 @@
 </head>
 <body>
 
-<div class="flex flex-col items-center h-screen" style="display: flex; background-color: #adddeb; justify-content: space-between;">
+<div class="flex flex-col items-center h-screen"
+     style="display: flex; background-color: #adddeb; justify-content: space-between;">
     <div
             class="text-center mb-4 flex justify-between items-center"
             style="flex-direction: row"
@@ -349,6 +352,7 @@
     >
         <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
         <button class="btn btn-light btn-lang" data-lang="en">English</button>
+        <br>
         <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
         <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
     </div>
