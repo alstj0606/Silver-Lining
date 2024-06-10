@@ -141,6 +141,7 @@ LOGIN_REDIRECT_URL = '/'
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+CSRF_TRUSTED_ORIGINS = ['https://*.silverlinings.site','https://*.127.0.0.1']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
