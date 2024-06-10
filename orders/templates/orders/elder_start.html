@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="120x120" href="/static/img/Silver-Lining-favicon.png">
+    <title>Silver Lining</title>
+    <style>
+          @font-face {
+            font-family: 'Freesentation-9Black';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'Freesentation-9Black';
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+            margin: 0;
+        }
+
+        .container {
+            width: 800px;
+            height: 450px;
+            text-align: center;
+            padding: 20px;
+            background-color:#D3ECF2;
+            /* Lavender */
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: xxx-large;
+            color: #5c5c5c;
+        }
+
+        p {
+            font-size: xx-large;
+            margin-top: 40px;
+        }
+
+        .processing {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .dot {
+            height: 20px;
+            width: 20px;
+            margin: 0 5px;
+            background-color:#64b9f2;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.5s infinite;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .startButton {
+            margin-top: 10px;
+            margin-bottom: 0px;
+            margin-right: 10px;
+            width: 200px;
+            height: 70px;
+            font-family: 'Freesentation-9Black';
+            font-size: 1.75rem;
+            background-color: #FFB848;
+            color: white;
+            border-radius: 15px;
+            border-color: transparent;
+            box-shadow: 0px 3px 3px 2px rgba(0, 0, 0, 0.1);
+        }
+        .hidden {
+            display: none;
+        }
+
+        .mybtn {
+            width: 840px;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .redirectButton {
+            width: 200px;
+            height: 70px;
+            background-color: #8DC0D0;
+            color: #FFF;
+            margin-top: 10px;
+            font-family: 'Freesentation-9Black';
+            font-size: 1.75rem;
+            border-radius: 15px;
+            border-color: transparent;
+            box-shadow: 0px 3px 3px 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-wrapper">
+        <div class="container">
+            <h1>안녕하세요,</h1>
+            <h1>어떤 메뉴로 주문하시겠습니까?</h1>
+            <div class="processing">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div>
+                <form id="speechForm">
+                    {% csrf_token %}
+                </form>
+                <p id="transcription"></p>
+            </div>
+            <p>음성 인식 중 ....</p>
+            <div class="mybtn">
+                <button id="redirectButton" class="redirectButton">일반주문 하기</button>
+            <button id="startButton" class="startButton hidden"></button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        window.addEventListener('load', function () {
+            fetch(`/orders/switch-language/?lang="ko-KR"`)
+        });
+        
+        window.addEventListener('load', function () {
+            console.log(">>>>>>>>>>>>> 실행");
+            const welcomeMessage = "반갑습니다. 원하시는 메뉴를 추천해 드리겠습니다. 필요한 것이 있다면 말씀해주세요.";
+            requestPermissions().then(() => {
+                speak(welcomeMessage, startSpeechRecognition);
+            }).catch(error => {
+                console.error('권한 요청 실패:', error);
+            });
+        });
+
+        const startButton = document.getElementById('startButton');
+        const redirectButton = document.getElementById('redirectButton');
+        const transcription = document.getElementById('transcription');
+
+
+
+        
+        function requestPermissions() {
+            return new Promise((resolve, reject) => {
+                navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(stream => {
+                    console.log('마이크 사용 권한이 허용되었습니다.');
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('마이크 사용 권한을 얻지 못했습니다:', error);
+                    reject(error);
+                });
+            });
+        }
+        
+        function speak(text, callback) {
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            utterance.onend = function () {
+                if (callback) {
+                    callback();
+                }
+            };
+            synth.speak(utterance);
+        }
+        
+        function getCsrfToken() {
+            const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfTokenElement ? csrfTokenElement.value : null;
+        }
+
+        function startSpeechRecognition() {
+            console.log(">>>>>>>>>>>>> startSpeechRecognition");
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("음성 인식이 지원되지 않는 브라우저입니다.");
+            } else {
+                const recognition = new webkitSpeechRecognition();
+                recognition.lang = 'ko-KR';
+                recognition.start();
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    console.log("transcript>>>>>>>>>>>>>", transcript);
+                    const csrfToken = getCsrfToken();
+                    console.log("csrf 탔는지 >>>>>>>>>");
+                    console.log("csrfToken>>>>>>>>>", csrfToken);
+
+                    axios.post('/orders/aibot/', { inputText: transcript },
+                        {
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            }
+                        })
+                        .then(function (response) {
+                            const responseText = response.data.responseText;
+                            const recommended_menu = response.data.recommended_menu;
+                            console.log('서버 응답:', responseText);
+                            localStorage.setItem('recommended_menu', JSON.stringify(recommended_menu));
+                            localStorage.setItem('customer_message', responseText);
+                            window.location.href = '/orders/elder_menu/';
+                            console.log("customer_message>>>>>>>", responseText);
+                            console.log("recommended_menu>>>>>>>", recommended_menu);
+                        })
+                        .catch(function (error) {
+                            console.error('에러:', error);
+                        });
+                };
+                recognition.onend = function () {
+                    startButton.textContent = '음성 입력 재시작';
+                    startButton.classList.remove('hidden');
+                };
+            }
+        }
+
+        
+        startButton.addEventListener('click', function() {
+        // speak 함수 실행 (특정 메시지를 발음하도록 수정 가능)
+        speak("새로운 음성 입력을 받을 수 있습니다. 어떤 메뉴를 원하세요?", startSpeechRecognition);
+        });
+        redirectButton.addEventListener('click', function() {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = '/orders/menu/';
+});
+
+    </script>
+</body>
+</html>

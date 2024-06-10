@@ -1,0 +1,604 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="120x120"
+      href="/static/img/Silver-Lining-favicon.png"
+    />
+    <title>추천 메뉴 및 장바구니</title>
+    <style>
+      @font-face {
+        font-family: "Freesentation-9Black";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2")
+          format("woff2");
+        font-style: normal;
+      }
+
+      body {
+        font-family: "Freesentation-9Black";
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f9fa; /* Lavender */
+        margin: 0;
+        color: #5c5c5c;
+      }
+
+      .container {
+        text-align: center;
+        padding: 20px;
+        background-color: #d3ecf2; /* Light background */
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 80%;
+      }
+
+      .nav {
+        font-size: 3rem;
+        background-color: #ef4040;
+        color: #f7f3f3;
+      }
+
+      .recommendations {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin: 20px 0;
+      }
+
+      .recommendation {
+        background-color: #f4f9fa;
+        padding: 10px;
+        border-radius: 10px;
+        flex: 1;
+        margin: 10px;
+        text-align: center;
+        min-width: 45%;
+      }
+
+      .recommendation img {
+        height: 230px;
+        width: 190px;
+      }
+
+      .recommendation h2 {
+        font-size: 44px;
+        font-weight: bold;
+      }
+
+      .recommendation p {
+        font-size: xxx-large;
+        font-weight: bold;
+        color: #5c5c5c;
+      }
+
+      .cart {
+        margin-top: 30px;
+        background-color: #8dc0d0;
+        padding: 20px;
+        border-radius: 10px;
+        position: relative; /* Added to handle absolute positioning of arrows */
+        max-height: 200px; /* Set a maximum height for the cart */
+        overflow-y: hidden; /* Hide overflow content */
+        box-sizing: border-box; /* Ensures padding is included in the element's width and height */
+        width: -webkit-fill-available;
+      }
+
+      #cartItems {
+        height: 200px; /* Adjust accordingly */
+        overflow-y: auto; /* Enable scrolling */
+        font-size: 2rem;
+        font-weight: bold;
+      }
+
+      .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+      }
+
+      .cart-item img {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+      }
+
+      .cart-item .remove {
+        color: rgb(232, 90, 90);
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 1.7rem;
+      }
+
+      .total-price,
+      .submit-container {
+        font-size: 2.3rem;
+        font-weight: bold;
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      button {
+        cursor: pointer;
+        font-size: 1.25rem;
+        padding: 10px 20px;
+        color: #fff;
+        background-color: #8dc0d0;
+        border: none;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      .cartarrowContainer {
+        justify-content: center;
+        display: flex;
+        align-items: center;
+      }
+
+      .up-arrow {
+        top: 10px; /* Position above the cart */
+      }
+
+      .down-arrow {
+        bottom: 10px; /* Position below the cart */
+      }
+
+      .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .popup-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        /* width: 80%;
+            max-width: 600px; */
+        width: 700px;
+        height: 800px;
+      }
+
+      .popup-container h2 {
+        font-size: 55px;
+        margin: 10px 0;
+      }
+
+      .popup-container img {
+        max-width: 300px;
+        height: 380px;
+      }
+
+      .popup-container .menu-image img {
+        max-width: 300px;
+        height: 380px;
+      }
+
+      .popup-container p {
+        font-size: 1.25rem;
+        color: #555;
+      }
+
+      .popup-container .price {
+        font-size: 60px;
+        font-weight: bold;
+        color: #5c5c5c;
+        margin-top: 15px;
+        margin-bottom: 10px;
+      }
+
+      .popup-container .name {
+        font-size: 60px;
+        margin-top: 20px;
+        font-weight: bold;
+        color: #5c5c5c;
+      }
+
+      .submitOrderBtn {
+        font-family: "Freesentation-9Black";
+        background-color: #8dc0d0;
+        height: 120px;
+        width: 250px;
+        font-size: 3rem;
+      }
+
+      .voiceRestart {
+        height: 120px;
+        width: 250px;
+        font-family: "Freesentation-9Black";
+        font-size: 3rem;
+        background-color: #ffb848;
+      }
+
+      .closePopup {
+        width: 170px;
+        height: 100px;
+        font-family: "Freesentation-9Black";
+        font-size: 3rem;
+        margin-top: 10px;
+      }
+      .restart {
+        width: 250px;
+        height: 100px;
+        font-family: "Freesentation-9Black";
+        font-size: 3rem;
+        margin-left: 15px;
+        margin-right: 10px;
+        margin-top: 10px;
+        background-color: #ffb848;
+      }
+
+      .mybtn {
+        width: 80%;
+        display: flex;
+        flex-direction: row-reverse;
+      }
+
+      .redirectButton {
+        margin-bottom: 30px;
+        width: 180px;
+        height: 60px;
+        background-color: #8dc0d0;
+        color: #fff;
+        font-family: "Freesentation-9Black";
+      }
+
+      .mymenu {
+        font-weight: bold;
+        color: white;
+        -webkit-text-stroke: 2.5px #0f68a2;
+        font-size: 4rem;
+      }
+      .mypopup {
+        -webkit-text-stroke: 2.5px #577a92;
+        font-size: 4rem;
+        color: white;
+        margin-top: -5px;
+        margin-bottom: 15px;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  </head>
+
+  <body>
+    <div class="mybtn">
+      <button id="redirectButton" class="redirectButton">일반주문 하기</button>
+    </div>
+    <div class="container">
+      <p class="mymenu">이런 음료도 추천드려요.</p>
+
+      <div class="recommendations" id="recommendations">
+        <!-- Menu items will be populated here dynamically -->
+      </div>
+
+      {% comment %} 카트 부분 {% endcomment %}
+      <div class="cartarrowContainer">
+        <div id="cartContainer" class="cart">
+          <div id="cartItems">
+            <!-- Cart items will be populated here dynamically -->
+          </div>
+        </div>
+        <div class="arrowContainer">
+          <button class="arrow up-arrow">▲</button>
+          <button class="arrow down-arrow">▼</button>
+        </div>
+      </div>
+
+      <div class="submit-container">
+        <div id="totalPrice" class="total-price">총 가격: 0원</div>
+        <button id="voiceRestart" class="voiceRestart">음성인식</button>
+        <button id="submitOrderBtn" class="submitOrderBtn">결제하기</button>
+      </div>
+
+      <form id="speechForm">{% csrf_token %}</form>
+    </div>
+
+    <!-- Pop-up for best recommendation -->
+    <div class="popup-overlay" id="popup-overlay">
+      <div class="popup-container" id="popup-container">
+        <h2 class="mypopup">추천 음료</h2>
+        <div class="menu-image">
+          <img src="" alt="메뉴 이미지" id="popup-image" />
+        </div>
+        <h2 class="name" id="popup-name">메뉴 이름</h2>
+        <p class="price" id="popup-price">0원</p>
+        <button id="restart" class="restart">음성인식</button>
+        <button id="closePopup" class="closePopup">닫기</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+      window.addEventListener("load", function () {
+        fetch(`/orders/switch-language/?lang="ko-KR"`);
+      });
+
+      const recommended_menu_string = localStorage.getItem("recommended_menu");
+      const recommended_menu = JSON.parse(recommended_menu_string);
+      const responseText = localStorage.getItem("customer_message");
+      const popupOverlay = document.getElementById("popup-overlay");
+      const popupContainer = document.getElementById("popup-container");
+      const popupImage = document.getElementById("popup-image");
+      const popupName = document.getElementById("popup-name");
+      const popupPrice = document.getElementById("popup-price");
+      const closePopup = document.getElementById("closePopup");
+      // const voiceRestart = document.getElementById('voiceRestart');
+
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("페이지 로딩 후 메뉴 조회, 장바구니 조회 >>> ");
+        // 메뉴 조회
+        axios
+          .get("/orders/orderbot/", {
+            params: { recommended_menu: recommended_menu_string },
+          })
+          .then((response) => {
+            const menuData = response.data.recommends; // assuming your API returns menus as an array
+            recommendations.innerHTML = "";
+
+            menuData.forEach((menu, index) => {
+              const menuItem = `
+                    <div class="recommendation" onclick="addItem('${
+                      menu.food_name
+                    }', ${menu.price}, '${menu.img_url}', ${1})">
+                        <h2>${menu.food_name}</h2>
+                        <div class="menu-image">
+                            <img src="${menu.img_url}" alt="${
+                menu.food_name
+              } 이미지">
+                        </div>
+                        <p>${menu.price}원</p>
+                    </div>
+                `;
+
+              if (index === 0) {
+                // Populating the popup with the first recommended menu
+                popupImage.src = menu.img_url;
+                popupName.textContent = menu.food_name;
+                popupPrice.textContent = `${menu.price}원`;
+                popupContainer.setAttribute(
+                  "onclick",
+                  `addItem('${menu.food_name}', ${menu.price}, '${
+                    menu.img_url
+                  }', ${1})`
+                );
+                popupOverlay.style.display = "flex";
+              } else {
+                // Inserting menu item into recommendations container
+                recommendations.insertAdjacentHTML("beforeend", menuItem);
+              }
+            });
+
+            closePopup.addEventListener("click", function (event) {
+              event.stopPropagation(); // Stop event from bubbling up
+              popupOverlay.style.display = "none"; // Hide the popup
+            });
+            document
+              .getElementById("restart")
+              .addEventListener("click", function (event) {
+                console.log("restartt로 func실행>>>>>>>>>");
+                event.stopPropagation(); // Stop event from bubbling up
+                console.log("stopPropagation 되고있나>>>>>>>>>");
+                speakAgain();
+                console.log("spearAgain222 되고있나>>>>>>>>>");
+                popupOverlay.style.display = "none"; // Hide the popup
+              });
+          })
+          .catch((error) => {
+            console.error("메뉴 업데이트 중 오류 발생:", error);
+          });
+
+        document
+          .getElementById("voiceRestart")
+          .addEventListener("click", speakAgain);
+
+        // 장바구니 조회
+        console.log("장바구니 조회 username >>>>> ");
+
+        clearCart();
+
+        // Handle event listeners for buttons
+        document
+          .getElementById("submitOrderBtn")
+          .addEventListener("click", submitOrder);
+      });
+
+      if (responseText) {
+        console.log("responseText 탔는지 >>>>>>>>>", responseText);
+        speak(responseText);
+      }
+
+      function speak(text) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "ko-KR";
+        synth.speak(utterance);
+      }
+
+      function getCsrfToken() {
+        const csrfTokenElement = document.querySelector(
+          'input[name="csrfmiddlewaretoken"]'
+        );
+        console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
+        return csrfTokenElement ? csrfTokenElement.value : null;
+      }
+
+      function speakAgain(text) {
+        const synth = window.speechSynthesis;
+        text = "무엇을 도와드릴까요?";
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "ko-KR";
+        synth.speak(utterance);
+        startSpeechRecognition();
+      }
+
+      function startSpeechRecognition() {
+        console.log(">>>>>>>>>>>>> startSpeechRecognition");
+        if (!("webkitSpeechRecognition" in window)) {
+          alert("음성 인식이 지원되지 않는 브라우저입니다.");
+          console.log(">>>>>>>>>>>>>>>> if 탔는지");
+        } else {
+          console.log(">>>>>>>>>> else 탔는지");
+          const recognition = new webkitSpeechRecognition();
+          console.log(">>>>>>>> recognition 탔는지");
+          recognition.lang = "ko-KR";
+          recognition.start();
+          console.log(">>>>>>>>>> start() 탔는지");
+          recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            console.log("transcript>>>>>>>>>>>>>", transcript);
+            const csrfToken = getCsrfToken();
+            console.log("csrf 탔는지 >>>>>>>>>");
+            console.log("csrfToken>>>>>>>>>", csrfToken);
+
+            axios
+              .post(
+                "/orders/orderbot/",
+                { inputText: transcript, recommended_menu: recommended_menu },
+                {
+                  headers: {
+                    "X-CSRFToken": csrfToken,
+                  },
+                }
+              )
+              .then(function (response) {
+                const result = response.data.result;
+                console.log("result인 추천메뉴>>>>>>>", result);
+                console.log("result 너니? >>>>>>>", result);
+                if (result == 1) {
+                  console.log("if문 탔는지 >>>>>>>>");
+                  triggerProceedToPay();
+                } else if (
+                  response.data.responseText &&
+                  response.data.recommended_menu
+                ) {
+                  const responseText = response.data.responseText;
+                  const recommended_menu = response.data.recommended_menu;
+                  console.log("responseText>>>>>>>>>>>>>>>", responseText);
+                  console.log(
+                    "recommended_menu>>>>>>>>>>>>>>>",
+                    recommended_menu
+                  );
+                  displayRecommendations(recommended_menu, responseText);
+                } else {
+                  refreshCart();
+                }
+              })
+              .catch(function (error) {
+                console.error("에러:", error);
+              });
+          };
+        }
+      }
+
+      function displayRecommendations(recommended_menu, responseText) {
+        console.log("displayRecommendations 파라미터:", {
+          params: { recommended_menu: recommended_menu },
+        });
+        axios
+          .get("/orders/orderbot/", {
+            params: { recommended_menu: JSON.stringify(recommended_menu) },
+          })
+          .then((response) => {
+            const menuData = response.data.recommends;
+            console.log("response>>>>>>>>>>", response);
+            console.log("response.data>>>>>", response.data);
+            console.log("menuData>>>>>", menuData);
+            recommendations.innerHTML = "";
+
+            menuData.forEach((menu, index) => {
+              const menuItem = `
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                        <h2>${menu.food_name}</h2>
+                        <div class="menu-image">
+                            <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
+                        </div>
+                        <p>${menu.price}원</p>
+                    </div>
+                `;
+
+              if (index === 0) {
+                // Populating the popup with the first recommended menu
+                popupImage.src = menu.img_url;
+                popupName.textContent = menu.food_name;
+                popupPrice.textContent = `${menu.price}원`;
+                console.log("menu.food_name>>>>>>>>>", menu.food_name);
+                popupContainer.setAttribute(
+                  "onclick",
+                  `addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')`
+                );
+                popupOverlay.style.display = "flex";
+              } else {
+                // Inserting menu item into recommendations container
+                recommendations.insertAdjacentHTML("beforeend", menuItem);
+              }
+            });
+
+            closePopup.addEventListener("click", function (event) {
+              event.stopPropagation(); // Stop event from bubbling up
+              popupOverlay.style.display = "none"; // Hide the popup
+            });
+          })
+          .catch((error) => {
+            console.error("메뉴 업데이트 중 오류 발생:", error);
+          });
+
+        if (responseText) {
+          console.log("responseText 탔는지 >>>>>>>>>", responseText);
+          speak(responseText);
+        }
+      }
+
+      const redirectButton = document.getElementById("redirectButton");
+      redirectButton.addEventListener("click", function () {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = "/orders/menu/";
+      });
+
+      function triggerProceedToPay() {
+        console.log("triggerProceedToPay 탔는지 >>>>>>>");
+        document.getElementById("submitOrderBtn").click();
+      }
+
+      (function () {
+        let timeout;
+
+        function resetTimeout() {
+          // 기존의 타임아웃을 클리어
+          clearTimeout(timeout);
+
+          // 새로운 타임아웃 설정 (30초 후에 페이지 리다이렉트)
+          timeout = setTimeout(() => {
+            clearCart();
+            // window.location.href = '/orders/start_order/';
+          }, 30000); // 1분 = 60,000 밀리초
+        }
+
+        // 페이지가 로드될 때와 사용자가 페이지에서 클릭할 때마다 타임아웃을 리셋
+        window.onload = resetTimeout;
+        document.onclick = resetTimeout;
+      })();
+    </script>
+    <script src="{% static 'js/cart.js' %}"></script>
+  </body>
+</html>

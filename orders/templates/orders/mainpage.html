@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="120x120" href="/static/img/Silver-Lining-favicon.png">
+    <title>Silver Lining</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-image: url('/static/img/Silver-Lining-main.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .navbar {
+            background-color: #73C1FC;
+            padding: 1.5rem 1rem;
+        }
+
+        .footer {
+            background-color: #FFFFFF;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .text-center {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+            {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light btn-lg mx-2" href="/accounts/logout/">로그아웃</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light btn-lg mx-2" href="/accounts/login/">로그인</a>
+                </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="btn btn-outline-light btn-lg mx-2" href="/admin/">대시보드</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-outline-light btn-lg mx-2" href="/orders/start_order/">주문하기</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="container mt-5">
+    <h1 class="text-center"></h1>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <span class="text-muted">© 2024 Silver Lining. All rights reserved.</span>
+    </div>
+</footer>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.6.0/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

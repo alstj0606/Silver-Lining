@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-31 20:03+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: .\orders\templates\orders\menu.html:358
+msgid "선택한 상품"
+msgstr "選択した商品"
+
+#: .\orders\templates\orders\menu.html:362
+#: .\orders\templates\orders\menu.html:438
+msgid "음성입력"
+msgstr "音声入力"
+
+#: .\orders\templates\orders\menu.html:381
+msgid "총 금액"
+msgstr "合計金額"
+
+#: .\orders\templates\orders\menu.html:381
+#: .\orders\templates\orders\menu.html:439
+msgid "원"
+msgstr "ウォン"
+
+#: .\orders\templates\orders\menu.html:386
+msgid "전체삭제"
+msgstr "全削除"
+
+#: .\orders\templates\orders\menu.html:387
+msgid "결제하기"
+msgstr "支払う"
+
+#: .\orders\templates\orders\menu.html:395
+msgid "AI기능이 필요하시면 음성입력을 눌러주세요."
+msgstr "AI機能が必要な場合は、音声入力を押してください。"
+
+#: .\orders\templates\orders\menu.html:435
+msgid "input"
+msgstr "ja-JP"
+
+#: .\orders\templates\orders\menu.html:436
+msgid "output"
+msgstr "ja-JP"
+
+#: .\orders\templates\orders\menu.html:437
+msgid "음성입력중"
+msgstr "音声入力中"
+
+#: .\orders\templates\orders\menu.html:440
+msgid "개"
+msgstr "つ"
+
+#: .\orders\templates\orders\menu.html:441
+msgid "아이템"
+msgstr "削除"
+
+#, fuzzy
+#~| msgid "삭제"
+#~ msgid "삭제"
+#~ msgstr "全削除"
