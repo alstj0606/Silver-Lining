@@ -132,12 +132,7 @@
         transition: transform 1s ease-in-out;
       }
 
-      .voicebutton {
-        margin: 30px;
-        justify-content: center;
-        align-items: center;
-        display: flex;
-      }
+
 
       #selectedItemsList {
         height: 350px;
@@ -401,17 +396,14 @@
           id="paginationButtons"
         ></div>
 
-        <div class="voicebutton">
-          <button class="gradient-btn" id="startButton">
-            <i class="fas fa-microphone-alt"></i>
-            <span>AI {% trans "음성입력" %}</span>
-          </button>
-        </div>
-
         <!-- 장바구니가 담기는 부분을 표시 -->
         <h3 class="text-center">
           {% trans "선택한 상품" %} 🛒
           <!-- 음성입력 버튼 위치 -->
+          <button class="gradient-btn" id="startButton">
+            <i class="fas fa-microphone-alt"></i>
+            <span>AI {% trans "음성입력" %}</span>
+          </button>
         </h3>
 
         <!-- 장바구니 길이가 초과 됐을때 위치 이동 버튼 -->
