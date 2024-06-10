@@ -243,30 +243,38 @@ class orderbot(APIView):
 
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
 
-            print("\n\n\n result >>>>> ", result)  # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
-            username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
-            name = result[1]  # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
+            username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+            name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
             # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
-            print("\n current_cart_get의 타입", type(current_cart_get))
-            print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get)
-            get_menu = json.loads(current_cart_get[name])
-            print("\n\n get_menu 의 타입 : ", type(get_menu))
-            get_menu["quantity"] = result[0]  # 'str' object does not support item assignment
-            print("\n\n quantity의 값이 업데이트 됐는지 : ",
-                  get_menu)  # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
 
-            # store_id = request.user.id
-            # menu = Menu.objects.get(store_id = store_id, food_name = name)
-            # print("\n\n add_to_cart 의 menu 필터링", menu)
-            # image = menu.img
-            # price = menu.price
-            # quantity = data["quantity"]
-            # item = CartItem(image, name, price, quantity)
-            # print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
-            # serializer = CartSerializer(item)
-            # print("\n\n serializer.data: ", type(serializer.data))
+            if name not in current_cart_get:
+                store_id = request.user.id
+                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                print("\n\n add_to_cart 의 menu 필터링", menu)
+                image = menu.img
+                price = menu.price
+                quantity = result[0]
+                item = CartItem(image, name, price, quantity)
+                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+                serializer = CartSerializer(item)
+                get_menu = serializer.data
+                print("\n\n serializer.data: ", type(serializer.data))
+            else:
+                print("\n current_cart_get의 타입", type(current_cart_get))
+                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+                get_menu = json.loads(current_cart_get[name])
+            print("\n\n get_menu 의 타입 : ", type(get_menu))
+            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
+            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
+
             cart = Cart(username)
-            cart.add_to_cart(get_menu)
+            print("\n\n\n 메뉴의 수량 확인 : ", get_menu["quantity"])
+            if get_menu["quantity"]=='0' or 0:
+                print("\n if문 잘 진입했는지:")
+                cart.remove(get_menu["menu_name"])
+            else:
+                cart.add_to_cart(get_menu)
 
             return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
 
@@ -286,9 +294,9 @@ class orderbot(APIView):
             print("\n\n if menu의 input_text>>>> ", input_text)
             print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
             print("\n\n if menu의 category >>>>>> ", types)
-            message, recommended_menu = bot(request, input_text, current_user)
+            message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
-        elif types == "pay":
+        elif types =="pay":
             print("\n\n elif pay 들어왔는지 \n\n")
             result = 1
 
@@ -312,7 +320,7 @@ def view_cart(request):
     'Iced Americano': '{"menu_name": "Iced Americano", "quantity": 2, "price": 5000, "image": "/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg"}'}}
     """
     print("\n\n\n context가 받아와지는지: ", context)
-    cart_data = context.get("cart_items", {})
+    cart_data = context.get("cart_items",{})
     print("\n\n cart_data 어떻게 생겼는지 >>>> ", cart_data)
     return Response({"cart_items": context.get("cart_items", {})})
 
@@ -321,16 +329,16 @@ def view_cart(request):
 @csrf_exempt
 def add_to_cart(request):
     if request.method == "POST":
-        username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
+        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         data = json.loads(request.body)
         print("\n\n data >>>>", data)
         print("\n\n request user >>>> ", request.user)
-        menu_name = data["menu_name"]  # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
-        print("\n\n name: ", menu_name)
+        menu_name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
+        print("\n\n name: " , menu_name)
 
         cart = Cart(username)
         store_id = request.user.id
-        menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
+        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
         print("\n\n add_to_cart 의 menu 필터링", menu)
         image = menu.img
         price = menu.price
@@ -349,16 +357,16 @@ def add_to_cart(request):
 @api_view(['POST'])
 def add_quantity(request):
     if request.method == "POST":
-        username = request.user.username  # 나중에 elder_menu에서 연결할 때 다시 구현
+        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
         print("\n\n request.user.username: ", username)
         print("\n\n add_quantity username: ", username)
-        name = request.POST.get("name")  # 카페라떼
+        name = request.POST.get("name") # 카페라떼
         print("\n\n name은 잘 들어왔는지: ", name)
-        quantity = int(request.POST.get("quantity"))  # 8
+        quantity = int(request.POST.get("quantity")) # 8
         print("\n\n quantity 잘 들어왔는지: ", quantity)
 
     cart = Cart(username)
-    menu = Menu.objects.get(store_id=2, food_name=name)
+    menu = Menu.objects.get(store_id = 2, food_name = name)
     print("\n\n get으로 id, food_name 같이: ", menu)
     # filter_menu = Menu.objects.filter(store_id = 2, food_name = name).first()
     # print("\n\n filter로 id, food_name 같이: ", filter_menu)
@@ -376,7 +384,7 @@ def add_quantity(request):
 @csrf_exempt
 @api_view(['POST'])
 def remove_from_cart(request, menu_name):
-    print("\n\n remove_from_cart() 타는지>>>")
+    print("\n\n remove_from_cart() 타는지>>>" )
     username = request.user.username
     print("\n\n remove() username: ", username)
     print("\n\n menu_name: ", menu_name)

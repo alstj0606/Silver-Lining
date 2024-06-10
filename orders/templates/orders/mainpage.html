@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="120x120" href="/static/img/Silver-Lining-favicon.png">
     <title>Silver Lining</title>
 
     <!-- Bootstrap CSS -->
@@ -11,16 +12,18 @@
 
     <style>
         body {
-            background-image: url('/static/img/mainpage.jpg');
+            background-image: url('/static/img/Silver-Lining-main.jpg');
             background-size: cover;
             background-repeat: no-repeat;
         }
 
-        .navbar, .footer {
-            background-color: #B22222; /* 붉은 색 포인트 */
+        .navbar {
+            background-color: #73C1FC;
+            padding: 1.5rem 1rem;
         }
 
         .footer {
+            background-color: #FFFFFF;
             color: white;
             text-align: center;
             padding: 1rem 0;
@@ -43,19 +46,19 @@
         <ul class="navbar-nav">
             {% if request.user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="btn btn-primary mx-2" href="/accounts/logout/">로그아웃</a>
+                    <a class="btn btn-outline-light btn-lg mx-2" href="/accounts/logout/">로그아웃</a>
                 </li>
             {% else %}
                 <li class="nav-item">
-                    <a class="btn btn-primary mx-2" href="/accounts/login/">로그인</a>
+                    <a class="btn btn-outline-light btn-lg mx-2" href="/accounts/login/">로그인</a>
                 </li>
             {% endif %}
 
             <li class="nav-item">
-                <a class="btn btn-primary mx-2" href="/admin/">대시보드</a>
+                <a class="btn btn-outline-light btn-lg mx-2" href="/admin/">대시보드</a>
             </li>
             <li class="nav-item">
-                <a class="btn btn-primary mx-2" href="/orders/start_order/">주문하기</a>
+                <a class="btn btn-outline-light btn-lg mx-2" href="/orders/start_order/">주문하기</a>
             </li>
         </ul>
     </div>

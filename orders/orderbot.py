@@ -232,7 +232,7 @@ def cart_ai(request, input_text, recommended_menu, current_user, current_cart_ge
         """
 
     system_output = f"""
-        Find the addressed menu from the recommended_menu.
+        Find the addressed menu from the {recommended_menu}.
         Also the input text is most likely to include the number of the addressed menu.
         If there is no indication of the number of the menu and includes only the menu name and the action, it has high possibility of indicating the number as one.
         The action is related to cart, thus it might be adding or deleting the menu in the cart.

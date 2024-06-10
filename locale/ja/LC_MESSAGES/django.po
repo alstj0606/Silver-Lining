@@ -66,9 +66,9 @@ msgstr "つ"
 
 #: .\orders\templates\orders\menu.html:441
 msgid "아이템"
-msgstr "全削除"
+msgstr "削除"
 
 #, fuzzy
-#~| msgid "전체삭제"
+#~| msgid "삭제"
 #~ msgid "삭제"
 #~ msgstr "全削除"

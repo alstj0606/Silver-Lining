@@ -1,96 +1,163 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/개.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="120x120"
+      href="/static/img/Silver-Lining-favicon.png"
+    />
     <title>Silver Lining</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f9fa;
-        }
+      @font-face {
+        font-family: "SokchoBadaDotum";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/SokchoBadaDotum.woff2")
+          format("woff2");
+        font-weight: normal;
+        font-style: normal;
+      }
 
-        h1 {
-            color: #ef4040;
-            margin-top: 70px;
-            font-size: 70px;
-        }
+      @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 
-        p {
-            font-size: 45px;
-            margin: 20px;
-        }
+      .lato-black {
+        font-family: "Lato", sans-serif;
+        font-weight: 900;
+        font-style: normal;
+      }
 
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 70px;
-        }
+      body {
+        font-family: "SokchoBadaDotum";
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: #3a3a3a;
+        background-color: #f4f9fa;
+        margin: 0;
+        height: 100vh;
+      }
 
-        button {
-            width: 800px;
-            height: 900px;
-            font-size: 120px;
-            font-weight: bold;
-            padding: 40px 80px;
-            color: white;
-            background-color: #ef4040;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-        }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+      }
 
-        button:hover {
-            background-color: #d93636;
-        }
+      h1 {
+        color: #3a3a3a;
+        margin-top: 20px;
+        font-size: 70px;
+      }
 
-        .spinner-container {
-            display: none;
-        }
+      p {
+        font-size: 40pt;
+        margin: 20px;
+      }
 
-        .status {
-            font-size: 50px;
-            margin-top: 100px;
-            display: none;
-        }
+      .button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+      }
 
-        .en-text {
-            font-size: 0.5em; /* "Place an order" 텍스트 크기 줄이기 */
-        }
+      button {
+        width: 900px;
+        height: 800px;
+        font-size: 120px;
+        font-weight: bold;
+        color: white;
+        background-color: #ffb848;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+
+      .spinner-container {
+        display: none;
+      }
+
+      .status {
+        font-size: 50px;
+        margin-top: 100px;
+        display: none;
+      }
+
+      .kr-text {
+        font-size: smaller;
+      }
+
+      .en-text {
+        font-family: "lato", sans-serif;
+        font-weight: 900;
+        font-style: normal;
+        font-size: 0.5em; /* 텍스트 크기 줄이기 */
+      }
 
         /* 웹캠과 캔버스를 감싸는 div 숨기기 */
         .hidden-container {
             display: none; /* 요소를 숨김 */
         }
+
+      .touch-screen {
+        font-family: "lato", sans-serif;
+        font-weight: 900;
+        font-style: normal;
+      }
     </style>
-</head>
-<body>
-<h1>여기에서 주문하세요!</h1>
-<p>화면을 터치해 주세요</p>
-<p>Please touch the screen</p>
-<div class="button-container">
-    <form id="order-form" method="post" action="{% url 'orders:face_recognition' %}">
-        {% csrf_token %}
-        <button type="submit" id="order-button">
-            <span class="kr-text">주문하기</span>
-            <span class="en-text">Place an order</span>
-        </button>
-        <div class="spinner-container" id="spinner">
-            <div class="spinner-border" style="width: 15rem; height: 15rem;" role="status">
-                <span class="visually-hidden"></span>
-            </div>
+  </head>
+  <body>
+    <div class="container">
+      <div>
+        <img
+          style="width: 160px; margin-top: 50px"
+          src="{% static 'img/Silver-Lining-logo.png' %}"
+          alt="실버라이닝 로고"
+        />
+        <h1>실버라이닝</h1>
+      </div>
+      <div class="button-container">
+        <form
+          id="order-form"
+          method="post"
+          action="{% url 'orders:face_recognition' %}"
+        >
+          {% csrf_token %}
+          <button type="submit" id="order-button">
+            <p class="kr-text">주문하기</p>
+            <p class="en-text">Start an order</p>
+          </button>
+          <p style="margin-top: 100px">화면을 터치해 주세요</p>
+          <p class="touch-screen">Please touch the screen</p>
+        </form>
+      </div>
+
+      <div class="spinner-container" id="spinner">
+        <div
+          class="spinner-border"
+          style="width: 15rem; height: 15rem"
+          role="status"
+        >
+          <span class="visually-hidden"></span>
         </div>
-        <div class="status" id="status">
-            <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
-            <br>
-            <span class="kr-text">Facial recognition is being performed</span>
-        </div>
-    </form>
-</div>
+      </div>
+      <div class="status" id="status">
+        <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
+        <br />
+        <span class="en-text">Facial recognition is being performed</span>
+      </div>
+    </div>
 
 <!-- 웹캠과 캔버스를 감싸는 div -->
 <div class="hidden-container">

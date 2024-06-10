@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/개.png">
+    <link rel="icon" type="image/png" sizes="120x120" href="/static/img/Silver-Lining-favicon.png">
     <title>Silver Lining</title>
     <style>
+          @font-face {
+            font-family: 'Freesentation-9Black';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+            font-style: normal;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Freesentation-9Black';
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,7 +27,7 @@
             height: 450px;
             text-align: center;
             padding: 20px;
-            background-color:#fffebd;
+            background-color:#D3ECF2;
             /* Lavender */
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -29,7 +35,7 @@
 
         h1 {
             font-size: xxx-large;
-            color: #333;
+            color: #5c5c5c;
         }
 
         p {
@@ -48,7 +54,7 @@
             height: 20px;
             width: 20px;
             margin: 0 5px;
-            background-color:#007bff;
+            background-color:#64b9f2;
             border-radius: 50%;
             display: inline-block;
             animation: bounce 1.5s infinite;
@@ -81,49 +87,44 @@
             margin-right: 10px;
             width: 200px;
             height: 70px;
-            font-size: larger;
-            background-color: #007bff;
+            font-family: 'Freesentation-9Black';
+            font-size: 1.75rem;
+            background-color: #FFB848;
             color: white;
-            font-weight: bold;
             border-radius: 15px;
+            border-color: transparent;
+            box-shadow: 0px 3px 3px 2px rgba(0, 0, 0, 0.1);
         }
         .hidden {
             display: none;
         }
 
-        .redirectButton {
-            margin-top: 10px;
-            margin-bottom: 0px;
-            width: 200px;
-            height: 70px;
-            font-size: larger;
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-            border-radius: 15px;
-        }
         .mybtn {
             width: 840px;
             display: flex;
             flex-direction: row-reverse;
+            justify-content: center;
+            align-items: center;
         }
 
         .redirectButton {
-            margin-bottom: 30px;
-            width: 180px;
-            height: 60px;
-            background-color: #bab6b6;
+            width: 200px;
+            height: 70px;
+            background-color: #8DC0D0;
             color: #FFF;
+            margin-top: 10px;
+            font-family: 'Freesentation-9Black';
+            font-size: 1.75rem;
+            border-radius: 15px;
+            border-color: transparent;
+            box-shadow: 0px 3px 3px 2px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container-wrapper">
-        <div class="mybtn">
-            <button id="redirectButton" class="redirectButton">일반주문 하기</button>
-        </div>
         <div class="container">
-            <h1>안녕하세요</h1>
+            <h1>안녕하세요,</h1>
             <h1>어떤 메뉴로 주문하시겠습니까?</h1>
             <div class="processing">
                 <div class="dot"></div>
@@ -137,7 +138,10 @@
                 <p id="transcription"></p>
             </div>
             <p>음성 인식 중 ....</p>
+            <div class="mybtn">
+                <button id="redirectButton" class="redirectButton">일반주문 하기</button>
             <button id="startButton" class="startButton hidden"></button>
+            </div>
         </div>
     </div>
     
@@ -233,7 +237,7 @@
                         });
                 };
                 recognition.onend = function () {
-                    startButton.textContent = '음성 입력 다시 시작';
+                    startButton.textContent = '음성 입력 재시작';
                     startButton.classList.remove('hidden');
                 };
             }
