@@ -358,14 +358,10 @@
 
             menuData.forEach((menu, index) => {
               const menuItem = `
-                    <div class="recommendation" onclick="addItem"('${
-                      menu.food_name
-                    }', ${menu.price}, '${menu.img_url}', ${1})">
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', '${menu.price}', '${menu.img_url}')">
                         <h2>${menu.food_name}</h2>
                         <div class="menu-image">
-                            <img src="${menu.img_url}" alt="${
-                menu.food_name
-              } 이미지">
+                            <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
                         </div>
                         <p>${menu.price}원</p>
                     </div>
@@ -591,7 +587,7 @@
           timeout = setTimeout(() => {
             clearCart();
             // window.location.href = '/orders/start_order/';
-          }, 30000); // 1분 = 60,000 밀리초
+          }, 3000000); // 1분 = 60,000 밀리초
         }
 
         // 페이지가 로드될 때와 사용자가 페이지에서 클릭할 때마다 타임아웃을 리셋

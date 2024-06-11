@@ -59,12 +59,12 @@
                 const dailyOrdersData = data.daily_orders;
                 const dailyRevenueData = data.daily_revenue;
                 let topMenusData = data.top_menus;
-                // const 대신 let으로 변경_정렬 가능하도록
 
-                topMenusData = topMenusData.sort((a, b) => b.count - a.count);
-                console.log("count로 메뉴 정렬>>>>>>>>>", topMenusData)
+                // Sort topMenusData by quantity
+                topMenusData = topMenusData.sort((a, b) => b.quantity - a.quantity);
+                console.log("Top menus sorted by quantity:", topMenusData);
 
-                // 일일 주문 수 차트
+                // Daily Orders Chart
                 const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
                 dailyOrdersChart.setOption({
                     xAxis: {
@@ -80,7 +80,7 @@
                     }]
                 });
 
-                // 일일 매출 차트
+                // Daily Revenue Chart
                 const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
                 dailyRevenueChart.setOption({
                     xAxis: {
@@ -96,22 +96,17 @@
                     }]
                 });
 
-                // 상위 5개 주문된 메뉴 카드
+                // Top Ordered Menus Cards
                 const topMenusElement = document.getElementById('top-menus');
 
-                const topFiveMenus = topMenusData.slice(0, 5)
-                console.log("topMenusData 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topMenusData)
-                console.log("topFiveMenus 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topFiveMenus)
-
-                topFiveMenus.forEach(menu => {
+                topMenusData.forEach(menu => {
                     const menuCard = document.createElement('div');
                     menuCard.className = 'col-md-4 mb-2';
                     menuCard.innerHTML = `
                         <div class="card bg-light border-0 shadow">
                             <div class="card-body">
-                                <h5>${menu.menu_item.name}</h5>
-                                <p class="mb-0">Korean Name: ${menu.food_name_ko}</p>
-                                <p class="mb-0">Order Count: ${menu.count}</p>
+                                <h5>${menu.food_name_ko}</h5>
+                                <p class="mb-0">Order Quantity: ${menu.quantity}</p>
                             </div>
                         </div>
                     `;
