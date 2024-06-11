@@ -328,6 +328,25 @@
             line-height: 2;
             border-radius: 0.3rem;
         }
+
+        .mybtn {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            margin: 20px; /* 원하는 여백 설정 가능 */
+            z-index: 999; /* 다른 요소 위에 표시하기 위한 z-index 값 설정 */
+        }
+
+        .redirectButton {
+            background: #ffb848;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -361,6 +380,10 @@
         <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
         <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
     </div>
+</div>
+
+<div class="mybtn">
+    <button id="redirectButton" class="redirectButton">음성주문 하기</button>
 </div>
 
 
@@ -533,6 +556,12 @@
         document.body.addEventListener('keypress', resetInactivityTimer); // 키 입력 시 타이머 리셋
         document.body.addEventListener('mousemove', resetInactivityTimer); // 마우스 움직임 시 타이머 리셋
     };
+
+    const redirectButton = document.getElementById("redirectButton");
+    redirectButton.addEventListener("click", function () {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = "/orders/elder_start/";
+    });
 
     // 음성입력 및 출력에 사용되는 언어 코드 설정
     const languageCodeIn = "{% trans 'input' %}"; // 음성입력 언어 선택
