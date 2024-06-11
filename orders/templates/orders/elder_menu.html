@@ -288,14 +288,14 @@
       <p class="mymenu">이런 음료도 추천드려요.</p>
 
       <div class="recommendations" id="recommendations">
-        <!-- Menu items will be populated here dynamically -->
+        <!-- 추천 메뉴 -->
       </div>
 
-      {% comment %} 카트 부분 {% endcomment %}
+      <!-- 장바구니  -->
       <div class="cartarrowContainer">
         <div id="cartContainer" class="cart">
           <div id="cartItems">
-            <!-- Cart items will be populated here dynamically -->
+            <!-- 장바구니에 추가된 메뉴 -->
           </div>
         </div>
         <div class="arrowContainer">
@@ -313,7 +313,7 @@
       <form id="speechForm">{% csrf_token %}</form>
     </div>
 
-    <!-- Pop-up for best recommendation -->
+    <!-- 첫번째 추천 메뉴 팝업 -->
     <div class="popup-overlay" id="popup-overlay">
       <div class="popup-container" id="popup-container">
         <h2 class="mypopup">추천 음료</h2>
@@ -343,7 +343,6 @@
       const popupName = document.getElementById("popup-name");
       const popupPrice = document.getElementById("popup-price");
       const closePopup = document.getElementById("closePopup");
-      // const voiceRestart = document.getElementById('voiceRestart');
 
       document.addEventListener("DOMContentLoaded", function () {
         console.log("페이지 로딩 후 메뉴 조회, 장바구니 조회 >>> ");
@@ -358,7 +357,7 @@
 
             menuData.forEach((menu, index) => {
               const menuItem = `
-                    <div class="recommendation" onclick="addItem('${
+                    <div class="recommendation" onclick="addItem"('${
                       menu.food_name
                     }', ${menu.price}, '${menu.img_url}', ${1})">
                         <h2>${menu.food_name}</h2>
@@ -372,7 +371,7 @@
                 `;
 
               if (index === 0) {
-                // Populating the popup with the first recommended menu
+                // 첫 번째 추천 메뉴를 팝업에
                 popupImage.src = menu.img_url;
                 popupName.textContent = menu.food_name;
                 popupPrice.textContent = `${menu.price}원`;
@@ -384,24 +383,21 @@
                 );
                 popupOverlay.style.display = "flex";
               } else {
-                // Inserting menu item into recommendations container
+                // 다른 추천 메뉴를 recommendations에
                 recommendations.insertAdjacentHTML("beforeend", menuItem);
               }
             });
 
             closePopup.addEventListener("click", function (event) {
-              event.stopPropagation(); // Stop event from bubbling up
-              popupOverlay.style.display = "none"; // Hide the popup
+              event.stopPropagation(); // addItem event 정지
+              popupOverlay.style.display = "none"; // 팝업 닫아주기
             });
             document
               .getElementById("restart")
               .addEventListener("click", function (event) {
-                console.log("restartt로 func실행>>>>>>>>>");
-                event.stopPropagation(); // Stop event from bubbling up
-                console.log("stopPropagation 되고있나>>>>>>>>>");
+                event.stopPropagation(); // addItem event 정지
                 speakAgain();
-                console.log("spearAgain222 되고있나>>>>>>>>>");
-                popupOverlay.style.display = "none"; // Hide the popup
+                popupOverlay.style.display = "none"; // 팝업 닫아주기
               });
           })
           .catch((error) => {
@@ -412,19 +408,14 @@
           .getElementById("voiceRestart")
           .addEventListener("click", speakAgain);
 
-        // 장바구니 조회
-        console.log("장바구니 조회 username >>>>> ");
-
         clearCart();
 
-        // Handle event listeners for buttons
         document
           .getElementById("submitOrderBtn")
           .addEventListener("click", submitOrder);
       });
 
       if (responseText) {
-        console.log("responseText 탔는지 >>>>>>>>>", responseText);
         speak(responseText);
       }
 
@@ -439,7 +430,6 @@
         const csrfTokenElement = document.querySelector(
           'input[name="csrfmiddlewaretoken"]'
         );
-        console.log("csrfTokenElement>>>>>>>>", csrfTokenElement);
         return csrfTokenElement ? csrfTokenElement.value : null;
       }
 
@@ -453,23 +443,16 @@
       }
 
       function startSpeechRecognition() {
-        console.log(">>>>>>>>>>>>> startSpeechRecognition");
         if (!("webkitSpeechRecognition" in window)) {
           alert("음성 인식이 지원되지 않는 브라우저입니다.");
-          console.log(">>>>>>>>>>>>>>>> if 탔는지");
         } else {
-          console.log(">>>>>>>>>> else 탔는지");
           const recognition = new webkitSpeechRecognition();
-          console.log(">>>>>>>> recognition 탔는지");
           recognition.lang = "ko-KR";
           recognition.start();
-          console.log(">>>>>>>>>> start() 탔는지");
           recognition.onresult = function (event) {
             const transcript = event.results[0][0].transcript;
             console.log("transcript>>>>>>>>>>>>>", transcript);
             const csrfToken = getCsrfToken();
-            console.log("csrf 탔는지 >>>>>>>>>");
-            console.log("csrfToken>>>>>>>>>", csrfToken);
 
             axios
               .post(
@@ -483,10 +466,7 @@
               )
               .then(function (response) {
                 const result = response.data.result;
-                console.log("result인 추천메뉴>>>>>>>", result);
-                console.log("result 너니? >>>>>>>", result);
                 if (result == 1) {
-                  console.log("if문 탔는지 >>>>>>>>");
                   triggerProceedToPay();
                 } else if (
                   response.data.responseText &&
@@ -494,11 +474,6 @@
                 ) {
                   const responseText = response.data.responseText;
                   const recommended_menu = response.data.recommended_menu;
-                  console.log("responseText>>>>>>>>>>>>>>>", responseText);
-                  console.log(
-                    "recommended_menu>>>>>>>>>>>>>>>",
-                    recommended_menu
-                  );
                   displayRecommendations(recommended_menu, responseText);
                 } else {
                   refreshCart();
@@ -512,23 +487,17 @@
       }
 
       function displayRecommendations(recommended_menu, responseText) {
-        console.log("displayRecommendations 파라미터:", {
-          params: { recommended_menu: recommended_menu },
-        });
         axios
           .get("/orders/orderbot/", {
             params: { recommended_menu: JSON.stringify(recommended_menu) },
           })
           .then((response) => {
             const menuData = response.data.recommends;
-            console.log("response>>>>>>>>>>", response);
-            console.log("response.data>>>>>", response.data);
-            console.log("menuData>>>>>", menuData);
             recommendations.innerHTML = "";
 
             menuData.forEach((menu, index) => {
               const menuItem = `
-                    <div class="recommendation" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}')">
+                    <div class="recommendation" onclick="addItem('${menu.food_name}', '${menu.price}', '${menu.img_url}')">
                         <h2>${menu.food_name}</h2>
                         <div class="menu-image">
                             <img src="${menu.img_url}" alt="${menu.food_name} 이미지">
@@ -538,7 +507,7 @@
                 `;
 
               if (index === 0) {
-                // Populating the popup with the first recommended menu
+                // 첫 번째 추천 메뉴를 팝업에
                 popupImage.src = menu.img_url;
                 popupName.textContent = menu.food_name;
                 popupPrice.textContent = `${menu.price}원`;
@@ -549,14 +518,14 @@
                 );
                 popupOverlay.style.display = "flex";
               } else {
-                // Inserting menu item into recommendations container
+                // 다른 추천 메뉴를 recommendations에
                 recommendations.insertAdjacentHTML("beforeend", menuItem);
               }
             });
 
             closePopup.addEventListener("click", function (event) {
-              event.stopPropagation(); // Stop event from bubbling up
-              popupOverlay.style.display = "none"; // Hide the popup
+              event.stopPropagation(); // addItem event 정지
+              popupOverlay.style.display = "none"; // 팝업 닫아주기
             });
           })
           .catch((error) => {
@@ -590,7 +559,7 @@
           // 새로운 타임아웃 설정 (30초 후에 페이지 리다이렉트)
           timeout = setTimeout(() => {
             clearCart();
-            // window.location.href = '/orders/start_order/';
+            window.location.href = '/orders/start_order/';
           }, 30000); // 1분 = 60,000 밀리초
         }
 

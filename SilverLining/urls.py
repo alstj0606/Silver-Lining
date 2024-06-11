@@ -21,6 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.db import connection
 from orders import views
+from orders.admin import CustomAdminSite
+
 
 
 def dummy_favicon(request):
