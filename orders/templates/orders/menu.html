@@ -514,6 +514,26 @@
         }
     }
 
+    let inactivityTimeout;
+    const inactivityTimeLimit = 30000; // 30초 (밀리초 단위)
+    const redirectUrl = "{% url 'orders:start_order' %}"; // 이동할 URL
+
+    // 사용자가 활동(클릭, 키 입력 등)을 할 때 타이머를 초기화하는 함수
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimeout); // 기존 타이머 제거
+        inactivityTimeout = setTimeout(() => {
+            window.location.href = redirectUrl; // 지정된 URL로 이동
+        }, inactivityTimeLimit);
+    }
+
+    // 사용자의 활동을 감지하는 이벤트 리스너 등록
+    window.onload = function () {
+        resetInactivityTimer(); // 초기 로드 시 타이머 설정
+        document.body.addEventListener('click', resetInactivityTimer); // 클릭 시 타이머 리셋
+        document.body.addEventListener('keypress', resetInactivityTimer); // 키 입력 시 타이머 리셋
+        document.body.addEventListener('mousemove', resetInactivityTimer); // 마우스 움직임 시 타이머 리셋
+    };
+
     // 음성입력 및 출력에 사용되는 언어 코드 설정
     const languageCodeIn = "{% trans 'input' %}"; // 음성입력 언어 선택
     const languageCodeOut = "{% trans 'output' %}"; // 음성출력 언어 선택
