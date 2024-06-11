@@ -3,8 +3,6 @@
 
 {% block content %}
 <div class="py-4">
-    <!-- Dropdown and buttons here... -->
-
     <div class="row">
         <div class="col-12 mb-4">
             <!-- Daily Orders -->
@@ -43,87 +41,72 @@
                     </div>
                 </div>
                 <div class="card-body p-2">
-                    <div class="bar-chart" id="top-ordered-menu"></div>
+                    <div class="row" id="top-menus">
+                        <!-- 메뉴 카드가 여기에 삽입됩니다. -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="{% static 'js/echarts.min.js' %}"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Fetch the data from the view
-            fetch("{% url 'orders_dashboard_data' %}")
-                .then(response => response.json())
-                .then(data => {
-                    // Prepare daily orders chart data
-                    const dailyOrdersData = data.daily_orders.map(item => item.order_count);
-                    const dailyOrdersLabels = data.daily_orders.map(item => item.created_at);
-
-                    // Prepare daily revenue chart data
-                    const dailyRevenueData = data.daily_revenue.map(item => item.total_price);
-                    const dailyRevenueLabels = data.daily_revenue.map(item => item.created_at);
-
-                    // Prepare top ordered menu chart data
-                    const topOrderedMenuData = data.top_menus.map(item => item.count);
-                    const topOrderedMenuLabels = data.top_menus.map(item => item.menu_item);
-
-                    // Set options for daily orders chart
-                    const dailyOrdersOptions = {
-                        xAxis: {
-                            type: 'category',
-                            data: dailyOrdersLabels
-                        },
-                        yAxis: {
-                            type: 'value'
-                        },
-                        series: [{
-                            data: dailyOrdersData,
-                            type: 'bar'
-                        }]
-                    };
-
-                    // Set options for daily revenue chart
-                    const dailyRevenueOptions = {
-                        xAxis: {
-                            type: 'category',
-                            data: dailyRevenueLabels
-                        },
-                        yAxis: {
-                            type: 'value'
-                        },
-                        series: [{
-                            data: dailyRevenueData,
-                            type: 'bar'
-                        }]
-                    };
-
-                    // Set options for top ordered menu chart
-                    const topOrderedMenuOptions = {
-                        xAxis: {
-                            type: 'category',
-                            data: topOrderedMenuLabels
-                        },
-                        yAxis: {
-                            type: 'value'
-                        },
-                        series: [{
-                            data: topOrderedMenuData,
-                            type: 'bar'
-                        }]
-                    };
-
-                    // Initialize the charts
-                    const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
-                    dailyOrdersChart.setOption(dailyOrdersOptions);
-
-                    const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
-                    dailyRevenueChart.setOption(dailyRevenueOptions);
-
-                    const topOrderedMenuChart = echarts.init(document.getElementById('top-ordered-menu'));
-                    topOrderedMenuChart.setOption(topOrderedMenuOptions);
-                });
-        });
-    </script>
 </div>
+
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 데이터를 Django 템플릿으로부터 가져옵니다.
+        const dailyOrdersData = {{ daily_orders|safe }};
+        const dailyRevenueData = {{ daily_revenue|safe }};
+        const topMenusData = {{ top_menus|safe }};
+
+        // 일일 주문 수 차트
+        const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
+        dailyOrdersChart.setOption({
+            xAxis: {
+                type: 'category',
+                data: dailyOrdersData.map(item => item[0]),
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: dailyOrdersData.map(item => item[1]),
+                type: 'bar'
+            }]
+        });
+
+        // 일일 매출 차트
+        const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
+        dailyRevenueChart.setOption({
+            xAxis: {
+                type: 'category',
+                data: dailyRevenueData.map(item => item[0])
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: dailyRevenueData.map(item => item[1]),
+                type: 'bar'
+            }]
+        });
+
+        // 상위 5개 주문된 메뉴 카드
+        const topMenusElement = document.getElementById('top-menus');
+
+        topMenusData.forEach(menu => {
+            const menuCard = document.createElement('div');
+            menuCard.className = 'col-md-4 mb-4';
+            menuCard.innerHTML = `
+                <div class="card bg-light border-0 shadow">
+                    <div class="card-body">
+                        <h5>${menu.menu_item.name}</h5>
+                        <p class="mb-0">Korean Name: ${menu.menu_item.food_name_ko}</p>
+                        <p class="mb-0">Order Count: ${menu.count}</p>
+                    </div>
+                </div>
+            `;
+            topMenusElement.appendChild(menuCard);
+        });
+    });
+</script>
 {% endblock %}

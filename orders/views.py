@@ -473,13 +473,17 @@ def orders_dashboard_data(request):
     all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True).value_counts().reset_index()
     all_menus.columns = ['menu_item', 'count']
 
-    # JSON 응답 생성
-    data = {
-        'daily_orders': daily_orders.to_dict(orient='records'),
-        'daily_revenue': daily_revenue.to_dict(orient='records'),
-        'top_menus': all_menus.to_dict(orient='records'),
+    # Top 5 메뉴만 가져오기
+    top_menus = all_menus.head(5)
+
+    # 데이터를 템플릿으로 전달
+    context = {
+        'daily_orders': daily_orders.values.tolist(),
+        'daily_revenue': daily_revenue.values.tolist(),
+        'top_menus': top_menus.to_dict(orient='records')
     }
-    return JsonResponse(data)
+    
+    return render(request, 'path_to_template/orders_dashboard.html', context)
 
 def orders_dashboard_view(request):
     return render(request, 'admin/orders_dashboard.html')
