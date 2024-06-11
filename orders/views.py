@@ -17,12 +17,13 @@ from django.utils.decorators import method_decorator  # 데코레이터를 사�
 from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
 from django.http import JsonResponse
 
-from .orderbot import request_type, cart_ai
-from .cart import CartItem, Cart, redis_test
-from .serializers import CartSerializer
+from .orderbot import request_type, cart_ai  # 음성 AI 처리 관련 함수
+from .cart import CartItem, Cart  # 장바구니 redis 저장 관련
+from .serializers import CartSerializer  # 장바구니 직렬화 관련
 
 from rest_framework.decorators import api_view
 import pandas as pd
+
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -51,11 +52,12 @@ def menu_view(request):
     return render(request, 'orders/menu.html')
 
 
-# 어르신을 위한 탬플릿 뷰
+# 고령층 템플릿
 def elder_start(request):
     return render(request, "orders/elder_start.html")
 
 
+# 고령층 템플릿
 def elder_menu(request):
     return render(request, "orders/elder_menu.html")
 
@@ -196,157 +198,110 @@ def face_recognition(request):
     return HttpResponse("Please upload an image.")
 
 
+# 고령층의 AI 관련 요청을 처리합니다.
 class orderbot(APIView):
+    # AI의 추천메뉴를 조회합니다.
     @staticmethod
     def get(request):
         user = request.user
         recommended_menu = request.GET.get('recommended_menu', '[]')
-        print("\n\n params가 string이 붙었을 때:")
-        print("\n\n orderbot의 recommended_menu", recommended_menu)
         # JSON 문자열을 파싱하여 리스트로 변환
         recommended_menu = json.loads(recommended_menu)
-        print("\n\n recommended_menu 파싱 이후", recommended_menu)
-        # 현재 사용자가 작성한 모든 메뉴의 store를 가져옵니다.
+        # 현재 사용자가 작성한 모든 메뉴를 가져옵니다.
         user_menus = Menu.objects.filter(store=user)
-
-        # 추천 메뉴를 미리 정의합니다.
         recommended_list = []
         for recommend in recommended_menu:
-            # recommended_list에 메뉴 객체 추가
+            # 추천 메뉴를 현재 사용자의 메뉴에서 필터링합니다.
             menu_items = user_menus.filter(food_name=recommend)
-            print("\n\n recommend로 잘 필터해서 가지고 오는지 >>>>", menu_items)
             for menu_item in menu_items:
                 recommended_list.append({
                     "food_name": menu_item.food_name,
                     "price": menu_item.price,
                     "img_url": menu_item.img.url
                 })
-            print("\n\n orderbot의 recommended_list>>>>>>>>>>", recommended_list)
         return Response({'recommends': recommended_list})
 
+    # POST 요청으로 음성 재입력이 들어왔을 때
     @staticmethod
     def post(request):
         result = 0
         input_text = request.data.get('inputText')
         recommended_menu = request.data.get('recommended_menu')
-        print("\n\n input_text>>>> ", input_text)
-        print("\n\n recommended_menu>>>> ", recommended_menu)
-        current_user = request.user  # POST 요청에서 'input' 값을 가져옴
+        current_user = request.user
+        # AI에 음성 transcript, 기존 추천 받았던 메뉴, 현재 점주 정보를 전달합니다.
         types, inputText, recommended_menu = request_type(request, input_text, recommended_menu, current_user)
-        print("\n\n category >>>>>> \n\n", types)
-
+        # AI가 장바구니 관련 음성 입력이라고 판단했을 경우
         if types == "cart":
-            # view_cart로 장바구니 정보를 가져옴
+            # 현재 장바구니를 확인합니다.
             current_cart = Cart(current_user.username)
             current_cart_get = current_cart.get_cart()
-            print("\n\n\n current_cart가 어떤 형태로 들어오는지 : ", current_cart_get)
-
+            # AI에게 음성 입력, 기존 추천 메뉴, 현재 점주, 현재 장바구니를 전달하여 응답을 받습니다.
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
-
-            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
-            username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-            name = result[1] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
-            # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
-
+            username = request.user.username
+            # 상태를 수정하려는 메뉴의 이름
+            name = result[1]
+            # 현재 장바구니에 해당 메뉴가 없을 때 메뉴를 데이터베이스에서 불러옵니다.
             if name not in current_cart_get:
                 store_id = request.user.id
-                menu = Menu.objects.get(store_id = store_id, food_name = name)
-                print("\n\n add_to_cart 의 menu 필터링", menu)
+                menu = Menu.objects.get(store_id=store_id, food_name=name)
                 image = menu.img
                 price = menu.price
                 quantity = result[0]
                 item = CartItem(image, name, price, quantity)
-                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
                 serializer = CartSerializer(item)
                 get_menu = serializer.data
-                print("\n\n serializer.data: ", type(serializer.data))
+            # 해당 메뉴가 있으면 상태를 불러옵니다.
             else:
-                print("\n current_cart_get의 타입", type(current_cart_get))
-                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
                 get_menu = json.loads(current_cart_get[name])
-            print("\n\n get_menu 의 타입 : ", type(get_menu))
-            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
-            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
-
+            # 수정하려는 메뉴의 수량을 가져옵니다.
+            get_menu["quantity"] = result[0]
+            # redis에서 처리할 수 있도록 넘겨줍니다.
             cart = Cart(username)
-            print("\n\n\n 메뉴의 수량 확인 : ", get_menu["quantity"])
-            if get_menu["quantity"]=='0' or 0:
-                print("\n if문 잘 진입했는지:")
+            # 수정한 수량이 0일 경우, 장바구니에서 삭제해주고 이외의 경우 수량을 업데이트하여 redis에 저장합니다.
+            if get_menu["quantity"] == '0' or 0:
                 cart.remove(get_menu["menu_name"])
             else:
                 cart.add_to_cart(get_menu)
-
             return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
 
-            """
-            ex ) "바닐라라떼 한 개로 바꿔줘."
-            cart_ai를 거쳐서 quantity 값을 받고, action도 받고, 메뉴 이름도 받아와야 함 (음성 인식한 것을 분석하는 함수)
-            ex )  바닐라라떼, redis - x = 요청한 quantity, 바꿔줘 == 수량 감소
-            --> 여기로 넘겨주면
-            redis에 넘길 데이터를 지정해주어야 한다. add_to_cart()
-            ex ) 바닐라라떼, 1, 나머지 메뉴 정보
-            --> cart.py에서 redis에 그대로 저장해줌. 같은 키값이면 set 으로 덮어씌워준다.
-            --> 이 정보가 redis에 저장되어 있으므로 updateCartDisplay()를 해주면 반영 끝.
-            """
-
-
+        # AI가 새 메뉴를 추천해달라는 요청이라고 판단했을 경우
         elif types == "menu":
-            print("\n\n if menu의 input_text>>>> ", input_text)
-            print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
-            print("\n\n if menu의 category >>>>>> ", types)
             message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
-        elif types =="pay":
-            print("\n\n elif pay 들어왔는지 \n\n")
+
+        # AI가 결제 요청이라고 판단했을 경우
+        elif types == "pay":
             result = 1
 
         return Response({'result': result})
 
 
-# 장바구니 페이지 뷰
+# 장바구니 현재 상태 조회
 @api_view(['GET'])
 def view_cart(request):
-    print("\n\n request 객체라도 나오는지: ", request)
-    print("\n\n request의 data: ", request.data)
     username = request.user.username
-    print("\n\n\n username 이 잘 들어왔는지: ", username)
     cart = Cart(username)
     context = {"cart_items": cart.get_cart()}
-    """
-    context >>>>>> 
-    {'cart_items': 
-    {'Vanilla Latte': '{"menu_name": "Vanilla Latte", "quantity": 2, "price": 5000, "image": "/media/menu_images/348719d11ab5b_j8HnmzP.png"}', 
-    '카페라떼': '{"menu_name": "\\uce74\\ud398\\ub77c\\ub5bc", "quantity": 4, "price": 4500, "image": "/media/menu_images/unnamed_iSy0wsw.png"}', 
-    'Iced Americano': '{"menu_name": "Iced Americano", "quantity": 2, "price": 5000, "image": "/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg"}'}}
-    """
-    print("\n\n\n context가 받아와지는지: ", context)
-    cart_data = context.get("cart_items",{})
-    print("\n\n cart_data 어떻게 생겼는지 >>>> ", cart_data)
-    return Response({"cart_items": context.get("cart_items", {})})
+    cart_data = context.get("cart_items", {})
+    return Response({"cart_items": cart_data})
 
 
-# 장바구니 항목 추가 뷰
+# 장바구니에 항목 추가
 @csrf_exempt
 def add_to_cart(request):
     if request.method == "POST":
-        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
+        username = request.user.username
         data = json.loads(request.body)
-        print("\n\n data >>>>", data)
-        print("\n\n request user >>>> ", request.user)
-        menu_name = data["menu_name"] # None 값 # 카드를 누르면 그 카드의 {menu.food_name} 전달이 여기로 되어야 함.
-        print("\n\n name: " , menu_name)
+        menu_name = data["menu_name"]
 
         cart = Cart(username)
         store_id = request.user.id
-        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
-        print("\n\n add_to_cart 의 menu 필터링", menu)
+        menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
         item = CartItem(image, menu_name, price, quantity)
-        print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
         serializer = CartSerializer(item)
-        print("\n\n serializer.data: ", type(serializer.data))
         cart.add_to_cart(serializer.data)
 
         return JsonResponse({"message": "Item added to cart", "cart_items": cart.get_cart()})
@@ -357,20 +312,12 @@ def add_to_cart(request):
 @api_view(['POST'])
 def add_quantity(request):
     if request.method == "POST":
-        username = request.user.username # 나중에 elder_menu에서 연결할 때 다시 구현
-        print("\n\n request.user.username: ", username)
-        print("\n\n add_quantity username: ", username)
-        name = request.POST.get("name") # 카페라떼
-        print("\n\n name은 잘 들어왔는지: ", name)
-        quantity = int(request.POST.get("quantity")) # 8
-        print("\n\n quantity 잘 들어왔는지: ", quantity)
+        username = request.user.username
+        name = request.POST.get("name")
+        quantity = int(request.POST.get("quantity"))
 
     cart = Cart(username)
-    menu = Menu.objects.get(store_id = 2, food_name = name)
-    print("\n\n get으로 id, food_name 같이: ", menu)
-    # filter_menu = Menu.objects.filter(store_id = 2, food_name = name).first()
-    # print("\n\n filter로 id, food_name 같이: ", filter_menu)
-    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu.food_name, menu.img, menu.price)
+    menu = Menu.objects.get(store_id=2, food_name=name)
     image = menu.img
     price = menu.price
     item = CartItem(image, name, price, quantity)
@@ -380,20 +327,17 @@ def add_quantity(request):
     return Response({"message": "장바구니 수량 수정"})
 
 
-# 장바구니 항목 제거 뷰
+# 장바구니 항목 제거
 @csrf_exempt
 @api_view(['POST'])
 def remove_from_cart(request, menu_name):
-    print("\n\n remove_from_cart() 타는지>>>" )
     username = request.user.username
-    print("\n\n remove() username: ", username)
-    print("\n\n menu_name: ", menu_name)
     cart = Cart(username)
     cart.remove(menu_name)
     return Response({"message": "해당 메뉴 삭제"})
 
 
-# 장바구니 전체 삭제 뷰
+# 장바구니 전체 삭제
 @csrf_exempt
 @api_view(['POST'])
 def clear_cart(request):
@@ -403,6 +347,7 @@ def clear_cart(request):
     return Response({"message": "장바구니 전체 삭제"})
 
 
+# 결제 후 주문번호 출력
 @csrf_exempt
 @api_view(["POST"])
 def submit_order(request):
@@ -410,19 +355,14 @@ def submit_order(request):
         username = request.user.username
         user = request.user
         json_data = request.data
-        print("\n\n json_data보기 : ", json_data)
         items = json_data.get('items')
         total = json_data.get('total')
-        print("\n\n items : ", items)
-        print("\n\n total : ", total)
 
-    # Process the order (database operations, etc.)
+    # 데이터베이스에 주문 저장
     cart = Cart(username)
-    # 데이터베이스에 저장
-
-    today = datetime.now().date()
 
     # 오늘 생성된 마지막 주문을 가져옵니다.
+    today = datetime.now().date()
     last_order = Order.objects.filter(store=user, created_at__date=today).order_by('-id').first()
     if last_order:
         order_number = last_order.order_number + 1
@@ -441,16 +381,6 @@ def submit_order(request):
     cart.clear()
 
     return Response({'order_number': new_order.order_number}, status=201)
-
-
-# redis 실행 확인
-def check_redis_connection(request):
-    try:
-        redis_test(request)
-        return JsonResponse({"message": "Redis connected successfully"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
 
 
 def orders_dashboard_data(request):
