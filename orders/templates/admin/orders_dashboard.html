@@ -13,7 +13,7 @@
                     </div>
                 </div>
                 <div class="card-body p-2">
-                    <div class="bar-chart" id="daily-orders"></div>
+                    <div id="daily-orders" style="width:100%;height:350px;"></div>
                 </div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="card-body p-2">
-                    <div class="bar-chart" id="daily-revenue"></div>
+                    <div id="daily-revenue" style="width:100%;height:350px;"></div>
                 </div>
             </div>
         </div>
@@ -50,63 +50,74 @@
     </div>
 </div>
 
-<script src="{% static 'js/echarts.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // 데이터를 Django 템플릿으로부터 가져옵니다.
-        const dailyOrdersData = {{ daily_orders|safe }};
-        const dailyRevenueData = {{ daily_revenue|safe }};
-        const topMenusData = {{ top_menus|safe }};
+        fetch('/orders/dashboard/orders_dashboard_data/')
+            .then(response => response.json())
+            .then(data => {
+                const dailyOrdersData = data.daily_orders;
+                const dailyRevenueData = data.daily_revenue;
+                let topMenusData = data.top_menus;
+                // const 대신 let으로 변경_정렬 가능하도록
 
-        // 일일 주문 수 차트
-        const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
-        dailyOrdersChart.setOption({
-            xAxis: {
-                type: 'category',
-                data: dailyOrdersData.map(item => item[0]),
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: [{
-                data: dailyOrdersData.map(item => item[1]),
-                type: 'bar'
-            }]
-        });
+                topMenusData = topMenusData.sort((a, b) => b.count - a.count);
+                console.log("count로 메뉴 정렬>>>>>>>>>", topMenusData)
 
-        // 일일 매출 차트
-        const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
-        dailyRevenueChart.setOption({
-            xAxis: {
-                type: 'category',
-                data: dailyRevenueData.map(item => item[0])
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: [{
-                data: dailyRevenueData.map(item => item[1]),
-                type: 'bar'
-            }]
-        });
+                // 일일 주문 수 차트
+                const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
+                dailyOrdersChart.setOption({
+                    xAxis: {
+                        type: 'category',
+                        data: dailyOrdersData.map(item => item.created_at),
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: dailyOrdersData.map(item => item.order_count),
+                        type: 'bar'
+                    }]
+                });
 
-        // 상위 5개 주문된 메뉴 카드
-        const topMenusElement = document.getElementById('top-menus');
+                // 일일 매출 차트
+                const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
+                dailyRevenueChart.setOption({
+                    xAxis: {
+                        type: 'category',
+                        data: dailyRevenueData.map(item => item.created_at)
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: dailyRevenueData.map(item => item.total_price),
+                        type: 'bar'
+                    }]
+                });
 
-        topMenusData.forEach(menu => {
-            const menuCard = document.createElement('div');
-            menuCard.className = 'col-md-4 mb-4';
-            menuCard.innerHTML = `
-                <div class="card bg-light border-0 shadow">
-                    <div class="card-body">
-                        <h5>${menu.menu_item.name}</h5>
-                        <p class="mb-0">Korean Name: ${menu.menu_item.food_name_ko}</p>
-                        <p class="mb-0">Order Count: ${menu.count}</p>
-                    </div>
-                </div>
-            `;
-            topMenusElement.appendChild(menuCard);
-        });
+                // 상위 5개 주문된 메뉴 카드
+                const topMenusElement = document.getElementById('top-menus');
+
+                const topFiveMenus = topMenusData.slice(0, 5)
+                console.log("topMenusData 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topMenusData)
+                console.log("topFiveMenus 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topFiveMenus)
+
+                topFiveMenus.forEach(menu => {
+                    const menuCard = document.createElement('div');
+                    menuCard.className = 'col-md-4 mb-2';
+                    menuCard.innerHTML = `
+                        <div class="card bg-light border-0 shadow">
+                            <div class="card-body">
+                                <h5>${menu.menu_item.name}</h5>
+                                <p class="mb-0">Korean Name: ${menu.food_name_ko}</p>
+                                <p class="mb-0">Order Count: ${menu.count}</p>
+                            </div>
+                        </div>
+                    `;
+                    topMenusElement.appendChild(menuCard);
+                });
+            });
     });
 </script>
 {% endblock %}

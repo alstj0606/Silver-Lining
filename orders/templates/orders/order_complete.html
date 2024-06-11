@@ -1,64 +1,159 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Orders Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/dashboard.css' %}">
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="120x120"
+      href="/static/img/Silver-Lining-favicon.png"
+    />
+    <title>Silver Lining</title>
+    <!-- 부트스트랩 CSS 추가 -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .bar-chart {
-            display: flex;
-            align-items: flex-end;
-            height: 200px;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-        .bar {
-            width: 20px;
-            background-color: #4caf50;
-            margin-right: 5px;
-        }
-        .bar div {
-            text-align: center;
-            color: white;
-            font-size: 12px;
-            height: 15px;  /* 고정된 높이 */
-        }
+      @font-face {
+        font-family: "SokchoBadaDotum";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/SokchoBadaDotum.woff2")
+          format("woff2");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "ChosunGu";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGu.woff")
+          format("woff");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      body {
+        font-family: "SokchoBadaDotum", "ChosunGu";
+        background-color: #8dc0d0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        color: white;
+        text-align: center;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .order-confirmation {
+        background-color: #f4f9fa;
+        border-radius: 20px;
+        margin: 4rem;
+        padding: 1.5rem 3rem 3rem 3rem; /* 패딩 크기 증가 */
+        box-shadow: 0 14px 20px rgba(0, 0, 0, 0.1);
+        color: #000;
+        max-width: 1000px; /* 최대 너비 증가 */
+        font-size: 1.5rem; /* 폰트 크기 증가 */
+      }
+
+      .title {
+        color: #3a3a3a;
+        margin-bottom: 40px;
+      }
+
+      .h1 {
+        color: #3a3a3a;
+        font-size: 2rem;
+      }
+
+      .order-confirmation h2 {
+        color: #ffb848;
+        font-size: 3rem; /* 제목 폰트 크기 증가 */
+      }
+
+      .notice {
+        font-family: "ChosunGu";
+        color: #403f3f;
+      }
+
+      .order-number {
+        color: #403f3f;
+        font-size: 5rem; /* 주문번호 폰트 크기 증가 */
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+
+      .receipt-box {
+        padding: 2rem; /* 패딩 크기 증가 */
+        background-color: #ffffff;
+        border: 5px solid #ffb848;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 3rem; /* 하단 마진 증가 */
+        min-width: 5rem; /* 최소 너비 증가 */
+        text-align: center;
+        line-height: 5rem; /* 텍스트 세로 중앙 정렬을 위해 박스 높이와 동일하게 설정 */
+      }
+
+      .thank-you {
+        font-family: "ChosunGu";
+        font-size: 1.8rem; /* 폰트 크기 증가 */
+        color: #403f3f;
+      }
+
+      .timer {
+        font-size: 2.5rem; /* 폰트 크기 증가 */
+        margin-top: 1.5rem; /* 상단 마진 증가 */
+        color: #47a2ce;
+      }
     </style>
-</head>
-<body>
-    <h1>Orders Dashboard</h1>
-    <div class="bar-chart" id="daily-orders"></div>
-
     <script>
-        // 데이터 로드
-        fetch('/orders/orders_dashboard_data/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('daily-orders').innerText = data.error;
-                    return;
-                }
+      document.addEventListener("DOMContentLoaded", function () {
+        let countdown = 5;
+        let timerElement = document.getElementById("timer");
 
-                const dailyOrders = data.daily_orders;
-
-                dailyOrders.forEach(item => {
-                    const bar = document.createElement('div');
-                    bar.className = 'bar';
-                    
-                    // 높이 고정
-                    const innerBar = document.createElement('div');
-                    innerBar.innerText = item.order_count;
-                    
-                    bar.appendChild(innerBar);
-                    
-                    document.getElementById('daily-orders').appendChild(bar);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+        let interval = setInterval(function () {
+          if (countdown <= 0) {
+            clearInterval(interval);
+            window.location.href = "{% url 'orders:start_order' %}";
+          } else {
+            timerElement.textContent = countdown;
+            countdown--;
+          }
+        }, 1000); // 1000 밀리초 = 1초
+      });
     </script>
-</body>
+  </head>
+  <body>
+    <div class="container">
+      <div class="order-confirmation">
+        <div class="title">
+          <!-- Add a class for header -->
+          <img
+            style="width: 100px"
+            src="{% static 'img/Silver-Lining-logo.png' %}"
+            alt="실버라이닝 로고"
+          />
+          <h1>실버라이닝</h1>
+        </div>
+        <h2>결제가 완료되었습니다.</h2>
+        <p class="notice">영수증 하단 주문번호를 확인해 주세요.</p>
+        <br />
+        <div class="receipt-box">
+          <div class="order-number">{{ order_number }}</div>
+        </div>
+        <p class="thank-you">이용해 주셔서 감사합니다.</p>
+        <div class="timer">
+          <span id="timer">5</span>초 후에 메뉴로 이동합니다.
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

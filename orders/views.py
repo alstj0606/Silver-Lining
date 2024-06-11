@@ -17,13 +17,13 @@ from django.utils.decorators import method_decorator  # 데코레이터를 사�
 from django.utils import translation  # Django의 다국어 지원을 위한 translation 모듈을 가져옵니다.
 from django.http import JsonResponse
 
-from .orderbot import request_type, cart_ai # 음성 AI 처리 관련 함수
-from .cart import CartItem, Cart # 장바구니 redis 저장 관련
-from .serializers import CartSerializer # 장바구니 직렬화 관련
+from .orderbot import request_type, cart_ai  # 음성 AI 처리 관련 함수
+from .cart import CartItem, Cart  # 장바구니 redis 저장 관련
+from .serializers import CartSerializer  # 장바구니 직렬화 관련
 
 from rest_framework.decorators import api_view
-# import plotly.express as px
-# import pandas as pd
+import pandas as pd
+
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
@@ -52,9 +52,10 @@ def menu_view(request):
     return render(request, 'orders/menu.html')
 
 
-# 고령층 템플릿 
+# 고령층 템플릿
 def elder_start(request):
     return render(request, "orders/elder_start.html")
+
 
 # 고령층 템플릿
 def elder_menu(request):
@@ -219,7 +220,7 @@ class orderbot(APIView):
                     "img_url": menu_item.img.url
                 })
         return Response({'recommends': recommended_list})
-    
+
     # POST 요청으로 음성 재입력이 들어왔을 때
     @staticmethod
     def post(request):
@@ -242,7 +243,7 @@ class orderbot(APIView):
             # 현재 장바구니에 해당 메뉴가 없을 때 메뉴를 데이터베이스에서 불러옵니다.
             if name not in current_cart_get:
                 store_id = request.user.id
-                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                menu = Menu.objects.get(store_id=store_id, food_name=name)
                 image = menu.img
                 price = menu.price
                 quantity = result[0]
@@ -257,22 +258,23 @@ class orderbot(APIView):
             # redis에서 처리할 수 있도록 넘겨줍니다.
             cart = Cart(username)
             # 수정한 수량이 0일 경우, 장바구니에서 삭제해주고 이외의 경우 수량을 업데이트하여 redis에 저장합니다.
-            if get_menu["quantity"]=='0' or 0:
+            if get_menu["quantity"] == '0' or 0:
                 cart.remove(get_menu["menu_name"])
             else:
                 cart.add_to_cart(get_menu)
             return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
-        
+
         # AI가 새 메뉴를 추천해달라는 요청이라고 판단했을 경우
         elif types == "menu":
             message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
-        
+
         # AI가 결제 요청이라고 판단했을 경우
-        elif types =="pay":
+        elif types == "pay":
             result = 1
 
         return Response({'result': result})
+
 
 # 장바구니 현재 상태 조회
 @api_view(['GET'])
@@ -280,8 +282,9 @@ def view_cart(request):
     username = request.user.username
     cart = Cart(username)
     context = {"cart_items": cart.get_cart()}
-    cart_data = context.get("cart_items",{})
+    cart_data = context.get("cart_items", {})
     return Response({"cart_items": cart_data})
+
 
 # 장바구니에 항목 추가
 @csrf_exempt
@@ -293,7 +296,7 @@ def add_to_cart(request):
 
         cart = Cart(username)
         store_id = request.user.id
-        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
+        menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
@@ -302,6 +305,7 @@ def add_to_cart(request):
         cart.add_to_cart(serializer.data)
 
         return JsonResponse({"message": "Item added to cart", "cart_items": cart.get_cart()})
+
 
 # 장바구니 항목 수량 수정
 @csrf_exempt
@@ -313,7 +317,7 @@ def add_quantity(request):
         quantity = int(request.POST.get("quantity"))
 
     cart = Cart(username)
-    menu = Menu.objects.get(store_id = 2, food_name = name)
+    menu = Menu.objects.get(store_id=2, food_name=name)
     image = menu.img
     price = menu.price
     item = CartItem(image, name, price, quantity)
@@ -321,6 +325,7 @@ def add_quantity(request):
     item_data = serializer.data
     cart.update_quantity(item_data)
     return Response({"message": "장바구니 수량 수정"})
+
 
 # 장바구니 항목 제거
 @csrf_exempt
@@ -331,6 +336,7 @@ def remove_from_cart(request, menu_name):
     cart.remove(menu_name)
     return Response({"message": "해당 메뉴 삭제"})
 
+
 # 장바구니 전체 삭제
 @csrf_exempt
 @api_view(['POST'])
@@ -339,6 +345,7 @@ def clear_cart(request):
     cart = Cart(username)
     cart.clear()
     return Response({"message": "장바구니 전체 삭제"})
+
 
 # 결제 후 주문번호 출력
 @csrf_exempt
@@ -375,6 +382,7 @@ def submit_order(request):
 
     return Response({'order_number': new_order.order_number}, status=201)
 
+
 def orders_dashboard_data(request):
     orders = Order.objects.all().values()
     df = pd.DataFrame(list(orders))
@@ -391,21 +399,24 @@ def orders_dashboard_data(request):
     # 날짜별 총 매출
     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
 
-    # 많이 주문된 메뉴
-    all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True).value_counts().reset_index()
-    all_menus.columns = ['menu_item', 'count']
+    # 많은 주문된 메뉴를 'food_name_ko' 기준으로 스플릿하고 누적
+    all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True)
+    all_menus = all_menus.apply(lambda x: x['food_name_ko'])
+    menu_counts = all_menus.value_counts().reset_index()
+    menu_counts.columns = ['food_name_ko', 'count']
 
-    # Top 5 메뉴만 가져오기
-    top_menus = all_menus.head(5)
+    # 메뉴 데이터 가공
+    menu_counts['menu_item'] = menu_counts['food_name_ko'].apply(lambda x: {'name': x, 'food_name_ko': x})
+    top_menus = menu_counts.head(5)
 
-    # 데이터를 템플릿으로 전달
-    context = {
-        'daily_orders': daily_orders.values.tolist(),
-        'daily_revenue': daily_revenue.values.tolist(),
-        'top_menus': top_menus.to_dict(orient='records')
+    # JSON 응답 생성
+    data = {
+        'daily_orders': daily_orders.to_dict(orient='records'),
+        'daily_revenue': daily_revenue.to_dict(orient='records'),
+        'top_menus': top_menus.to_dict(orient='records'),
     }
-    
-    return render(request, 'path_to_template/orders_dashboard.html', context)
+    return JsonResponse(data)
+
 
 def orders_dashboard_view(request):
     return render(request, 'admin/orders_dashboard.html')
