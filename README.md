@@ -17,15 +17,16 @@
 ## 👨‍🏫 Developement Team (Pair Programming)
 **박현준, 박소영, 박지현, 홍민서**
 
-<br><br>
 
-** 기능구현
-- 얼굴인식
-- 음성인식
-- 
-
+- Django admin customization: 유저, 메뉴, 해시태그 CRUD 
+- 이용자 input 처리: opencv, gTTS, gSTT를 js에서 이용
+- 얼굴 인식 기능: opencv로 얼굴 인식 후 gpt로 나이를 추정
+- 음성 인식 기능: STT로 입력받은 음성을 gpt로 처리하고 받은 응답을 TTS로 출력
+- AI 메뉴 추천 모델: 받은 음성을 기반으로 gpt-4o 로 메뉴 추천
+- 연령별 맞춤 템플릿: 고령층과 비고령층의 UI/UX와 기능의 차별화를 통해 연령 맞춤 서비스 제공
 
 <br>
+
 
 ## ⏲️ Development time 
 - 2024.05.13(월) ~ 2023.06.12(수)
