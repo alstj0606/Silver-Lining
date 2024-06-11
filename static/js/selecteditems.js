@@ -92,12 +92,4 @@ function calculateTotalPrice(selectedItems) {
     return totalPrice;
 }
 
-function calculateTotalPrice(selectedItems) {
-    let totalPrice = 0;
-    for (const item of Object.values(selectedItems)) {
-        totalPrice += item.price * item.count;  // 선택된 항목의 가격 합산
-    }
-    return totalPrice;
-}
-
 

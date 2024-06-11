@@ -1,7 +1,10 @@
 from django.contrib import admin
 from .models import Order
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
-
+from django.urls import path
+from django.shortcuts import redirect
+# from .views import orders_dashboard
+from django.template.response import TemplateResponse
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -38,3 +41,19 @@ class OrderAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return ["status", "store", "created_at", ("created_at", DateRangeFilter)]
         return ["status", "created_at", ("created_at", DateRangeFilter)]
+
+
+class CustomAdminSite(admin.AdminSite):
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('dashboard/', self.admin_view(self.dashboard_view))
+        ]
+        return custom_urls + urls
+
+    def dashboard_view(self, request):
+        return redirect('/orders/dashboard/')
+
+admin_site = CustomAdminSite(name='custom_admin')
+
+admin_site.register(Order)

@@ -1,0 +1,123 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="py-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <!-- Daily Orders -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Daily Orders</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div id="daily-orders" style="width:100%;height:350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-4">
+            <!-- Daily Revenue -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Daily Revenue</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div id="daily-revenue" style="width:100%;height:350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-4">
+            <!-- Top Ordered Menu -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Top Ordered Menu</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="row" id="top-menus">
+                        <!-- 메뉴 카드가 여기에 삽입됩니다. -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/orders/dashboard/orders_dashboard_data/')
+            .then(response => response.json())
+            .then(data => {
+                const dailyOrdersData = data.daily_orders;
+                const dailyRevenueData = data.daily_revenue;
+                let topMenusData = data.top_menus;
+                // const 대신 let으로 변경_정렬 가능하도록
+
+                topMenusData = topMenusData.sort((a, b) => b.count - a.count);
+                console.log("count로 메뉴 정렬>>>>>>>>>", topMenusData)
+
+                // 일일 주문 수 차트
+                const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
+                dailyOrdersChart.setOption({
+                    xAxis: {
+                        type: 'category',
+                        data: dailyOrdersData.map(item => item.created_at),
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: dailyOrdersData.map(item => item.order_count),
+                        type: 'bar'
+                    }]
+                });
+
+                // 일일 매출 차트
+                const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
+                dailyRevenueChart.setOption({
+                    xAxis: {
+                        type: 'category',
+                        data: dailyRevenueData.map(item => item.created_at)
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: dailyRevenueData.map(item => item.total_price),
+                        type: 'bar'
+                    }]
+                });
+
+                // 상위 5개 주문된 메뉴 카드
+                const topMenusElement = document.getElementById('top-menus');
+
+                const topFiveMenus = topMenusData.slice(0, 5)
+                console.log("topMenusData 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topMenusData)
+                console.log("topFiveMenus 어떤 모양으로 들어오고 있나>>>>>>>>>>>>>>", topFiveMenus)
+
+                topFiveMenus.forEach(menu => {
+                    const menuCard = document.createElement('div');
+                    menuCard.className = 'col-md-4 mb-2';
+                    menuCard.innerHTML = `
+                        <div class="card bg-light border-0 shadow">
+                            <div class="card-body">
+                                <h5>${menu.menu_item.name}</h5>
+                                <p class="mb-0">Korean Name: ${menu.food_name_ko}</p>
+                                <p class="mb-0">Order Count: ${menu.count}</p>
+                            </div>
+                        </div>
+                    `;
+                    topMenusElement.appendChild(menuCard);
+                });
+            });
+    });
+</script>
+{% endblock %}
