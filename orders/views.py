@@ -453,6 +453,40 @@ def check_redis_connection(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+# def orders_dashboard_data(request):
+#     orders = Order.objects.all().values()
+#     df = pd.DataFrame(list(orders))
+
+#     if df.empty:
+#         return JsonResponse({'error': 'No data available'})
+
+#     # 날짜별로 분석할 수 있도록 'created_at' 필드를 날짜로 변환
+#     df['created_at'] = pd.to_datetime(df['created_at']).dt.date
+
+#     # 날짜별 주문 수
+#     daily_orders = df.groupby('created_at').size().reset_index(name='order_count')
+
+#     # 날짜별 총 매출
+#     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
+
+#     # 많이 주문된 메뉴
+#     all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True).value_counts().reset_index()
+#     all_menus.columns = ['menu_item', 'count']
+
+# ##
+# # 메뉴 데이터 가공
+#     all_menus['menu_item'] = all_menus['menu_item'].apply(lambda x: {'name': x, 'food_name_ko': x})
+#     top_menus = all_menus.head(5)
+
+
+#     # JSON 응답 생성
+#     data = {
+#         'daily_orders': daily_orders.to_dict(orient='records'),
+#         'daily_revenue': daily_revenue.to_dict(orient='records'),
+#         'top_menus': all_menus.to_dict(orient='records'),
+#     }
+#     return JsonResponse(data)
+
 def orders_dashboard_data(request):
     orders = Order.objects.all().values()
     df = pd.DataFrame(list(orders))
@@ -469,21 +503,21 @@ def orders_dashboard_data(request):
     # 날짜별 총 매출
     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
 
-    # 많이 주문된 메뉴
-    all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True).value_counts().reset_index()
-    all_menus.columns = ['menu_item', 'count']
+    # 많은 주문된 메뉴를 'food_name_ko' 기준으로 스플릿하고 누적
+    all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True)
+    all_menus = all_menus.apply(lambda x: x['food_name_ko'])
+    menu_counts = all_menus.value_counts().reset_index()
+    menu_counts.columns = ['food_name_ko', 'count']
 
-##
-# 메뉴 데이터 가공
-    all_menus['menu_item'] = all_menus['menu_item'].apply(lambda x: {'name': x, 'food_name_ko': x})
-    top_menus = all_menus.head(5)
-
+    # 메뉴 데이터 가공
+    menu_counts['menu_item'] = menu_counts['food_name_ko'].apply(lambda x: {'name': x, 'food_name_ko': x})
+    top_menus = menu_counts.head(5)
 
     # JSON 응답 생성
     data = {
         'daily_orders': daily_orders.to_dict(orient='records'),
         'daily_revenue': daily_revenue.to_dict(orient='records'),
-        'top_menus': all_menus.to_dict(orient='records'),
+        'top_menus': top_menus.to_dict(orient='records'),
     }
     return JsonResponse(data)
 
