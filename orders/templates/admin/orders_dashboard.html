@@ -1,0 +1,129 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="py-4">
+    <!-- Dropdown and buttons here... -->
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <!-- Daily Orders -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Daily Orders</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="bar-chart" id="daily-orders"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-4">
+            <!-- Daily Revenue -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Daily Revenue</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="bar-chart" id="daily-revenue"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-4">
+            <!-- Top Ordered Menu -->
+            <div class="card bg-yellow-100 border-0 shadow">
+                <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                    <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Top Ordered Menu</div>
+                    </div>
+                </div>
+                <div class="card-body p-2">
+                    <div class="bar-chart" id="top-ordered-menu"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/echarts.min.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch the data from the view
+            fetch("{% url 'orders_dashboard_data' %}")
+                .then(response => response.json())
+                .then(data => {
+                    // Prepare daily orders chart data
+                    const dailyOrdersData = data.daily_orders.map(item => item.order_count);
+                    const dailyOrdersLabels = data.daily_orders.map(item => item.created_at);
+
+                    // Prepare daily revenue chart data
+                    const dailyRevenueData = data.daily_revenue.map(item => item.total_price);
+                    const dailyRevenueLabels = data.daily_revenue.map(item => item.created_at);
+
+                    // Prepare top ordered menu chart data
+                    const topOrderedMenuData = data.top_menus.map(item => item.count);
+                    const topOrderedMenuLabels = data.top_menus.map(item => item.menu_item);
+
+                    // Set options for daily orders chart
+                    const dailyOrdersOptions = {
+                        xAxis: {
+                            type: 'category',
+                            data: dailyOrdersLabels
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: dailyOrdersData,
+                            type: 'bar'
+                        }]
+                    };
+
+                    // Set options for daily revenue chart
+                    const dailyRevenueOptions = {
+                        xAxis: {
+                            type: 'category',
+                            data: dailyRevenueLabels
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: dailyRevenueData,
+                            type: 'bar'
+                        }]
+                    };
+
+                    // Set options for top ordered menu chart
+                    const topOrderedMenuOptions = {
+                        xAxis: {
+                            type: 'category',
+                            data: topOrderedMenuLabels
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: topOrderedMenuData,
+                            type: 'bar'
+                        }]
+                    };
+
+                    // Initialize the charts
+                    const dailyOrdersChart = echarts.init(document.getElementById('daily-orders'));
+                    dailyOrdersChart.setOption(dailyOrdersOptions);
+
+                    const dailyRevenueChart = echarts.init(document.getElementById('daily-revenue'));
+                    dailyRevenueChart.setOption(dailyRevenueOptions);
+
+                    const topOrderedMenuChart = echarts.init(document.getElementById('top-ordered-menu'));
+                    topOrderedMenuChart.setOption(topOrderedMenuOptions);
+                });
+        });
+    </script>
+</div>
+{% endblock %}

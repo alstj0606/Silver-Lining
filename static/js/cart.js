@@ -76,6 +76,7 @@ let cart = {};
 
         let cartItem = JSON.parse(cart[name])
 
+        console.log("\n\n\n\n", axios.post('/orders/add_to_cart/', cartItem), cartItem)
         axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
                 console.log("Unexpected Response Data Format >>>")
@@ -83,9 +84,20 @@ let cart = {};
                 refreshCart();
             })
             .catch(error => {
-                console.error('Error adding item to cart:', error);
-            });
-        }
+                if (error.response) {
+                    // 서버에서 응답이 돌아온 경우
+                    console.error('Error response:', error.response.data);
+                    console.error('Status code:', error.response.status);
+                    console.error('Headers:', error.response.headers);
+                } else if (error.request) {
+                    // 요청이 만들어졌으나 응답을 받지 못한 경우
+                    console.error('Error request:', error.request);
+                } else {
+                    // 요청 설정 중에 에러가 발생한 경우
+                    console.error('Error message:', error.message);
+                }
+                console.error('Error config:', error.config);
+            })};
 
     function getCsrfToken() {
         const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
