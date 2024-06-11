@@ -473,6 +473,12 @@ def orders_dashboard_data(request):
     all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True).value_counts().reset_index()
     all_menus.columns = ['menu_item', 'count']
 
+##
+# 메뉴 데이터 가공
+    all_menus['menu_item'] = all_menus['menu_item'].apply(lambda x: {'name': x, 'food_name_ko': x})
+    top_menus = all_menus.head(5)
+
+
     # JSON 응답 생성
     data = {
         'daily_orders': daily_orders.to_dict(orient='records'),
