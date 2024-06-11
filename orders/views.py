@@ -22,8 +22,8 @@ from .cart import CartItem, Cart # 장바구니 redis 저장 관련
 from .serializers import CartSerializer # 장바구니 직렬화 관련
 
 from rest_framework.decorators import api_view
-import plotly.express as px
-import pandas as pd
+# import plotly.express as px
+# import pandas as pd
 
 # 언어를 변경하는 함수입니다.
 def switch_language(request):
