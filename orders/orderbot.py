@@ -4,6 +4,7 @@ from django.conf import settings
 from menus.models import Menu, Hashtag
 import json
 
+# AI가 참고할 현재 점주의 메뉴와 해시태그 정보를 가져옵니다.
 def get_user_menu_and_hashtags(user):
     # 현재 로그인된 사용자의 메뉴 가져오기
     user_menu = Menu.objects.filter(store=user)
@@ -16,11 +17,8 @@ def get_user_menu_and_hashtags(user):
 
     return menu_list, hashtag_list
 
-### 요청을 파악해야 함
-
+# 음성 재입력 시 AI가 해당 요청이 어떤 유형(장바구니, 메뉴 추천, 결제)인지 구별합니다.
 def request_type(client, input_text, recommended_menu, current_user):
-    print("\n\n request_type의 input text \n\n", input_text)
-    print("\n\n request_type()으로 recommended_menu가 잘 들어오는지 >>>>", recommended_menu)
     # 사용자의 카테고리 가져오기
     category = current_user.category
 
@@ -54,52 +52,28 @@ def request_type(client, input_text, recommended_menu, current_user):
         ],
     )
 
-    print("\n\n request_type의 AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
     ai_response = completion.choices[0].message.content
-    print("\n\n ai response에서 필요한 부분만 분리 >>>>>>>", ai_response)
-    ## Input: 아메리카노 두 잔 넣어 줘
-    ## Category: cart
-    # category -> 결과값에 따라서 어느 ai 로 보낼건지: 
-    """
-    메뉴 추천이면 bot() -> 메뉴 추천, 메시지 -> 음성 메시지 출력, 추천 메뉴 보여주기
-    장바구니면 bot2() -> 대상, 행동을 input에서 뽑아낸다(아메리카노/ 개수 / 넣는 거) ->  대상: 아메리카노, 개수: 2개, 행동: 넣는 거 ---(js로 넣어줄 수 있나?)---> 눌러주면 되는 것
-    아메리카노/ 2개/ 넣는 거 --> views.py ? orderbot --> views.py post() db 아메리카노, 2잔 추가 --> 
-    
-    responseText, category
-
-    views.py:
-            if category == cart:
-                responseText --> 쪼개는거: 메뉴, 개수, 행위
-            elif == menu:
-                response ? ? ? 다시 음성인식 speak() -> speechRecognition() - >
-            category - cart --> 
-            category - menu -->
-            category - pay -->
-    """
 
     inputText = ""
     types = ""
 
+    # 응답에서 필요한 정보를 분리해줍니다.
     try:
         for line in ai_response.split('\n'):
             print()
-            line = line.strip()  # Remove whitespace from both ends
+            line = line.strip()
             if line.startswith('Input:'):
                 inputText = line.split('Input: ')[1]
                 print("\n\n 응답에서 분리한 inputText:", inputText, "\n\n")
             elif line.startswith('Type:'):
                 types = line.split('Type: ')[1]
                 print("\n\n 응답에서 분리한 type :", types, "\n\n")
-
     except IndexError:
         recommended_menu = []
 
     return types, inputText, recommended_menu
 
-
-
-#######################
-
+# AI가 메뉴를 세가지 추천해줍니다.
 def get_recommended_menus(client, input_text, current_user):
     # 사용자의 카테고리 가져오기
     category = current_user.category
@@ -150,14 +124,12 @@ def get_recommended_menus(client, input_text, current_user):
             if line.startswith('Recommended Menu:'):
                 recommended_menu = line.split('Recommended Menu: ')[1].strip().split(', ')
                 break  # We don't need to continue once we have extracted the recommended menus
-
     except IndexError:
         recommended_menu = []
 
-    print("recommended_men >>>>>>>", recommended_menu)
     return recommended_menu
 
-
+# 추천 메뉴를 바탕으로 AI가 응답 메시지와 추천 메뉴를 반환해줍니다.
 def generate_final_response(client, recommended_menu, current_user):
 
     system_instructions = f"""
@@ -182,30 +154,23 @@ def generate_final_response(client, recommended_menu, current_user):
     ai_response = completion.choices[0].message.content
     customer_message = ""
 
+    # AI 응답에서 필요한 부분을 분리해줍니다.
     try:
         for line in ai_response.split('\n'):
-            line = line.strip()  # Remove whitespace from both ends
+            line = line.strip()
             if line.startswith('Message:'):
                 customer_message = line.split('Message: ')[1].strip()
-                break  # We don't need to continue once we have extracted the customer message
-
+                break
     except IndexError:
         customer_message = "죄송합니다. 다시 한 번 이야기 해주세요"
 
-    print("customer_message >>>>>>>>>>>>", customer_message)
     return customer_message
 
-
-
+# 추천 메뉴와 응답 메시지를 받아오도록 함수를 실행합니다.
 def bot(request, input_text, current_user):
     client = OpenAI(api_key=settings.OPEN_API_KEY)
-
-    # Getting the recommended menus
     recommended_menu = get_recommended_menus(client, input_text, current_user)
-
-    # Generating the final response
     customer_message = generate_final_response(client, recommended_menu, current_user)
-
     return customer_message, recommended_menu
 
 # inputText가 장바구니 안의 데이터를 수정하는 cart 유형일 때:
@@ -223,8 +188,6 @@ def cart_ai(request, input_text, recommended_menu, current_user, current_cart_ge
         category_text = "카페"
     else:
         category_text = "음식점"
-
-    print("\n\n json으로 current_cart 잘 풀어줬는지", current_cart_get)
 
     system_data = f"""
         You are a distinguisher of the input text, detecting the menu, the number of the detected menu, and the action to perform.
@@ -260,25 +223,18 @@ def cart_ai(request, input_text, recommended_menu, current_user, current_cart_ge
         ],
     )
 
-    print("\n\n cart_ai의 AI 응답 >>>>>>>>>>>>>>>>>>> ", completion)
     ai_response = completion.choices[0].message.content
-    print("\n\n cart_ai에서 필요한 부분만 분리 >>>>>>>", ai_response)
 
     calculate = 0
-
+    # AI 응답에서 필요한 부분을 분리해줍니다.
     try:
         for line in ai_response.split('\n'):
-            print("\n\n 각 line >>> ", line)
-            line = line.strip()  # Remove whitespace from both ends
+            line = line.strip()
             if line.startswith('Menu:'):
                 menu = line.split('Menu: ')[1]
-                print("\n\n 응답에서 분리한 inputText:", menu, "\n\n")
             elif line.startswith('Calculate:'):
                 calculate = line.split('Calculate: ')[1]
-                print("\n\n 응답에서 분리한 type :", calculate, "\n\n")
-
     except IndexError:
         recommended_menu = []
         
     return calculate, menu, recommended_menu
-
