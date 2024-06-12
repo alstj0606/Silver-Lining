@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +23,8 @@ from .serializers import CartSerializer  # 장바구니 직렬화 관련
 
 from rest_framework.decorators import api_view
 import pandas as pd
+from django.contrib.auth.decorators import login_required, user_passes_test
+from accounts.models import User
 
 
 # 언어를 변경하는 함수입니다.
@@ -352,6 +354,8 @@ def clear_cart(request):
 @api_view(["POST"])
 def submit_order(request):
     if request.method == "POST":
+        print("\n\n\n\n\n\n\n submit으로 들어온 request>>>>>>>", request)
+        print("\n\n\n\n\n\n\n submit으로 들어온 request의 타입이 궁금>>>>>>>", type(request))
         username = request.user.username
         user = request.user
         json_data = request.data
@@ -384,32 +388,43 @@ def submit_order(request):
 
 
 def orders_dashboard_data(request):
-    orders = Order.objects.all().values()
+    # Query all orders for the logged-in user's store
+    orders = Order.objects.filter(store_id=request.user.id).values()
+    
     df = pd.DataFrame(list(orders))
 
     if df.empty:
         return JsonResponse({'error': 'No data available'})
 
-    # 날짜별로 분석할 수 있도록 'created_at' 필드를 날짜로 변환
+    # Convert 'created_at' field to date to allow for daily analysis
     df['created_at'] = pd.to_datetime(df['created_at']).dt.date
 
-    # 날짜별 주문 수
+    # Daily order count
     daily_orders = df.groupby('created_at').size().reset_index(name='order_count')
 
-    # 날짜별 총 매출
+    # Daily total revenue
     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
 
-    # 많은 주문된 메뉴를 'food_name_ko' 기준으로 스플릿하고 누적
-    all_menus = df['order_menu'].apply(pd.Series).stack().reset_index(drop=True)
-    all_menus = all_menus.apply(lambda x: x['food_name_ko'])
-    menu_counts = all_menus.value_counts().reset_index()
-    menu_counts.columns = ['food_name_ko', 'count']
+    # Process the menu items and accumulate 'count' for top ordered menus
+    menu_counts = {}
 
-    # 메뉴 데이터 가공
-    menu_counts['menu_item'] = menu_counts['food_name_ko'].apply(lambda x: {'name': x, 'food_name_ko': x})
-    top_menus = menu_counts.head(5)
+    for order_menu in df['order_menu']:
+        for item in order_menu:
+            food_name_ko = item['food_name_ko']
+            count = item['count']
+            if food_name_ko in menu_counts:
+                menu_counts[food_name_ko] += count
+            else:
+                menu_counts[food_name_ko] = count
 
-    # JSON 응답 생성
+    # Convert the accumulated menu counts to a DataFrame
+    menu_counts_df = pd.DataFrame(list(menu_counts.items()), columns=['food_name_ko', 'quantity'])
+    menu_counts_df = menu_counts_df.sort_values(by='quantity', ascending=False).reset_index(drop=True)
+    
+    # Extract top 5 ordered menus
+    top_menus = menu_counts_df.head(5)
+
+    # Create JSON response
     data = {
         'daily_orders': daily_orders.to_dict(orient='records'),
         'daily_revenue': daily_revenue.to_dict(orient='records'),
@@ -417,11 +432,6 @@ def orders_dashboard_data(request):
     }
     return JsonResponse(data)
 
-
+@login_required
 def orders_dashboard_view(request):
     return render(request, 'admin/orders_dashboard.html')
-
-# def navigation(request):
-#     context = {'staff': request.user}
-#     print("\n\n\n\n navigation context 어떻게 생겼나>>>>>>>>>>>", context)
-#     return render(request, 'includes/navigation.html', context)
