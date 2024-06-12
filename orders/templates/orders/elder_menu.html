@@ -462,7 +462,9 @@
               )
               .then(function (response) {
                 const result = response.data.result;
+                cart = response.data.cart_items;
                 if (result == 1) {
+                  submitOrder();
                   triggerProceedToPay();
                 } else if (
                   response.data.responseText &&

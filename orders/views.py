@@ -274,6 +274,9 @@ class orderbot(APIView):
         # AI가 결제 요청이라고 판단했을 경우
         elif types == "pay":
             result = 1
+            cart=Cart(username)
+            cart_items = cart.get_cart()
+            return Response({'result': result, 'cart_items': cart_items})
 
         return Response({'result': result})
 
