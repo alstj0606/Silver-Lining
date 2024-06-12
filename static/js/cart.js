@@ -1,4 +1,4 @@
-let cart = {};
+let cartData = {};
 
     // 장바구니 조회
     function updateCartDisplay(cartData) {
@@ -43,6 +43,7 @@ let cart = {};
         });
     }
 
+
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc, quantity) {
         let item = {
@@ -51,21 +52,24 @@ let cart = {};
             quantity: quantity,
             image: imgSrc
         };
-        if (cart[name]) {
-            let existingItem = JSON.parse(cart[name]);
+        if (cartData[name]) {
+            let existingItem = JSON.parse(cartData[name]);
+            if (typeof existingItem === 'string') { 
+                existingItem = JSON.parse(existingItem); 
+            } 
             existingItem.quantity += 1;
-            cart[name] = JSON.stringify(existingItem);
+            cartData[name] = JSON.stringify(existingItem);
         } else {
             item.quantity = 1
-            cart[name] = JSON.stringify(item);
+            cartData[name] = JSON.stringify(item);
         }
 
-        let cartItem = JSON.parse(cart[name])
+        let cartItem = JSON.parse(cartData[name])
 
         axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
                 console.log("Unexpected Response Data Format >>>")
-                console.log("장바구니 새로고침 해보기 >>>> ", cart)
+                console.log("장바구니 새로고침 해보기 >>>> ", cartData)
                 refreshCart();
             })
             .catch(error => {
@@ -100,9 +104,11 @@ let cart = {};
     function submitOrder() {
         const csrfToken = getCsrfToken();
         console.log("Checking cart contents >>>>>>> ", cart);
-        const selectedItems = Object.entries(cart).map(([name, item]) => {
+        const selectedItems = Object.entries(cartData).map(([name, item]) => {
             console.log(`Parsing item: ${item}`); // 각 item을 파싱하기 전 로그 출력
-            item = JSON.parse(item)
+            if (typeof item === 'string') { 
+                item = JSON.parse(item); 
+            } 
             return {name: name, count: item.quantity, food_name_ko: item.menu_name};
         });
 
@@ -133,7 +139,7 @@ let cart = {};
                 'X-CSRFToken': csrfToken
             }})
             .then(response => {
-                delete cart[name];
+                delete cartData[name];
                 refreshCart();
             })
             .catch(error => {
@@ -148,7 +154,7 @@ let cart = {};
             'X-CSRFToken': csrfToken
         }})
             .then(response => {
-                cart = {};
+                cartData = {};
                 refreshCart();
             })
             .catch(error => {
