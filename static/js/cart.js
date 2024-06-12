@@ -1,4 +1,4 @@
-let cart = {};
+let cartData = {};
 
     // 장바구니 조회
     function updateCartDisplay(cartData) {
@@ -31,17 +31,20 @@ let cart = {};
         handleScrollArrows();
         }
 
-    // 장바구니 상태 업데이트
+
     function refreshCart() {
-        axios.get('/orders/cart/')
-        .then(response => {
-            const cartData = response.data.cart_items ? response.data.cart_items : {};
-            updateCartDisplay(cartData);
-        })
-        .catch(error => {
-            console.error('카트 데이터 fetch 실패:', error);
-        });
+        return axios.get('/orders/cart/')
+            .then(response => {
+                const cartData = response.data.cart_items ? response.data.cart_items : {};
+                updateCartDisplay(cartData);
+                return cartData;
+            })
+            .catch(error => {
+                console.error('카트 데이터 fetch 실패:', error);
+                return {}; // 오류 발생 시 빈 객체 반환
+            });
     }
+
 
     // 장바구니에 메뉴 추가
     function addItem(name, price, imgSrc, quantity) {
@@ -51,25 +54,24 @@ let cart = {};
             quantity: quantity,
             image: imgSrc
         };
-        if (cart[name]) {
-            let existingItem = JSON.parse(cart[name]);
+        if (cartData[name]) {
+            let existingItem = JSON.parse(cartData[name]);
+            if (typeof existingItem === 'string') { 
+                existingItem = JSON.parse(existingItem); 
+            } 
             existingItem.quantity += 1;
-            cart[name] = JSON.stringify(existingItem);
+            cartData[name] = JSON.stringify(existingItem);
         } else {
             item.quantity = 1
-            cart[name] = JSON.stringify(item);
+            cartData[name] = JSON.stringify(item);
         }
 
-        let cartItem = JSON.parse(cart[name])
+        let cartItem = JSON.parse(cartData[name])
 
-        axios.post('/orders/add_to_cart/', cartItem, {
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
-        })
+        axios.post('/orders/add_to_cart/', cartItem)
             .then(response => {
                 console.log("Unexpected Response Data Format >>>")
-                console.log("장바구니 새로고침 해보기 >>>> ", cart)
+                console.log("장바구니 새로고침 해보기 >>>> ", cartData)
                 refreshCart();
             })
             .catch(error => {
@@ -93,39 +95,44 @@ let cart = {};
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
 
-    // let cart = {
-    //     "item1": '{"quantity": 2, "menu_name": "비빔밥"}',
-    //     "item2": '{"quantity": 1, "menu_name": "된장찌개"}'
-    // };
 
-    const csrfToken = getCsrfToken();
-
-    // 주문 접수
     function submitOrder() {
         const csrfToken = getCsrfToken();
-        console.log("Checking cart contents >>>>>>> ", cart);
-        const selectedItems = Object.entries(cart).map(([name, item]) => {
-            console.log(`Parsing item: ${item}`); // 각 item을 파싱하기 전 로그 출력
-            item = JSON.parse(item)
-            return {name: name, count: item.quantity, food_name_ko: item.menu_name};
-        });
 
-        // 총 가격 가져오기
-        let totalPriceElement = document.getElementById('totalPrice');
-        let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '', '원'), 10) || 0;
+        refreshCart().then(cartData => {
+            console.log("Received cartData from refreshCart >>>>>>> ", cartData);
 
-        axios.post("/orders/submit/", JSON.stringify({
-            items: selectedItems,
-            total: currentTotal
-        }), {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            }
-        }).then(response => {
-            window.location.href = '/orders/order_complete/' + response.data.order_number + '/';
-        }).catch(error => {
-            console.error('Error submitting order:', error);
+            // 각 아이템을 JSON 파싱 후 올바른 형식으로 변환
+            const selectedItems = Object.entries(cartData).map(([name, item]) => {
+                console.log(`Parsing item: ${item}`); // 각 item을 파싱하기 전 로그 출력
+                if (typeof item === 'string') {
+                    item = JSON.parse(item);
+                }
+                return {
+                    id: item.item_id,
+                    food_name_ko: item.menu_name,
+                    count: item.quantity
+                };
+            });
+
+            // 총 가격 가져오기
+            let totalPriceElement = document.getElementById('totalPrice');
+            let currentTotal = parseInt(totalPriceElement.textContent.replace('총 가격: ', '').replace('원', ''), 10) || 0;
+
+            // Axios 요청
+            axios.post("/orders/submit/", {
+                items: selectedItems,
+                total: currentTotal
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            }).then(response => {
+                window.location.href = '/orders/order_complete/' + response.data.order_number + '/';
+            }).catch(error => {
+                console.error('Error submitting order:', error);
+            });
         });
     }
 
@@ -137,7 +144,7 @@ let cart = {};
                 'X-CSRFToken': csrfToken
             }})
             .then(response => {
-                delete cart[name];
+                delete cartData[name];
                 refreshCart();
             })
             .catch(error => {
@@ -152,7 +159,7 @@ let cart = {};
             'X-CSRFToken': csrfToken
         }})
             .then(response => {
-                cart = {};
+                cartData = {};
                 refreshCart();
             })
             .catch(error => {
@@ -183,4 +190,3 @@ let cart = {};
     });
 
     handleScrollArrows();
-
