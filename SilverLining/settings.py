@@ -116,6 +116,9 @@ CACHES = {
 # 캐시 타임아웃
 CACHE_TTL = 30
 
+LOGIN_URL = '/accounts/login/'
+
+
 AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
 # Password validation

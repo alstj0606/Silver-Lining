@@ -93,12 +93,19 @@ let cart = {};
         return csrfTokenElement ? csrfTokenElement.value : null;
     }
 
+    // let cart = {
+    //     "item1": '{"quantity": 2, "menu_name": "비빔밥"}',
+    //     "item2": '{"quantity": 1, "menu_name": "된장찌개"}'
+    // };
+
     const csrfToken = getCsrfToken();
 
     // 주문 접수
     function submitOrder() {
         const csrfToken = getCsrfToken();
+        console.log("Checking cart contents >>>>>>> ", cart);
         const selectedItems = Object.entries(cart).map(([name, item]) => {
+            console.log(`Parsing item: ${item}`); // 각 item을 파싱하기 전 로그 출력
             item = JSON.parse(item)
             return {name: name, count: item.quantity, food_name_ko: item.menu_name};
         });
