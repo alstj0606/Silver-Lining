@@ -62,7 +62,11 @@ let cart = {};
 
         let cartItem = JSON.parse(cart[name])
 
-        axios.post('/orders/add_to_cart/', cartItem)
+        axios.post('/orders/add_to_cart/', cartItem, {
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
             .then(response => {
                 console.log("Unexpected Response Data Format >>>")
                 console.log("장바구니 새로고침 해보기 >>>> ", cart)
