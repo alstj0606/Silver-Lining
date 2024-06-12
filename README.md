@@ -150,7 +150,7 @@
 
 #### (1) Age Group Identification and Customized Kiosk UI through Facial Recognition
 
-   - The kiosk, using its built-in camera, takes a photo of the kiosk user and estimates the user's age from the photo.
+   - The kiosk takes a photo of the kiosk user using a browser webcam and estimates the user's age from the photo.
 
    - Depending on whether the estimated age indicates an older user or a younger user, the kiosk order UI will be customized accordingly.
 
@@ -168,15 +168,17 @@
 
 3. The top recommended menu appears in a popup, and the user can choose to add this menu to the cart or view other recommended menus.
 
+4. Re-receiving menu recommendation, adding/updating/deleting items in cart, proceeding to payment are all possible using voice recognition.
 
 
-#### (2-2) Younger Users (Voice Recognition Order or Touch-screen Order)
+
+#### (2-2) Younger Users
 
 1. By default, users can use the typical tap-to-order method.
 
 2. Users can activate the AI menu recommendation feature using voice recognition by tapping the voice recognition button, as instructed by the guide message.
 
-3. Unlike the order process for older users, voice recognition does not start automatically; users can turn the voice recognition feature on or off as needed during the ordering process.
+3. Unlike the order process for older users, voice recognition only includes menu recommendation.
 
 
 
@@ -201,10 +203,17 @@
 - Predefined hashtags need to be set before menu creation.
 
 - When creating a menu, the menu name, price, hashtags, and images must be uploaded.
+  
+- Hashtags are used as a category in the younger users templates.
 
   
 
-#### (2) Order Status Related (work in progress)
+#### (2) Order Status Related
+
+- When logged in with a staff account, a dashboard based on order table is displayed on main page of admin.
+
+- For the dashboard, staff can check daily orders, daily revenues, and ordered menu rankings.
+
 
 
 
