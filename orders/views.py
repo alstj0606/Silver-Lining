@@ -45,6 +45,7 @@ def main_page(requset):
 
 
 # 주문을 시작하는 페이지를 렌더링합니다.
+@login_required
 def start_order(request):
     return render(request, 'orders/start_order.html')
 
@@ -433,43 +434,39 @@ def submit_order(request):
 #     return JsonResponse(data)
 
 def orders_dashboard_data(request):
-    # Query all orders for the logged-in user's store
+    # 로그인 된 staff 계정의 주문 정보를 가져옵니다.
     orders = Order.objects.filter(store_id=request.user.id).values()
-    
     df = pd.DataFrame(list(orders))
 
     if df.empty:
         return JsonResponse({'error': 'No data available'})
 
-    # Convert 'created_at' field to date to allow for daily analysis
+    # 'created_at'필드를 날짜별 계산이 가능하도록 date형태로 바꿔줍니다.
     df['created_at'] = pd.to_datetime(df['created_at']).dt.date
 
-    # Daily order count
     daily_orders = df.groupby('created_at').size().reset_index(name='order_count')
-
-    # Daily total revenue
     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
 
-    # Process the menu items and accumulate 'count' for top ordered menus
+
     menu_counts = {}
 
     for order_menu in df['order_menu']:
         for item in order_menu:
             food_name_ko = item['food_name_ko']
-            count = int(item['count'])  # 여기서 문자열을 정수로 변환하여 문제를 해결할 수 있습니다.
+            count = int(item['count'])  # 여기서 문자열을 정수로 변환합니다.
             if food_name_ko in menu_counts:
                 menu_counts[food_name_ko] += count
             else:
                 menu_counts[food_name_ko] = count
 
-    # Convert the accumulated menu counts to a DataFrame
+    # 누적된 메뉴 quantity를 DataFrame으로 변경해줍니다.
     menu_counts_df = pd.DataFrame(list(menu_counts.items()), columns=['food_name_ko', 'quantity'])
     menu_counts_df = menu_counts_df.sort_values(by='quantity', ascending=False).reset_index(drop=True)
     
-    # Extract top 5 ordered menus
+    # 누적된 주문 quantity가 많은 순으로 상위 5개 메뉴를 선택합니다.
     top_menus = menu_counts_df.head(5)
 
-    # Create JSON response
+    # Json Response를 생성합니다.
     data = {
         'daily_orders': daily_orders.to_dict(orient='records'),
         'daily_revenue': daily_revenue.to_dict(orient='records'),
