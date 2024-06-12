@@ -388,51 +388,6 @@ def submit_order(request):
     return Response({'order_number': new_order.order_number}, status=201)
 
 
-# def orders_dashboard_data(request):
-#     # Query all orders for the logged-in user's store
-#     orders = Order.objects.filter(store_id=request.user.id).values()
-    
-#     df = pd.DataFrame(list(orders))
-
-#     if df.empty:
-#         return JsonResponse({'error': 'No data available'})
-
-#     # Convert 'created_at' field to date to allow for daily analysis
-#     df['created_at'] = pd.to_datetime(df['created_at']).dt.date
-
-#     # Daily order count
-#     daily_orders = df.groupby('created_at').size().reset_index(name='order_count')
-
-#     # Daily total revenue
-#     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
-
-#     # Process the menu items and accumulate 'count' for top ordered menus
-#     menu_counts = {}
-
-#     for order_menu in df['order_menu']:
-#         for item in order_menu:
-#             food_name_ko = item['food_name_ko']
-#             count = item['count']
-#             if food_name_ko in menu_counts:
-#                 menu_counts[food_name_ko] += count
-#             else:
-#                 menu_counts[food_name_ko] = count
-
-#     # Convert the accumulated menu counts to a DataFrame
-#     menu_counts_df = pd.DataFrame(list(menu_counts.items()), columns=['food_name_ko', 'quantity'])
-#     menu_counts_df = menu_counts_df.sort_values(by='quantity', ascending=False).reset_index(drop=True)
-    
-#     # Extract top 5 ordered menus
-#     top_menus = menu_counts_df.head(5)
-
-#     # Create JSON response
-#     data = {
-#         'daily_orders': daily_orders.to_dict(orient='records'),
-#         'daily_revenue': daily_revenue.to_dict(orient='records'),
-#         'top_menus': top_menus.to_dict(orient='records'),
-#     }
-#     return JsonResponse(data)
-
 def orders_dashboard_data(request):
     # 로그인 된 staff 계정의 주문 정보를 가져옵니다.
     orders = Order.objects.filter(store_id=request.user.id).values()
