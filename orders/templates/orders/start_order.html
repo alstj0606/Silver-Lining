@@ -1,163 +1,191 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link
-      rel="icon"
-      type="image/png"
-      sizes="120x120"
-      href="/static/img/Silver-Lining-favicon.png"
+            rel="icon"
+            type="image/png"
+            sizes="120x120"
+            href="/static/img/Silver-Lining-favicon.png"
     />
     <title>Silver Lining</title>
     <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
     <style>
-      @font-face {
-        font-family: "SokchoBadaDotum";
-        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/SokchoBadaDotum.woff2")
-          format("woff2");
-        font-weight: normal;
-        font-style: normal;
-      }
+        @font-face {
+            font-family: "SokchoBadaDotum";
+            src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/SokchoBadaDotum.woff2") format("woff2");
+            font-weight: normal;
+            font-style: normal;
+        }
 
-      @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 
-      .lato-black {
-        font-family: "Lato", sans-serif;
-        font-weight: 900;
-        font-style: normal;
-      }
+        .lato-black {
+            font-family: "Lato", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+        }
 
-      body {
-        font-family: "SokchoBadaDotum";
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: #3a3a3a;
-        background-color: #f4f9fa;
-        margin: 0;
-        height: 100vh;
-      }
+        body {
+            font-family: "SokchoBadaDotum";
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #3a3a3a;
+            background-color: #f4f9fa;
+            margin: 0;
+            height: 100vh;
+        }
 
-      .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        width: 100%;
-      }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
 
-      h1 {
-        color: #3a3a3a;
-        margin-top: 20px;
-        font-size: 70px;
-      }
+        h1 {
+            color: #3a3a3a;
+            margin-top: 20px;
+            font-size: 70px;
+        }
 
-      p {
-        font-size: 40pt;
-        margin: 20px;
-      }
+        p {
+            font-size: 40pt;
+            margin: 20px;
+        }
 
-      .button-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 50px;
-      }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
 
-      button {
-        width: 900px;
-        height: 800px;
-        font-size: 120px;
-        font-weight: bold;
-        color: white;
-        background-color: #ffb848;
-        border: none;
-        border-radius: 20px;
-        cursor: pointer;
-      }
+        #order-button {
+            width: 900px;
+            height: 800px;
+            font-size: 120px;
+            font-weight: bold;
+            color: white;
+            background-color: #ffb848;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
 
-      .spinner-container {
-        display: none;
-      }
+        #order-button2 {
+            width: 900px;
+            height: 300px;
+            font-size: 120px;
+            font-weight: bold;
+            color: white;
+            background-color: #ffb848;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
 
-      .status {
-        font-size: 50px;
-        margin-top: 100px;
-        display: none;
-      }
+        .spinner-container {
+            display: none;
+        }
 
-      .kr-text {
-        font-size: smaller;
-      }
+        .status {
+            font-size: 50px;
+            margin-top: 100px;
+            display: none;
+        }
 
-      .en-text {
-        font-family: "lato", sans-serif;
-        font-weight: 900;
-        font-style: normal;
-        font-size: 0.5em; /* 텍스트 크기 줄이기 */
-      }
+        .kr-text {
+            font-size: smaller;
+        }
+
+        .en-text {
+            font-family: "lato", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+            font-size: 0.5em; /* 텍스트 크기 줄이기 */
+        }
+
+        .kr-text2 {
+            font-size: 50px;
+        }
+
+        .en-text2 {
+            font-family: "lato", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+            font-size: 30px; /* 텍스트 크기 줄이기 */
+        }
 
         /* 웹캠과 캔버스를 감싸는 div 숨기기 */
         .hidden-container {
             display: none; /* 요소를 숨김 */
         }
 
-      .touch-screen {
-        font-family: "lato", sans-serif;
-        font-weight: 900;
-        font-style: normal;
-      }
+        .touch-screen {
+            font-family: "lato", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <div>
+</head>
+<body>
+<div class="container">
+    <div>
         <img
-          style="width: 160px; margin-top: 50px"
-          src="{% static 'img/Silver-Lining-logo.png' %}"
-          alt="실버라이닝 로고"
+                style="width: 160px; margin-top: 50px"
+                src="{% static 'img/Silver-Lining-logo.png' %}"
+                alt="실버라이닝 로고"
         />
         <h1>실버라이닝</h1>
-      </div>
-      <div class="button-container">
-        <form
-          id="order-form"
-          method="post"
-          action="{% url 'orders:face_recognition' %}"
-        >
-          {% csrf_token %}
-          <button type="submit" id="order-button">
-            <p class="kr-text">주문하기</p>
-            <p class="en-text">Start an order</p>
-          </button>
-          <p style="margin-top: 100px">화면을 터치해 주세요</p>
-          <p class="touch-screen">Please touch the screen</p>
-        </form>
-      </div>
-
-      <div class="spinner-container" id="spinner">
-        <div
-          class="spinner-border"
-          style="width: 15rem; height: 15rem"
-          role="status"
-        >
-          <span class="visually-hidden"></span>
-        </div>
-      </div>
-      <div class="status" id="status">
-        <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
-        <br />
-        <span class="en-text">Facial recognition is being performed</span>
-      </div>
     </div>
+    <div class="button-container">
+        <form
+                id="order-form"
+                method="post"
+                action="{% url 'orders:face_recognition' %}"
+        >
+            {% csrf_token %}
+            <button type="submit" id="order-button">
+                <p class="kr-text">주문하기</p>
+                <p class="en-text">Start an order</p>
+            </button>
+        </form>
+
+        <button id="order-button2">
+            <p class="kr-text2">얼굴인식 없이 주문하기</p>
+            <p class="en-text2">Order without facial recognition</p>
+        </button>
+        <p style="margin-top: 100px">화면을 터치해 주세요</p>
+        <p class="touch-screen">Please touch the screen</p>
+    </div>
+
+    <div class="spinner-container" id="spinner">
+        <div
+                class="spinner-border"
+                style="width: 15rem; height: 15rem"
+                role="status"
+        >
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+    <div class="status" id="status">
+        <span class="kr-text">얼굴 인식을 진행하고 있습니다</span>
+        <br/>
+        <span class="en-text">Facial recognition is being performed</span>
+    </div>
+</div>
 
 <!-- 웹캠과 캔버스를 감싸는 div -->
 <div class="hidden-container">
@@ -178,6 +206,12 @@
 <script>
     window.addEventListener('load', function () {
         fetch(`/orders/switch-language/?lang="ko-KR"`)
+    });
+
+    const redirectButton2 = document.getElementById("order-button2");
+    redirectButton2.addEventListener("click", function () {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = "/orders/menu/";
     });
 
     // 웹캠에서 비디오를 가져오고 얼굴을 감지하는 함수
@@ -292,6 +326,7 @@
         document.getElementById("spinner").style.display = "block";
         document.getElementById("status").style.display = "block";
         document.getElementById("order-button").style.display = "none";
+        document.getElementById("order-button2").style.display = "none";
         event.preventDefault(); // 기본 폼 제출 동작 방지
         detectFaceAndSubmit(); // 얼굴 감지 및 제출 함수 호출
     });
