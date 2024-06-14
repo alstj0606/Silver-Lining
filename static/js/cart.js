@@ -147,6 +147,7 @@ let cart = {};
 
     // 장바구니 전체 메뉴 삭제
     function clearCart() {
+        const csrfToken = getCsrfToken();
         axios.post('/orders/cart/clear/', {},
         {headers: {
             'X-CSRFToken': csrfToken
