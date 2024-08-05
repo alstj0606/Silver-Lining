@@ -29,6 +29,7 @@ OPEN_API_KEY = config.OPEN_API_KEY
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = [".silverlinings.site"]
 
 # Application definition
 
@@ -85,28 +86,34 @@ WSGI_APPLICATION = 'SilverLining.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
+        'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+    }
+}
+
+
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',  # SQLite3 데이터베이스 사용
-#         'NAME': BASE_DIR / 'db.sqlite3',  # 데이터베이스 파일 경로
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
+#         'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
+#         'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
+#         'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
+#         'PORT': '5432',
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
-        'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
-        'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
-        'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
-        'PORT': '5432',
-    }
-}
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
+
         "LOCATION": "redis://redis:6379",  # Redis 서버의 위치
+
+        "LOCATION": "redis://127.0.0.1:6379",  # Redis 컨테이너와 연결
+
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -115,6 +122,9 @@ CACHES = {
 
 # 캐시 타임아웃
 CACHE_TTL = 30
+
+LOGIN_URL = '/accounts/login/'
+
 
 AUTH_USER_MODEL = "accounts.User"  # 사용자 모델 지정
 
@@ -141,6 +151,7 @@ LOGIN_REDIRECT_URL = '/'
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+CSRF_TRUSTED_ORIGINS = ['https://*.silverlinings.site','https://*.127.0.0.1']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -171,10 +182,7 @@ LANGUAGES = [
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = (os.path.join('media'))
 
-# Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-

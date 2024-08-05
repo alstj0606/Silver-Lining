@@ -4,9 +4,6 @@ from django.conf import settings
 from django.core.cache import cache
 import json
 
-# # Redis 연결 설정
-# r = redis.StrictRedis.from_url(settings.CACHES['default']['LOCATION'])
-
 def redis_test(request):
     r = redis.StrictRedis.from_url(settings.CACHES['default']['LOCATION'])
     print("\n\n Pinging Redis...")
@@ -17,8 +14,9 @@ def redis_test(request):
         print("\n\n Redis connection failed.")
 
     cache.set("cache", "됐으면 좋겠다")
-    
 
+
+# 장바구니 항목을 dict로 변환
 class CartItem:
     def __init__(self, image, menu_name, price, quantity):
         self.image = image
@@ -35,25 +33,28 @@ class CartItem:
             "quantity": self.quantity
         }
 
+
+# 장바구니 데이터를 redis에 생성, 조회, 수정, 삭제
 class Cart:
     def __init__(self, username):
         self.username = username
+
         self.cart_key = f"cart:{self.username}" 
 
 
-## **Fetching Cart Data**:
+        self.cart_key = f"cart:{self.username}"
+
+
+    # 장바구니의 현재 상태를 조회합니다.
     def get_cart(self):
         redis_conn = get_redis_connection("default")
         cart_data = redis_conn.hgetall(self.cart_key)
-        print("\n\n cart_data를 넘겨주어야 하는데 어떻게 생겼나:", cart_data)
         return_data = {k.decode('utf-8'): v.decode('utf-8') for k, v in cart_data.items()}
-        print("\n\n 그래서 넘어갈 때는 어떻게 생긴채로 넘어가나: ", return_data)
         return return_data
 
-## **Adding an Item to the Cart**:
+    # 장바구니에 메뉴를 추가합니다.
     def add_to_cart(self, item):
         redis_conn = get_redis_connection("default")
-        print("\n\n item이 어떻게 들어왔는지 : ", item)
         menu_name = item['menu_name']
         quantity = item['quantity']
         price = item['price']
@@ -65,23 +66,36 @@ class Cart:
             'price': price,
             'image': image
         })
-        print("\n\n item_data 는 잘 들어온건지 >>>> ", item_data)
-        print("\n\n type menu_name >>", type(menu_name))
-        print("\n\n item_data type", type(item_data))
+
         redis_conn.hset(self.cart_key, menu_name, item_data)
-        print("\n\n\n redis에 저장이 잘 됐는지: ", self.cart_key, menu_name, item_data)
+
 
 
 ## **Removing an Item**:
+
+    # 장바구니 메뉴의 수량을 수정합니다.
+    def update_quantity(self, item_data):
+        redis_conn = get_redis_connection("default")
+        name = item_data["name"]
+        price = item_data["price"]
+        quantity = item_data["quantity"]
+        update_data = json.dumps(item_data)
+        redis_conn.hset(self.cart_key, name, update_data)
+
+    # 메뉴를 장바구니에서 삭제합니다.
+
     def remove(self, menu_name):
-        print("\n\n menu_name: ", menu_name)
         redis_conn = get_redis_connection("default")
         redis_conn.hdel(self.cart_key, menu_name)
 
-## Clear the cart
+    # 장바구니 전체를 삭제합니다.
     def clear(self):
         redis_conn = get_redis_connection("default")
+
         redis_conn.delete(self.cart_key)
         print("\n\n cart.py의 clear>>>>>>>>>", self.cart_key)
         return "clear다녀감.."
+
+
+        redis_conn.delete(self.cart_key)
 

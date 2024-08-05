@@ -3,7 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py compilemessages && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "if [ ! -f /app/.initialized ]; then python manage.py migrate --noinput && python manage.py compilemessages && touch /app/.initialized; fi && gunicorn --bind 0.0.0.0:8000 SilverLining.wsgi:application"
     volumes:
       - .:/app
     ports:
@@ -13,7 +13,21 @@ services:
       - redis
     environment:
       DATABASE_URL: postgres://myuser:mypassword@db:5432/mydb
+    networks:
+      - backend
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./static:/static
+      - ./media:/media
+    depends_on:
+      - web
+    networks:
+      - backend
 
   db:
     image: postgres:latest
@@ -23,9 +37,17 @@ services:
       POSTGRES_PASSWORD: mypassword
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
 
   redis:
     image: redis:latest
+    networks:
+      - backend
 
 volumes:
   postgres_data:
+
+networks:
+  backend:
+    driver: bridge

@@ -11,6 +11,7 @@ function speak(text, callback) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = languageCodeOut; // 출력 언어 설정
+    utterance.rate = 1.3; // 1.3배 속도로 설정
     utterance.onend = function () {
         console.log("음성 안내가 끝났습니다.");
 
@@ -105,7 +106,7 @@ function appendRecommendedMenuItems(container, items) {
             <div class="menu-item card recommended" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
-                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <h5 class="card-title">${menu.food_name}</h5>
                     <p class="card-text text-muted">${menu.price}${won}</p>
                 </div>
             </div>
@@ -120,7 +121,7 @@ function appendMenuItems(container, items) {
             <div class="menu-item card" onclick="addItem('${menu.food_name}', ${menu.price}, '${menu.img_url}', this, '${menu.food_name_ko}')">
                 <img src="${menu.img_url}" alt="${menu.food_name}" class="card-img-top">
                 <div class="card-body text-center">
-                    <h5 class="card-title text-primary">${menu.food_name}</h5>
+                    <h5 class="card-title">${menu.food_name}</h5>
                     <p class="card-text text-muted">${menu.price}${won}</p>
                 </div>
             </div>
