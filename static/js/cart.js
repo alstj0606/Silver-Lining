@@ -68,7 +68,7 @@ let cartData = {};
 
         let cartItem = JSON.parse(cartData[name])
 
-        axios.post('/orders/add_to_cart/', cartItem)
+        axios.post('/orders/update_cart_menu/', cartItem)
             .then(response => {
                 console.log("Unexpected Response Data Format >>>")
                 console.log("장바구니 새로고침 해보기 >>>> ", cartData)
@@ -164,14 +164,24 @@ let cartData = {};
 
     // 장바구니 전체 메뉴 삭제
     function clearCart() {
+
+        console.log("\n\n clearCart 진입했는지 >>>>>>>>")
+        const username = "mega"
+        axios.post('/orders/cart/clear/', {},
+            {headers: {
+                'X-CSRFToken': csrfToken
+            }})
+
         const csrfToken = getCsrfToken();
         axios.post('/orders/cart/clear/', {},
         {headers: {
             'X-CSRFToken': csrfToken
         }})
+
             .then(response => {
                 cartData = {};
                 refreshCart();
+                console.log("\n\n clearCart 잘 되고 있나 >>>>>>>>")
             })
             .catch(error => {
                 console.error('Error clearing cart:', error);

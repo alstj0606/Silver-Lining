@@ -240,6 +240,18 @@ class orderbot(APIView):
             current_cart_get = current_cart.get_cart()
             # AI에게 음성 입력, 기존 추천 메뉴, 현재 점주, 현재 장바구니를 전달하여 응답을 받습니다.
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
+
+
+            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
+            username = request.user.username 
+            name = result[1]
+            # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
+            
+            if name not in current_cart_get:
+                store_id = request.user.id
+                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                print("\n\n update_cart_menu 의 menu 필터링", menu)
+
             username = request.user.username
             # 상태를 수정하려는 메뉴의 이름
             name = result[1]
@@ -247,10 +259,40 @@ class orderbot(APIView):
             if name not in current_cart_get:
                 store_id = request.user.id
                 menu = Menu.objects.get(store_id=store_id, food_name=name)
+
                 image = menu.img
                 price = menu.price
                 quantity = result[0]
                 item = CartItem(image, name, price, quantity)
+
+                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+                serializer = CartSerializer(item)
+                get_menu = serializer.data
+                print("\n\n serializer.data: ", type(serializer.data))
+            else:
+                print("\n current_cart_get의 타입", type(current_cart_get))
+                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+                get_menu = json.loads(current_cart_get[name])
+            print("\n\n get_menu 의 타입 : ", type(get_menu))
+            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
+            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
+
+
+            cart = Cart(username)
+            if get_menu["quantity"] == '0' or 0:
+                cart.remove(get_menu["menu_name"])
+                print("\n\n cart.remove 잘 되고 있는지 >>>>>>>>>", get_menu)
+            else:
+                cart.add_to_cart(get_menu)
+
+            return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
+
+
+        elif types == "menu":
+            print("\n\n if menu의 input_text>>>> ", input_text)
+            print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
+            print("\n\n if menu의 category >>>>>> ", types)
+
                 serializer = CartSerializer(item)
                 get_menu = serializer.data
             # 해당 메뉴가 있으면 상태를 불러옵니다.
@@ -269,6 +311,7 @@ class orderbot(APIView):
 
         # AI가 새 메뉴를 추천해달라는 요청이라고 판단했을 경우
         elif types == "menu":
+
             message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
@@ -291,7 +334,7 @@ def view_cart(request):
 
 # 장바구니에 항목 추가
 @csrf_exempt
-def add_to_cart(request):
+def update_cart_menu(request):
     if request.method == "POST":
         username = request.user.username
         data = json.loads(request.body)
@@ -299,7 +342,12 @@ def add_to_cart(request):
 
         cart = Cart(username)
         store_id = request.user.id
+
+        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
+        print("\n\n update_cart_menu 의 menu 필터링", menu)
+
         menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
+
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
@@ -320,7 +368,13 @@ def add_quantity(request):
         quantity = int(request.POST.get("quantity"))
 
     cart = Cart(username)
+
+    menu = Menu.objects.get(store_id = 2, food_name = name)
+    print("\n\n get으로 id, food_name 같이: ", menu)
+    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu.food_name, menu.img, menu.price)
+
     menu = Menu.objects.get(store_id=2, food_name=name)
+
     image = menu.img
     price = menu.price
     item = CartItem(image, name, price, quantity)
@@ -346,7 +400,9 @@ def remove_from_cart(request, menu_name):
 def clear_cart(request):
     username = request.user.username
     cart = Cart(username)
-    cart.clear()
+    print("\n\n cart>>>>>>>>>", cart)
+    res = cart.clear()
+    print("\n\n cart.clear 잘 가는지>>>>>>>>>", res)
     return Response({"message": "장바구니 전체 삭제"})
 
 
