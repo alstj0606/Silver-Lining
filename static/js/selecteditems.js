@@ -23,7 +23,7 @@ function updateSelectedItemsList() {
                 <span>${item.price}${won}</span>
                 <span>${item.count}${count}</span>
                 </div>
-                <button class="btn btn-danger btn-lg" onclick="removeItem('${name}')"> ${DelItem} </button>
+                <button class="btn btn-lg" style="color:red;" onclick="removeItem('${name}')"> ${DelItem} </button>
             `;
         selectedItemsList.appendChild(itemElement);
         totalPrice += item.price * item.count;
@@ -83,14 +83,6 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
         }
     });
 });
-
-function calculateTotalPrice(selectedItems) {
-    let totalPrice = 0;
-    for (const item of Object.values(selectedItems)) {
-        totalPrice += item.price * item.count;  // 선택된 항목의 가격 합산
-    }
-    return totalPrice;
-}
 
 function calculateTotalPrice(selectedItems) {
     let totalPrice = 0;

@@ -1,31 +1,91 @@
-{% load static %}
-{% load static i18n %}
-{% load i18n %}
+{% load static %} {% load static i18n %} {% load i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/개.png">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link
+            rel="icon"
+            type="image/png"
+            sizes="120x120"
+            href="/static/img/Silver-Lining-favicon.png"
+    />
     <title>Silver Lining</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
     <style>
+        @font-face {
+            font-family: "SokchoBadaDotum";
+            src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_1@1.0/SokchoBadaDotum.woff2") format("woff2");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "ChosunGu";
+            src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGu.woff") format("woff");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap");
+
         body {
+            font-family: "Noto Sans KR", sans-serif;
             font-size: 2rem;
+            background-color: #f4f9fa;
+            overflow-x: auto;
+            overflow-y: auto;
         }
 
-        .mb-4, .my-4 {
-            margin-bottom: -2rem !important;
+        .mb-4,
+        .my-4 {
+            margin-bottom: 0rem !important;
         }
 
-        .h3, h3 {
-            font-size: 2.75rem;
+        .mt-5, .my-5 {
+            margin-top: 0.5rem !important;
+        }
+
+        .mt-3, .my-3 {
+            margin-top: 0rem !important;
+        }
+
+        .h3,
+        h3 {
+            font-size: 2.5rem;
             margin: 20px;
         }
 
-        .h5, h5 {
+        .h5,
+        h5 {
             font-size: 1.5rem;
+        }
+
+        .silver-lining {
+            font-family: "SokchoBadaDotum";
+            font-size: 3rem;
+            color: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Align items to the start of the container */
+        }
+
+        .silver-lining img {
+            margin-right: 10px; /* Space between image and text */
+        }
+
+        .center-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .menu-item {
@@ -34,8 +94,8 @@
             align-items: center;
             padding: 10px;
             margin: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid #8dc0d0;
+            border-radius: 10px;
             flex-direction: column;
             transition: transform 0.2s;
             width: 280px;
@@ -59,6 +119,13 @@
             margin: 5px;
         }
 
+        .card-title {
+            margin-bottom: 0.75rem;
+            font-family: "Noto Sans KR", sans-serif;
+            font-weight: 700;
+            color: #5c5c5c;
+        }
+
         .card-body {
             text-align: center;
         }
@@ -68,6 +135,7 @@
             z-index: 1000;
             transition: transform 1s ease-in-out;
         }
+
 
         #selectedItemsList {
             height: 350px;
@@ -84,6 +152,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background: #8dc0d0;
         }
 
         .selected-item {
@@ -100,22 +169,27 @@
         .btn-custom-large {
             font-size: 20px;
             padding: 15px 30px;
+            margin: 10px;
+            color: white;
+            background: #47a2ce;
         }
 
         .btn-custom {
-            padding: 30px 0; /* 상하 padding은 30px로 유지하고 좌우 padding은 0으로 설정 */
-            font-size: 3.5rem;
+            padding: 20px 0; /* 상하 padding은 20px로 유지하고 좌우 padding은 0으로 설정 */
+            font-size: 2.5rem;
             width: calc(50% - 47.5px); /* 50%에서 좌우 padding(47.5px)를 뺀 값 */
+            background: #47a2ce;
         }
 
         .actions {
             display: flex;
-            justify-content: space-between;
-            margin-left: 200px; /* 왼쪽으로 200px 이동 */
+            justify-content: flex-end;
+            margin-left: 200px;
         }
 
         .btn-page {
-            padding: .375rem 1.75rem;
+            padding: 0.375rem 1.75rem;
+            border-radius: 10px;
             font-size: 3rem;
         }
 
@@ -135,8 +209,7 @@
             height: 850px;
         }
 
-        .dog-helper {
-
+        .bear-assistant {
             position: fixed;
 
             bottom: 30px;
@@ -148,66 +221,40 @@
             z-index: 1000;
 
             text-align: center;
-
         }
-
 
         .speech-bubble {
-
+            font-family: "ChosunGu";
             position: relative;
-
-            background: #fffebd;
-
-            padding: 10px;
-
+            background: #47a2ce;
+            padding: 25px;
             border-radius: 10px;
-
-            border: 2px solid #000;
-
-            margin-bottom: 10px;
-
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: inline-block;
-
         }
-
 
         .speech-bubble:after {
-
-            content: '';
-
+            content: "";
             position: absolute;
-
             bottom: -10px;
-
             left: 50%;
-
             margin-left: -10px;
-
+            padding: 10px;
             border-width: 10px;
-
             border-style: solid;
-
-            border-color: #fffebd transparent transparent transparent;
-
+            border-color: #47a2ce transparent transparent transparent;
         }
 
-
-        .dog-helper img {
-
+        .bear-assistant img {
             width: 100%;
-
         }
-
 
         .button-container {
-
             margin-top: 10px;
-
         }
 
-
         .button-container button {
-
             background-color: #f0f0f0;
 
             border: 1px solid #ccc;
@@ -219,7 +266,6 @@
             border-radius: 5px;
 
             cursor: pointer;
-
         }
 
         .menu-item.card.recommended {
@@ -246,7 +292,7 @@
 
         /* 그라디언트 효과 */
         .gradient-btn {
-            background: linear-gradient(to right, #4e73df, #224abe); /* 그라디언트 배경색 설정 */
+            background: #ffb848;
             border: none;
             color: white;
             font-size: 1.5rem;
@@ -277,130 +323,187 @@
         }
 
         .btn-lang {
-            padding: .5rem 1rem;
+            padding: 0.5rem 1rem;
             font-size: 1rem;
-            line-height: 1.8;
-            border-radius: .3rem;
-            width: 130px;
+            line-height: 2;
+            border-radius: 0.3rem;
+        }
+
+        .mybtn {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            margin: 20px; /* 원하는 여백 설정 가능 */
+            z-index: 999; /* 다른 요소 위에 표시하기 위한 z-index 값 설정 */
+        }
+
+        .redirectButton {
+            background: #ffb848;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 </head>
 <body>
-<div class="flex flex-col items-center h-screen">
-    <div class="text-center mb-4 flex justify-between items-center" style="flex-direction: row;">
-        <div class="silver-lining" style="font-size: 4rem; background-color: #ef4040; color: #f8f9fa; padding: 20px;">
+
+<div class="flex flex-col items-center h-screen"
+     style="display: flex; background-color: #adddeb; justify-content: space-between;">
+    <div
+            class="text-center mb-4 flex justify-between items-center"
+            style="flex-direction: row"
+    >
+        <div class="silver-lining">
+            <img
+                    style="width: 160px"
+                    src="{% static 'img/Silver-Lining-logo.png' %}"
+                    alt="실버라이닝 로고"
+            />
             Silver Lining
         </div>
     </div>
+    <!-- 언어선택을 위한 버튼 -->
+    <div
+            id="language-buttons"
+            class="flex"
+            style="top: 10px; right: 60px; margin: 45px"
+    >
+        <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
+        <button class="btn btn-light btn-lang" data-lang="en">English</button>
+        <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
+        <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
+    </div>
 </div>
 
-<!-- 언어선택을 위한 버튼 -->
-<div id="language-buttons" class="flex" style="position: fixed;top: 10px;right: 60px;">
-    <button class="btn btn-light btn-lang" data-lang="ko">한국어</button>
-    <button class="btn btn-light btn-lang" data-lang="en">English</button>
-    <br>
-    <button class="btn btn-light btn-lang" data-lang="ja">日本語</button>
-    <button class="btn btn-light btn-lang" data-lang="zh-hans">中文</button>
+<div class="mybtn">
+    <button id="redirectButton" class="redirectButton">음성주문 하기</button>
 </div>
 
 
 <div class="container mt-5">
     <!-- crsf토큰 인증을 위한 입력 -->
-    <form id="speechForm">
-        {% csrf_token %}
-    </form>
+    <form id="speechForm">{% csrf_token %}</form>
 
-    <!-- AI 음성안내 메세시 표시해주는 부분 강아지 -->
-    <div class="dog-helper">
-
-        <div class="speech-bubble">
-            <!-- 플로팅 메시지를 표시할 컨테이너 -->
-            <div id="floatingMessage">
-                <p id="transcription"></p>
-            </div>
-            <div class="button-container">
-
-            </div>
-
+    <div class="center-body">
+        <!-- 데이터 베이스에서 카테고리를 가져와서 반영해주는 곳 -->
+        <div class="categories d-flex justify-content-center">
+            <div class="btn-group" role="group" aria-label="카테고리"></div>
         </div>
-        <!-- 댕댕이 -->
-        <img style="width: 100px" src="{% static 'img/개.png' %}" alt="안내 도우미">
-    </div>
 
-    <!-- 데이터 베이스에서 카테고리를 가져와서 반영해주는 곳 -->
-    <div class="categories d-flex justify-content-center">
-        <div class="btn-group" role="group" aria-label="카테고리">
-        </div>
-    </div>
-
-    <!-- AI추천음료 부분 -->
-    <div style="display: flex; flex-direction: row; justify-content: center;">
-        <!-- 음성입력으로 추천을 해주는 음료가 있다면 해당 부분 생김 -->
-        <div class="recommended-menu">
-            <div class="button d-flex flex-wrap justify-content-center" id="recommendedContainer">
+        <!-- AI추천음료 부분 -->
+        <div
+                style="display: flex; flex-direction: row; justify-content: center"
+        >
+            <!-- 음성입력으로 추천을 해주는 음료가 있다면 해당 부분 생김 -->
+            <div class="recommended-menu">
+                <div
+                        class="button d-flex flex-wrap justify-content-center"
+                        id="recommendedContainer"
+                ></div>
+            </div>
+            <!-- 추천음료로 메뉴를 표시할 컨테이너 -->
+            <div class="menu">
+                <div
+                        class="button d-flex flex-wrap justify-content-center"
+                        id="menuContainer"
+                ></div>
             </div>
         </div>
-        <!-- 추천음료로 메뉴를 표시할 컨테이너 -->
-        <div class="menu">
-            <div class="button d-flex flex-wrap justify-content-center" id="menuContainer">
-            </div>
-        </div>
-    </div>
 
-    <!-- 페이지 네이션으로 버튼이 표시가 되는 부분 -->
-    <div class="pagination justify-content-center" id="paginationButtons">
-    </div>
+        <!-- 페이지 네이션으로 버튼이 표시가 되는 부분 -->
+        <div
+                class="pagination justify-content-center"
+                id="paginationButtons"
+        ></div>
 
-    <!-- 장바구니가 담기는 부분을 표시 -->
-    <h3 class="text-center">{% trans "선택한 상품" %} 🛒
-        <!-- 음성입력 버튼 위치 -->
-        <button class="gradient-btn" id="startButton">
-            <i class="fas fa-microphone-alt"></i>
-            <span>AI {% trans "음성입력" %}</span>
-        </button>
-    </h3>
-
-    <!-- 장바구니 길이가 초과 됐을때 위치 이동 버튼 -->
-    <div class="selected-items mt-4 d-flex">
-        <div id="selectedItemsList" class="flex-grow-1"></div>
-        <div class="d-flex flex-column justify-content-center align-items-center">
-            <button class="btn btn-primary scroll-button mb-2" onclick="scrollSelectedItemsList(-100)">
-                <i class="fas fa-arrow-up"></i>
+        <!-- 장바구니가 담기는 부분을 표시 -->
+        <h3 class="text-center">
+            {% trans "선택한 상품" %} 🛒
+            <!-- 음성입력 버튼 위치 -->
+            <button class="gradient-btn" id="startButton">
+                <i class="fas fa-microphone-alt"></i>
+                <span>AI {% trans "음성입력" %}</span>
             </button>
-            <button class="btn btn-primary scroll-button" onclick="scrollSelectedItemsList(100)">
-                <i class="fas fa-arrow-down"></i>
+        </h3>
+
+        <!-- 장바구니 길이가 초과 됐을때 위치 이동 버튼 -->
+        <div class="selected-items mt-4 d-flex">
+            <div id="selectedItemsList" class="flex-grow-1"></div>
+            <div
+                    class="d-flex flex-column justify-content-center align-items-center"
+            >
+                <button
+                        class="btn scroll-button mb-2"
+                        onclick="scrollSelectedItemsList(-100)"
+                >
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button
+                        class="btn scroll-button"
+                        onclick="scrollSelectedItemsList(100)"
+                >
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 장바구니에 담긴 총 금액을 표시 해주는 부분 -->
+        <div class="total-price mt-3">
+            <h3 class="text-center">
+                {% trans "총 금액" %}:
+                <span id="totalPrice">0{% trans "원" %}</span>
+            </h3>
+        </div>
+
+        <!-- 장바구니 내용물 삭제 하는 부분 -->
+        <div class="actions text-center">
+            <button class="btn btn-custom" onclick="clearItems()">
+                {% trans "전체삭제" %}
+            </button>
+            <button class="btn btn-custom" id="submitOrderBtn">
+                {% trans "결제하기" %}
             </button>
         </div>
     </div>
+</div>
 
-    <!-- 장바구니에 담긴 총 금액을 표시 해주는 부분 -->
-    <div class="total-price mt-3">
-        <h3 class="text-center">{% trans "총 금액" %}: <span id="totalPrice">0{% trans "원" %}</span></h3>
+<!-- AI 음성 인식 기능: 실버라이닝 베어 -->
+<div class="bear-assistant">
+    <div class="speech-bubble">
+        <!-- 플로팅 메시지를 표시할 컨테이너 -->
+        <div id="floatingMessage">
+            <p id="transcription"></p>
+        </div>
+        <div class="button-container"></div>
     </div>
-
-    <!-- 장바구니 내용물 삭제 하는 부분 -->
-    <div class="actions text-center">
-        <button class="btn btn-danger btn-custom" onclick="clearItems()">{% trans "전체삭제" %}</button>
-        <button class="btn btn-success btn-custom" id="submitOrderBtn">{% trans "결제하기" %}</button>
-    </div>
+    <!-- 이미지 -->
+    <img
+            style="width: 200px"
+            src="{% static 'img/silver-lining-aibear.png' %}"
+            alt="안내 도우미"
+    />
 </div>
 
 <script>
     // 페이지 로드 시 메뉴 업데이트 및 환영 메시지 출력
-    window.addEventListener('load', function () {
+    window.addEventListener("load", function () {
         updateMenus(); // 메뉴 업데이트
-        const welcomeMessage = "{% trans 'AI기능이 필요하시면 음성입력을 눌러주세요.' %}"; // 환영 메시지
+        const welcomeMessage =
+            "{% trans 'AI기능이 필요하시면 음성입력을 눌러주세요.' %}"; // 환영 메시지
         speak(welcomeMessage); // 음성 메시지 출력
     });
 
     // DOMContentLoaded 이벤트 리스너 등록
     document.addEventListener("DOMContentLoaded", function () {
         const languageButtons = document.querySelectorAll(".btn-light");
-        languageButtons.forEach(button => {
+        languageButtons.forEach((button) => {
             button.addEventListener("click", function () {
                 const lang = this.dataset.lang;
                 switchLanguage(lang); // 언어 변경 함수 호출
@@ -410,27 +513,55 @@
         // 언어 변경 함수
         function switchLanguage(lang) {
             fetch(`/orders/switch-language/?lang=${lang}`) // 언어 변경 요청 보내기
-                .then(response => {
+                .then((response) => {
                     if (response.ok) {
                         window.location.reload(); // 페이지 새로고침
                     } else {
-                        console.error('Failed to switch language.'); // 언어 변경 실패 시 오류 메시지 출력
+                        console.error("Failed to switch language."); // 언어 변경 실패 시 오류 메시지 출력
                     }
                 })
-                .catch(error => console.error('Error:', error)); // 오류 발생 시 오류 메시지 출력
+                .catch((error) => console.error("Error:", error)); // 오류 발생 시 오류 메시지 출력
         }
     });
 
     // CSRF 토큰 가져오는 함수
     function getCsrfToken() {
-        const csrfTokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        const csrfTokenElement = document.querySelector(
+            'input[name="csrfmiddlewaretoken"]'
+        );
         if (csrfTokenElement) {
             return csrfTokenElement.value;
         } else {
-            console.error('CSRF 토큰을 찾을 수 없습니다.');
+            console.error("CSRF 토큰을 찾을 수 없습니다.");
             return null;
         }
     }
+
+    let inactivityTimeout;
+    const inactivityTimeLimit = 30000; // 30초 (밀리초 단위)
+    const redirectUrl = "{% url 'orders:start_order' %}"; // 이동할 URL
+
+    // 사용자가 활동(클릭, 키 입력 등)을 할 때 타이머를 초기화하는 함수
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimeout); // 기존 타이머 제거
+        inactivityTimeout = setTimeout(() => {
+            window.location.href = redirectUrl; // 지정된 URL로 이동
+        }, inactivityTimeLimit);
+    }
+
+    // 사용자의 활동을 감지하는 이벤트 리스너 등록
+    window.onload = function () {
+        resetInactivityTimer(); // 초기 로드 시 타이머 설정
+        document.body.addEventListener('click', resetInactivityTimer); // 클릭 시 타이머 리셋
+        document.body.addEventListener('keypress', resetInactivityTimer); // 키 입력 시 타이머 리셋
+        document.body.addEventListener('mousemove', resetInactivityTimer); // 마우스 움직임 시 타이머 리셋
+    };
+
+    const redirectButton = document.getElementById("redirectButton");
+    redirectButton.addEventListener("click", function () {
+        // 버튼 클릭 시 orders/templates/menu.html로 리다이렉트
+        window.location.href = "/orders/elder_start/";
+    });
 
     // 음성입력 및 출력에 사용되는 언어 코드 설정
     const languageCodeIn = "{% trans 'input' %}"; // 음성입력 언어 선택

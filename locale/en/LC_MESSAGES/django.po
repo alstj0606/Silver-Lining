@@ -67,10 +67,10 @@ msgstr "ea"
 
 #: .\orders\templates\orders\menu.html:441
 msgid "아이템"
-msgstr "Delete All"
+msgstr "Delete"
 
 # "Won" is the currency of South Korea
 #, fuzzy
-#~| msgid "전체삭제"
+#~| msgid "삭제"
 #~ msgid "삭제"
 #~ msgstr "Delete All"
