@@ -99,6 +99,16 @@ let cartData = {};
     function submitOrder() {
         const csrfToken = getCsrfToken();
 
+        console.log("Checking cart contents >>>>>>> ", cart);
+        const selectedItems = Object.entries(cartData).map(([name, item]) => {
+            console.log(`Parsing item: ${item}`); // 각 item을 파싱하기 전 로그 출력
+            if (typeof item === 'string') { 
+                item = JSON.parse(item); 
+            } 
+            return {name: name, count: item.quantity, food_name_ko: item.menu_name};
+        });
+
+
         refreshCart().then(cartData => {
             console.log("Received cartData from refreshCart >>>>>>> ", cartData);
 
