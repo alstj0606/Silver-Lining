@@ -38,7 +38,12 @@ class CartItem:
 class Cart:
     def __init__(self, username):
         self.username = username
+
+        self.cart_key = f"cart:{self.username}" 
+
+
         self.cart_key = f"cart:{self.username}"
+
 
     # 장바구니의 현재 상태를 조회합니다.
     def get_cart(self):
@@ -64,6 +69,10 @@ class Cart:
 
         redis_conn.hset(self.cart_key, menu_name, item_data)
 
+
+
+## **Removing an Item**:
+
     # 장바구니 메뉴의 수량을 수정합니다.
     def update_quantity(self, item_data):
         redis_conn = get_redis_connection("default")
@@ -74,6 +83,7 @@ class Cart:
         redis_conn.hset(self.cart_key, name, update_data)
 
     # 메뉴를 장바구니에서 삭제합니다.
+
     def remove(self, menu_name):
         redis_conn = get_redis_connection("default")
         redis_conn.hdel(self.cart_key, menu_name)
@@ -81,4 +91,11 @@ class Cart:
     # 장바구니 전체를 삭제합니다.
     def clear(self):
         redis_conn = get_redis_connection("default")
+
         redis_conn.delete(self.cart_key)
+        print("\n\n cart.py의 clear>>>>>>>>>", self.cart_key)
+        return "clear다녀감.."
+
+
+        redis_conn.delete(self.cart_key)
+

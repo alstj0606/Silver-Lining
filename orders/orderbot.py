@@ -54,6 +54,10 @@ def request_type(client, input_text, recommended_menu, current_user):
 
     ai_response = completion.choices[0].message.content
 
+    print("\n\n ai response에서 필요한 부분만 분리 >>>>>>>", ai_response)
+
+
+
     inputText = ""
     types = ""
 
@@ -73,7 +77,11 @@ def request_type(client, input_text, recommended_menu, current_user):
 
     return types, inputText, recommended_menu
 
+
+
+
 # AI가 메뉴를 세가지 추천해줍니다.
+
 def get_recommended_menus(client, input_text, current_user):
     # 사용자의 카테고리 가져오기
     category = current_user.category

@@ -54,8 +54,14 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetch('/orders/dashboard/orders_dashboard_data/')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log(data)
                 const dailyOrdersData = data.daily_orders;
                 const dailyRevenueData = data.daily_revenue;
                 let topMenusData = data.top_menus;
@@ -112,7 +118,12 @@
                     `;
                     topMenusElement.appendChild(menuCard);
                 });
+            })
+            .catch(error => {
+                console.error('Fetching data failed:', error);
             });
     });
 </script>
+
+
 {% endblock %}

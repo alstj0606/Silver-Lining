@@ -45,6 +45,7 @@ def main_page(requset):
 
 
 # 주문을 시작하는 페이지를 렌더링합니다.
+@login_required
 def start_order(request):
     return render(request, 'orders/start_order.html')
 
@@ -239,6 +240,18 @@ class orderbot(APIView):
             current_cart_get = current_cart.get_cart()
             # AI에게 음성 입력, 기존 추천 메뉴, 현재 점주, 현재 장바구니를 전달하여 응답을 받습니다.
             result = cart_ai(request, inputText, recommended_menu, current_user, current_cart_get)
+
+
+            print("\n\n\n result >>>>> ", result) # ('3', '카페라떼,', ['Iced Americano', 'Lemonade', 'Vanilla Latte'])
+            username = request.user.username 
+            name = result[1]
+            # json_current_cart = json.loads(current_cart_get) # TypeError: the JSON object must be str, bytes or bytearray, not dict
+            
+            if name not in current_cart_get:
+                store_id = request.user.id
+                menu = Menu.objects.get(store_id = store_id, food_name = name)
+                print("\n\n update_cart_menu 의 menu 필터링", menu)
+
             username = request.user.username
             # 상태를 수정하려는 메뉴의 이름
             name = result[1]
@@ -246,10 +259,40 @@ class orderbot(APIView):
             if name not in current_cart_get:
                 store_id = request.user.id
                 menu = Menu.objects.get(store_id=store_id, food_name=name)
+
                 image = menu.img
                 price = menu.price
                 quantity = result[0]
                 item = CartItem(image, name, price, quantity)
+
+                print("CartItem에 들어갔다온 데이터가 잘 받아와지는지 >>>> ", item)
+                serializer = CartSerializer(item)
+                get_menu = serializer.data
+                print("\n\n serializer.data: ", type(serializer.data))
+            else:
+                print("\n current_cart_get의 타입", type(current_cart_get))
+                print("\n current_cart_get 어떻게 생겼나 : ", current_cart_get )
+                get_menu = json.loads(current_cart_get[name])
+            print("\n\n get_menu 의 타입 : ", type(get_menu))
+            get_menu["quantity"] = result[0] # 'str' object does not support item assignment
+            print("\n\n quantity의 값이 업데이트 됐는지 : ", get_menu) # {'menu_name': 'Iced Americano', 'quantity': '3', 'price': 5000, 'image': '/media/menu_images/29PM5PMW1I_1_RVIzXq3.jpg'}
+
+
+            cart = Cart(username)
+            if get_menu["quantity"] == '0' or 0:
+                cart.remove(get_menu["menu_name"])
+                print("\n\n cart.remove 잘 되고 있는지 >>>>>>>>>", get_menu)
+            else:
+                cart.add_to_cart(get_menu)
+
+            return Response({"message": "Item added to cart", "cart_items": cart.get_cart()})
+
+
+        elif types == "menu":
+            print("\n\n if menu의 input_text>>>> ", input_text)
+            print("\n\n if menu의 recommended_menu>>>> ", recommended_menu)
+            print("\n\n if menu의 category >>>>>> ", types)
+
                 serializer = CartSerializer(item)
                 get_menu = serializer.data
             # 해당 메뉴가 있으면 상태를 불러옵니다.
@@ -268,6 +311,7 @@ class orderbot(APIView):
 
         # AI가 새 메뉴를 추천해달라는 요청이라고 판단했을 경우
         elif types == "menu":
+
             message, recommended_menu = bot(input_text, current_user)
             return Response({'responseText': message, 'recommended_menu': recommended_menu})
 
@@ -293,7 +337,7 @@ def view_cart(request):
 
 # 장바구니에 항목 추가
 @csrf_exempt
-def add_to_cart(request):
+def update_cart_menu(request):
     if request.method == "POST":
         username = request.user.username
         data = json.loads(request.body)
@@ -301,7 +345,12 @@ def add_to_cart(request):
 
         cart = Cart(username)
         store_id = request.user.id
+
+        menu = Menu.objects.get(store_id = store_id, food_name = menu_name)
+        print("\n\n update_cart_menu 의 menu 필터링", menu)
+
         menu = Menu.objects.get(store_id=store_id, food_name=menu_name)
+
         image = menu.img
         price = menu.price
         quantity = data["quantity"]
@@ -322,7 +371,13 @@ def add_quantity(request):
         quantity = int(request.POST.get("quantity"))
 
     cart = Cart(username)
+
+    menu = Menu.objects.get(store_id = 2, food_name = name)
+    print("\n\n get으로 id, food_name 같이: ", menu)
+    print("\n\n menu가 이렇게 가져오는 게 맞나: ", menu.food_name, menu.img, menu.price)
+
     menu = Menu.objects.get(store_id=2, food_name=name)
+
     image = menu.img
     price = menu.price
     item = CartItem(image, name, price, quantity)
@@ -348,7 +403,9 @@ def remove_from_cart(request, menu_name):
 def clear_cart(request):
     username = request.user.username
     cart = Cart(username)
-    cart.clear()
+    print("\n\n cart>>>>>>>>>", cart)
+    res = cart.clear()
+    print("\n\n cart.clear 잘 가는지>>>>>>>>>", res)
     return Response({"message": "장바구니 전체 삭제"})
 
 
@@ -391,43 +448,39 @@ def submit_order(request):
 
 
 def orders_dashboard_data(request):
-    # Query all orders for the logged-in user's store
+    # 로그인 된 staff 계정의 주문 정보를 가져옵니다.
     orders = Order.objects.filter(store_id=request.user.id).values()
-    
     df = pd.DataFrame(list(orders))
 
     if df.empty:
         return JsonResponse({'error': 'No data available'})
 
-    # Convert 'created_at' field to date to allow for daily analysis
+    # 'created_at'필드를 날짜별 계산이 가능하도록 date형태로 바꿔줍니다.
     df['created_at'] = pd.to_datetime(df['created_at']).dt.date
 
-    # Daily order count
     daily_orders = df.groupby('created_at').size().reset_index(name='order_count')
-
-    # Daily total revenue
     daily_revenue = df.groupby('created_at')['total_price'].sum().reset_index()
 
-    # Process the menu items and accumulate 'count' for top ordered menus
+
     menu_counts = {}
 
     for order_menu in df['order_menu']:
         for item in order_menu:
             food_name_ko = item['food_name_ko']
-            count = item['count']
+            count = int(item['count'])  # 여기서 문자열을 정수로 변환합니다.
             if food_name_ko in menu_counts:
                 menu_counts[food_name_ko] += count
             else:
                 menu_counts[food_name_ko] = count
 
-    # Convert the accumulated menu counts to a DataFrame
+    # 누적된 메뉴 quantity를 DataFrame으로 변경해줍니다.
     menu_counts_df = pd.DataFrame(list(menu_counts.items()), columns=['food_name_ko', 'quantity'])
     menu_counts_df = menu_counts_df.sort_values(by='quantity', ascending=False).reset_index(drop=True)
     
-    # Extract top 5 ordered menus
+    # 누적된 주문 quantity가 많은 순으로 상위 5개 메뉴를 선택합니다.
     top_menus = menu_counts_df.head(5)
 
-    # Create JSON response
+    # Json Response를 생성합니다.
     data = {
         'daily_orders': daily_orders.to_dict(orient='records'),
         'daily_revenue': daily_revenue.to_dict(orient='records'),
