@@ -29,7 +29,10 @@ OPEN_API_KEY = config.OPEN_API_KEY
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+
+
 # ALLOWED_HOSTS = [".silverlinings.site"]
+
 
 # Application definition
 
@@ -94,6 +97,8 @@ DATABASES = {
 }
 
 
+
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -105,6 +110,18 @@ DATABASES = {
 #     }
 # }
 
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'mydb',  # Docker Compose 파일에서 설정한 데이터베이스 이름과 동일하게 설정
+#         'USER': 'myuser',  # Docker Compose 파일에서 설정한 사용자 이름과 동일하게 설정
+#         'PASSWORD': 'mypassword',  # Docker Compose 파일에서 설정한 비밀번호와 동일하게 설정
+#         'HOST': 'db',  # Docker Compose 파일에서 설정한 PostgreSQL 서비스의 이름과 동일하게 설정
+#         'PORT': '5432',
+#     }
+# }
 
 CACHES = {
     "default": {
