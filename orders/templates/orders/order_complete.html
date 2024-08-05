@@ -115,6 +115,9 @@
       }
     </style>
     <script>
+      window.addEventListener('load', function () {
+        fetch(`/orders/switch-language/?lang="ko-KR"`)
+      });
       document.addEventListener("DOMContentLoaded", function () {
         let countdown = 5;
         let timerElement = document.getElementById("timer");

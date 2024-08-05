@@ -76,7 +76,7 @@ document.getElementById('submitOrderBtn').addEventListener('click', function () 
         },
         success: function (data) {
             console.log('주문이 성공적으로 처리되었습니다.');
-            // window.location.href = '/orders/order_complete/' + data.order_number + '/';  // 주문 완료 페이지로 이동
+            window.location.href = '/orders/order_complete/' + data.order_number + '/';  // 주문 완료 페이지로 이동
         },
         error: function (error) {
             console.error('주문 처리 중 오류가 발생했습니다:', error);  // 오류 발생 시 메시지 출력

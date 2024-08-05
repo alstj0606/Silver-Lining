@@ -11,6 +11,7 @@ function speak(text, callback) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = languageCodeOut; // 출력 언어 설정
+    utterance.rate = 1.3; // 1.3배 속도로 설정
     utterance.onend = function () {
         console.log("음성 안내가 끝났습니다.");
 
